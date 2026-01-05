@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "CommonJS",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@domain/*": ["packages/src/domain/*"],
+      "@application/*": ["packages/src/application/*"],
+      "@infra/*": ["packages/src/infra/*"]
+    }
+  }
+}
