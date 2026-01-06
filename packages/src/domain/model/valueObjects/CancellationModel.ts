@@ -1,4 +1,4 @@
-import { FeatureRow } from "../../prediction/dtos/FeatureRow";
+import { CancellationModelDto } from "../dtos/CancellationModelDto";
 import { ModelVersion } from "./ModelVersion";
 
 export class CancellationModel {
@@ -6,13 +6,17 @@ export class CancellationModel {
     readonly version: ModelVersion,
     readonly featureOrder: string[],
     readonly coefficients: number[], // 同じ順序
-    readonly intercept: number
+    readonly intercept: number,
+    readonly mean: number[],
+    readonly std: number[]
   ) {}
   static create(props: {
     version: ModelVersion;
     featureOrder: string[];
     coefficients: number[];
     intercept: number;
+    mean: number[];
+    std: number[];
   }): CancellationModel {
     if (
       props.featureOrder.length !== props.coefficients.length ||
@@ -23,15 +27,20 @@ export class CancellationModel {
       props.version,
       props.featureOrder,
       props.coefficients,
-      props.intercept
+      props.intercept,
+      props.mean,
+      props.std
     );
   }
-  // 予測用の簡易メソッド（必要なら）
-  predict(featureRow: FeatureRow): number {
-    const z = this.featureOrder.reduce(
-      (acc, key, i) => acc + (featureRow[key] ?? 0) * this.coefficients[i],
-      this.intercept
-    );
-    return 1 / (1 + Math.exp(-z));
+
+  toPrimitive(): CancellationModelDto {
+    return {
+      date: this.version.toDate(),
+      featureOrder: this.featureOrder,
+      coefficients: this.coefficients,
+      intercept: this.intercept,
+      mean: this.mean,
+      std: this.std,
+    };
   }
 }

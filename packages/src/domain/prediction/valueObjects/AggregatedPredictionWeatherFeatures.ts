@@ -36,7 +36,7 @@ export class AggregatedPredictionWeatherFeatures {
     return {
       avgTemperature: this.avgTemperature.toNumber(),
       avgRainFall: this.avgRainFall.toNumber(),
-      precipitationProbability: this.precipitationProbability.toPercent() / 100, // 降水確率を0..1に正規化
+      rainOccurRate: this.precipitationProbability.toPercent() / 100, // 降水確率を0..1に正規化
       sampleCount: this.sampleCount,
     };
   }

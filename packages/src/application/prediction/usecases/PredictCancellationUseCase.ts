@@ -7,12 +7,14 @@ import { TimeWindowSpec } from "../../../domain/training/valueObjects/TimeWindow
 import { NearTermWeatherForecastRepository } from "../../../domain/weatherForecast/repositoryInterface.ts/NearTermWeatherForecastRepository";
 import { PredictCancellationRequest } from "../dtos/PredictCancellationRequest";
 import { PredictCancellationResponse } from "../dtos/PredictCancellationResponse";
+import { CancellationPredictor } from "../interfaces/CancellationPredictor";
 
 export class PredictCancellationUseCase {
   constructor(
     private readonly gameRepository: ScheduledGameRepository,
     private readonly forecastRepository: NearTermWeatherForecastRepository,
-    private readonly modelRepository: CancellationModelRepository
+    private readonly modelRepository: CancellationModelRepository,
+    private readonly predictor: CancellationPredictor
   ) {}
 
   async execute(
@@ -43,7 +45,10 @@ export class PredictCancellationUseCase {
       forecasts.hourlyWeatherForecasts
     );
 
-    const probability = model.predict(aggregatedFeatures.toPrimitive());
+    const probability = this.predictor.predict({
+      model: model.toPrimitive(),
+      features: aggregatedFeatures.toPrimitive(),
+    });
     return {
       message: "予測に成功しました",
       probability: CancellationProbability.from(probability).toNumber(),

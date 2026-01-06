@@ -5,6 +5,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "dependencies": {
+    "ml-logistic-regression": "^2.0.0",
+    "ml-matrix": "^6.12.1",
     "uuid": "^13.0.0"
   }
 }

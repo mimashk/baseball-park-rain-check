@@ -1,4 +1,6 @@
 import { CancellationModelRepository } from "../../../domain/model/repositoryInterface/CancellationModelRepository";
+import { CancellationModel } from "../../../domain/model/valueObjects/CancellationModel";
+import { ModelVersion } from "../../../domain/model/valueObjects/ModelVersion";
 import { ObservedHourlyWeatherRepository } from "../../../domain/training/repositoryInterface/ObservedHourlyWeatherRepository";
 import { PastGameRecordRepository } from "../../../domain/training/repositoryInterface/PastGameRecordRepository";
 import { TrainingWeatherFeatureAggregator } from "../../../domain/training/services/TrainingWeatherFeatureAggregator";
@@ -53,9 +55,17 @@ export class TrainCancellationModelUseCase {
       throw new Error("学習に使えるデータがありません");
     }
 
-    const model = await this.trainer.train(
+    const modelDto = await this.trainer.train(
       examples.map((e) => e.toPrimitive())
     );
+    const model = CancellationModel.create({
+      version: ModelVersion.fromDate(modelDto.date),
+      featureOrder: modelDto.featureOrder,
+      coefficients: modelDto.coefficients,
+      intercept: modelDto.intercept,
+      mean: modelDto.mean,
+      std: modelDto.std,
+    });
     await this.modelRepository.save(model);
 
     return {
