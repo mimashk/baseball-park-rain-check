@@ -2,44 +2,39 @@ import { BallPark } from "../valueObjects/BallPark";
 import { BaseballTeam } from "../valueObjects/BaseballTeam";
 import { GameCategory } from "../valueObjects/GameCategory";
 import { GameId } from "../valueObjects/GameId";
-import { GameStartTime } from "../valueObjects/GameStartTime";
 import { GameStatus } from "../valueObjects/GameStatus";
 
-export interface CreateGameProps {
+export interface CreateScheduledGameProps {
   date: Date;
-  startTime: string;
   category: string;
   homeTeam: string;
   awayTeam: string;
   ballPark: string;
 }
 
-export interface updateGameProps {
+export interface UpdateScheduledGameProps {
   date?: Date;
-  startTime?: string;
   category?: string;
   homeTeam?: string;
   awayTeam?: string;
   ballPark?: string;
 }
 
-export class Game {
+export class ScheduledGame {
   constructor(
     readonly id: GameId,
     readonly date: Date,
-    readonly startTime: GameStartTime,
     readonly category: GameCategory,
     readonly homeTeam: BaseballTeam,
     readonly awayTeam: BaseballTeam,
     readonly ballPark: BallPark,
-    private status: GameStatus // メインスポンサーとイベントを追加したいが、MVPだといらないかなと思うので一旦省略
+    private _status: GameStatus // メインスポンサーとイベントを追加したいが、MVPだといらないかなと思うので一旦省略
   ) {}
 
-  static create(props: CreateGameProps): Game {
-    return new Game(
+  static create(props: CreateScheduledGameProps): ScheduledGame {
+    return new ScheduledGame(
       GameId.generate(),
       props.date,
-      GameStartTime.from(props.startTime),
       GameCategory.from(props.category),
       BaseballTeam.from(props.homeTeam),
       BaseballTeam.from(props.awayTeam),
@@ -48,31 +43,35 @@ export class Game {
     );
   }
 
-  update(props: updateGameProps): Game {
-    return new Game(
+  update(props: UpdateScheduledGameProps): ScheduledGame {
+    return new ScheduledGame(
       this.id,
       props.date ?? this.date,
-      props.startTime ? GameStartTime.from(props.startTime) : this.startTime,
       props.category ? GameCategory.from(props.category) : this.category,
       props.homeTeam ? BaseballTeam.from(props.homeTeam) : this.homeTeam,
       props.awayTeam ? BaseballTeam.from(props.awayTeam) : this.awayTeam,
       props.ballPark ? BallPark.from(props.ballPark) : this.ballPark,
-      this.status
+      this._status
     );
   }
 
+  status(): GameStatus {
+    return this._status;
+  }
+
   start(now: Date) {
-    const { hour, minute } = this.startTime.getParts();
+    const hour = this.date.getHours();
+    const minute = this.date.getMinutes();
     const startDateTime = new Date(this.date);
     startDateTime.setHours(hour, minute);
-    if (now >= startDateTime) this.status = this.status.toInProgress();
+    if (now >= startDateTime) this._status = this._status.toInProgress();
   }
 
   complete() {
-    this.status = this.status.toCompleted();
+    this._status = this._status.toCompleted();
   }
 
   cancel() {
-    this.status = this.status.toCancelled();
+    this._status = this._status.toCancelled();
   }
 }

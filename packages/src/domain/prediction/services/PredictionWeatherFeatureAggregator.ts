@@ -3,11 +3,9 @@ import { PrecipitationProbability } from "../../weatherForecast/valueObjects/Pre
 import { RainFall } from "../../weatherForecast/valueObjects/RainFall";
 import { TemperatureCelsius } from "../../weatherForecast/valueObjects/Temperature";
 import { AggregatedPredictionWeatherFeatures } from "../valueObjects/AggregatedPredictionWeatherFeatures";
-import { PredictionKey } from "../valueObjects/PredictionKey";
 
 export class PredictionWeatherFeatureAggregator {
   static aggregate(
-    predictionKey: PredictionKey,
     hourly: HourlyWeatherForecast[]
   ): AggregatedPredictionWeatherFeatures {
     if (!hourly || hourly.length === 0) {
@@ -21,7 +19,6 @@ export class PredictionWeatherFeatureAggregator {
     );
 
     return AggregatedPredictionWeatherFeatures.create({
-      predictionKey,
       avgTemperature: TemperatureCelsius.from(avgTemp),
       avgRainFall: RainFall.fromMillimeters(avgRain),
       precipitationProbability,

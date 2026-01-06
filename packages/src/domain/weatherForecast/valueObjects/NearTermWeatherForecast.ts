@@ -1,34 +1,28 @@
 import { HourlyWeatherForecast } from "./HourlyWeatherForecast";
 import { BallParkWeatherPoint } from "./BallParkWeatherPoint";
+import { BallParkId } from "../../scheduledGame/valueObjects/BallPark";
 
-export interface ShortTermWeatherProps {
-  ballParkId: number;
+export interface NearTermWeatherForecastProps {
+  ballParkId: BallParkId;
   hourlyWeatherForecasts: HourlyWeatherForecast[];
   publishedAt: Date;
 }
 
-export class TwelveHourWeatherForecasts {
+export class NearTermWeatherForecast {
   constructor(
     readonly ballParkWeatherPoint: BallParkWeatherPoint,
     readonly hourlyWeatherForecasts: HourlyWeatherForecast[],
     readonly publishedAt: Date
   ) {}
-  static create(props: ShortTermWeatherProps): TwelveHourWeatherForecasts {
+  static create(props: NearTermWeatherForecastProps): NearTermWeatherForecast {
     if (!props.ballParkId) {
       throw new Error("球場IDが指定されていません");
     }
-    if (props.hourlyWeatherForecasts.length !== 12) {
-      throw new Error("短期的な天気予報は12時間分でなければなりません");
-    }
-    if (
-      !props.ballParkId ||
-      !props.hourlyWeatherForecasts ||
-      !props.publishedAt
-    ) {
-      throw new Error("必須項目が不足しています");
+    if (props.hourlyWeatherForecasts.length < 12) {
+      throw new Error("近期的な天気予報は12時間以上のデータが必要です");
     }
     const normalizedPublishedAt = new Date(props.publishedAt);
-    return new TwelveHourWeatherForecasts(
+    return new NearTermWeatherForecast(
       BallParkWeatherPoint.create(props.ballParkId),
       props.hourlyWeatherForecasts,
       normalizedPublishedAt

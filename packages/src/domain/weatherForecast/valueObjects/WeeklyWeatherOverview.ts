@@ -1,20 +1,21 @@
 import { DailyWeatherOverview } from "./DailyWeatherOverview";
 import { BallParkWeatherPoint } from "./BallParkWeatherPoint";
+import { BallParkId } from "../../scheduledGame/valueObjects/BallPark";
 
 export interface WeeklyForecastProps {
-  ballParkId: number;
+  ballParkId: BallParkId;
   dailyWeatherOverviews: DailyWeatherOverview[];
   publishedAt: Date;
 }
 
-export class WeeklyForecast {
+export class WeeklyWeatherOverview {
   private constructor(
     readonly ballParkWeatherPoint: BallParkWeatherPoint,
     readonly dailyWeatherOverviews: DailyWeatherOverview[],
     readonly publishedAt: Date
   ) {}
 
-  static create(props: WeeklyForecastProps): WeeklyForecast {
+  static create(props: WeeklyForecastProps): WeeklyWeatherOverview {
     if (!props.ballParkId) {
       throw new Error("球場IDが指定されていません");
     }
@@ -30,7 +31,7 @@ export class WeeklyForecast {
     }
     const normalizedPublishedAt = new Date(props.publishedAt);
 
-    return new WeeklyForecast(
+    return new WeeklyWeatherOverview(
       BallParkWeatherPoint.create(props.ballParkId),
       props.dailyWeatherOverviews,
       normalizedPublishedAt

@@ -32,7 +32,7 @@ export class BallParkWeatherPoint {
     private readonly _nearestWeatherStationName: string
   ) {}
 
-  static create(ballParkId: number): BallParkWeatherPoint {
+  static create(ballParkId: BallParkId): BallParkWeatherPoint {
     const hit = BallParkWeatherPointCatalog[ballParkId];
     if (!hit) throw new Error("球場付近の天気予報地点が見つかりません");
     this.validate(hit);

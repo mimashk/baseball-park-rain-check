@@ -2,11 +2,9 @@ import { RainFall } from "../../weatherForecast/valueObjects/RainFall";
 import { TemperatureCelsius } from "../../weatherForecast/valueObjects/Temperature";
 import { AggregatedTrainingWeatherFeatures } from "../valueObjects/AggregatedTrainingWeatherFeatures";
 import { ObservedHourlyWeather } from "../valueObjects/ObservedHourlyWeather";
-import { TrainingKey } from "../valueObjects/TrainingKey";
 
 export class TrainingWeatherFeatureAggregator {
   static aggregate(
-    trainingKey: TrainingKey,
     hourly: ObservedHourlyWeather[]
   ): AggregatedTrainingWeatherFeatures {
     if (!hourly || hourly.length === 0) {
@@ -20,7 +18,6 @@ export class TrainingWeatherFeatureAggregator {
     );
 
     return AggregatedTrainingWeatherFeatures.create({
-      trainingKey,
       avgTemperature: TemperatureCelsius.from(avgTemp),
       avgRainFall: RainFall.fromMillimeters(avgRain),
       rainOccurRate,

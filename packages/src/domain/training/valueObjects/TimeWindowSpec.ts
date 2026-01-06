@@ -1,5 +1,3 @@
-import { GameStartTime } from "../../scheduledGame/valueObjects/GameStartTime";
-
 export class TimeWindowSpec {
   private constructor(
     readonly beforeHours: number,
@@ -26,10 +24,15 @@ export class TimeWindowSpec {
   }
 
   /** 集約対象の開始/終了時刻を返す（endはexclusive） */
-  toRange(startTime: GameStartTime): { from: Date; to: Date } {
-    const hour = startTime.getHour();
-    const from = new Date((hour - this.beforeHours) * 60 * 60 * 1000);
-    const to = new Date((hour + this.afterHours) * 60 * 60 * 1000);
+  toRange(date: Date): { from: Date; to: Date } {
+    const hour = date.getHours();
+    const minute = date.getMinutes();
+    const from = new Date(date);
+    from.setHours(hour - this.beforeHours);
+    from.setMinutes(minute);
+    const to = new Date(date);
+    to.setHours(hour + this.afterHours);
+    to.setMinutes(minute);
     return { from, to };
   }
 }
