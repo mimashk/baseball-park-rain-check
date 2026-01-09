@@ -1,4 +1,4 @@
-import { HourlyWeatherForecast } from "../../weatherForecast/valueObjects/HourlyWeatherForecast";
+import { BallParkHourlyWeatherForecast } from "../../weatherForecast/valueObjects/BallParkHourlyWeatherForecast";
 import { PrecipitationProbability } from "../../weatherForecast/valueObjects/PrecipitationProbability";
 import { RainFall } from "../../weatherForecast/valueObjects/RainFall";
 import { TemperatureCelsius } from "../../weatherForecast/valueObjects/Temperature";
@@ -6,7 +6,7 @@ import { AggregatedPredictionWeatherFeatures } from "../valueObjects/AggregatedP
 
 export class PredictionWeatherFeatureAggregator {
   static aggregate(
-    hourly: HourlyWeatherForecast[]
+    hourly: BallParkHourlyWeatherForecast[]
   ): AggregatedPredictionWeatherFeatures {
     if (!hourly || hourly.length === 0) {
       throw new Error("気象予報データがありません");

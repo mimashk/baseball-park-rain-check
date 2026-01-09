@@ -1,7 +1,7 @@
 import { CancellationModelRepository } from "../../../domain/model/repositoryInterface/CancellationModelRepository";
 import { CancellationModel } from "../../../domain/model/valueObjects/CancellationModel";
 import { ModelVersion } from "../../../domain/model/valueObjects/ModelVersion";
-import { ObservedHourlyWeatherRepository } from "../../../domain/training/repositoryInterface/ObservedHourlyWeatherRepository";
+import { BallParkObservedHourlyWeatherRepository } from "../../../domain/training/repositoryInterface/BallParkObservedHourlyWeatherRepository";
 import { PastGameRecordRepository } from "../../../domain/training/repositoryInterface/PastGameRecordRepository";
 import { TrainingWeatherFeatureAggregator } from "../../../domain/training/services/TrainingWeatherFeatureAggregator";
 import { TimeWindowSpec } from "../../../domain/training/valueObjects/TimeWindowSpec";
@@ -9,11 +9,12 @@ import { TrainingExample } from "../../../domain/training/valueObjects/TrainingE
 import { TrainCancellationModelRequest } from "../dtos/TrainCancellationModelRequest";
 import { TrainCancellationModelResponse } from "../dtos/TrainCancellationModelResponse";
 import { CancellationModelTrainer } from "../interfaces/CancellationModelTrainer";
+import { mapTrainingExampleToRow } from "../mapper/mapTrainingExampleToRow";
 
 export class TrainCancellationModelUseCase {
   constructor(
     private readonly pastGameRepository: PastGameRecordRepository,
-    private readonly weatherRepository: ObservedHourlyWeatherRepository,
+    private readonly weatherRepository: BallParkObservedHourlyWeatherRepository,
     private readonly trainer: CancellationModelTrainer,
     private readonly modelRepository: CancellationModelRepository
   ) {}
@@ -56,7 +57,7 @@ export class TrainCancellationModelUseCase {
     }
 
     const modelDto = await this.trainer.train(
-      examples.map((e) => e.toPrimitive())
+      examples.map((e) => mapTrainingExampleToRow(e))
     );
     const model = CancellationModel.create({
       version: ModelVersion.fromDate(modelDto.date),

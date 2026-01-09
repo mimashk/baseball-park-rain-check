@@ -1,6 +1,6 @@
 import { CancellationPredictor } from "../../../application/prediction/interfaces/CancellationPredictor";
 import { CancellationModelDto } from "../../../domain/model/dtos/CancellationModelDto";
-import { FeatureRow } from "../../../domain/prediction/dtos/FeatureRow";
+import { FeatureRow } from "../../../application/prediction/dtos/FeatureRow";
 import { CancellationFeaturePreprocessor } from "./CancellationFeaturePreprocessor";
 import { FeatureKey } from "./FeatureOrder";
 

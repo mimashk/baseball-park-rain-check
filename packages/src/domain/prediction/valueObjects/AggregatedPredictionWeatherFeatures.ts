@@ -1,7 +1,6 @@
 import { PrecipitationProbability } from "../../weatherForecast/valueObjects/PrecipitationProbability";
 import { RainFall } from "../../weatherForecast/valueObjects/RainFall";
 import { TemperatureCelsius } from "../../weatherForecast/valueObjects/Temperature";
-import { FeatureRow } from "../dtos/FeatureRow";
 
 export class AggregatedPredictionWeatherFeatures {
   private constructor(
@@ -30,14 +29,5 @@ export class AggregatedPredictionWeatherFeatures {
       props.precipitationProbability,
       props.sampleCount
     );
-  }
-
-  toPrimitive(): FeatureRow {
-    return {
-      avgTemperature: this.avgTemperature.toNumber(),
-      avgRainFall: this.avgRainFall.toNumber(),
-      rainOccurRate: this.precipitationProbability.toPercent() / 100, // 降水確率を0..1に正規化
-      sampleCount: this.sampleCount,
-    };
   }
 }

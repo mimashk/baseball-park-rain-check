@@ -4,15 +4,16 @@ import { CancellationProbability } from "../../../domain/prediction/valueObjects
 import { ScheduledGameRepository } from "../../../domain/scheduledGame/repositoryInterface/ScheduledGameRepository";
 import { GameId } from "../../../domain/scheduledGame/valueObjects/GameId";
 import { TimeWindowSpec } from "../../../domain/training/valueObjects/TimeWindowSpec";
-import { NearTermWeatherForecastRepository } from "../../../domain/weatherForecast/repositoryInterface.ts/NearTermWeatherForecastRepository";
+import { BallParkHourlyWeatherForecastRepository } from "../../../domain/weatherForecast/repositoryInterface.ts/BallParkHourlyWeatherForecastRepository";
 import { PredictCancellationRequest } from "../dtos/PredictCancellationRequest";
 import { PredictCancellationResponse } from "../dtos/PredictCancellationResponse";
 import { CancellationPredictor } from "../interfaces/CancellationPredictor";
+import { mapAggregatedPredictionWeatherFeaturesToRow } from "../mapper/mapAggregatedPredictionWeatherFeaturesToRow";
 
 export class PredictCancellationUseCase {
   constructor(
     private readonly gameRepository: ScheduledGameRepository,
-    private readonly forecastRepository: NearTermWeatherForecastRepository,
+    private readonly forecastRepository: BallParkHourlyWeatherForecastRepository,
     private readonly modelRepository: CancellationModelRepository,
     private readonly predictor: CancellationPredictor
   ) {}
@@ -41,13 +42,12 @@ export class PredictCancellationUseCase {
     );
     if (!forecasts) throw new Error("予測に使える気象データがありません");
 
-    const aggregatedFeatures = PredictionWeatherFeatureAggregator.aggregate(
-      forecasts.hourlyWeatherForecasts
-    );
+    const aggregatedFeatures =
+      PredictionWeatherFeatureAggregator.aggregate(forecasts);
 
     const probability = this.predictor.predict({
       model: model.toPrimitive(),
-      features: aggregatedFeatures.toPrimitive(),
+      features: mapAggregatedPredictionWeatherFeaturesToRow(aggregatedFeatures),
     });
     return {
       message: "予測に成功しました",

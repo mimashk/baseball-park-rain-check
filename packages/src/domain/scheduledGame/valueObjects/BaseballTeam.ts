@@ -31,7 +31,7 @@ export class BaseballTeam {
     );
   }
 
-  labelJa(): string {
-    return BaseballTeamType[this.value];
+  labelJa(): BaseballTeamType {
+    return this.value;
   }
 }

@@ -1,5 +1,5 @@
 import { CancellationModelDto } from "../../../domain/model/dtos/CancellationModelDto";
-import { FeatureRow } from "../../../domain/prediction/dtos/FeatureRow";
+import { FeatureRow } from "../dtos/FeatureRow";
 
 export interface CancellationPredictor {
   predict(params: {

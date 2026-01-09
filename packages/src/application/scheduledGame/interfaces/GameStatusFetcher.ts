@@ -1,11 +1,10 @@
-import { GameStatusType } from "../../../domain/scheduledGame/valueObjects/GameStatus";
+import { BaseballTeamType } from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
+import { GameStatusDto } from "../dtos/GameStatusDto";
 
 export interface GameStatusFetcher {
   fetchStatus(input: {
     date: Date;
-    homeTeamName: string;
-    awayTeamName: string;
-  }): Promise<{
-    status: GameStatusType;
-  }>;
+    homeTeamName: BaseballTeamType;
+    awayTeamName: BaseballTeamType;
+  }): Promise<GameStatusDto>;
 }

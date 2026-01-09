@@ -1,8 +1,5 @@
-import { CreateScheduledGameProps } from "../../../domain/scheduledGame/entities/ScheduledGame";
+import { ScheduledGameDto } from "../dtos/ScheduledGameDto";
 
 export interface ScheduledGameFetcher {
-  fetchScheduledGames(
-    from: Date,
-    to: Date
-  ): Promise<CreateScheduledGameProps[]>;
+  fetchScheduledGames(from: Date, to: Date): Promise<ScheduledGameDto[]>;
 }

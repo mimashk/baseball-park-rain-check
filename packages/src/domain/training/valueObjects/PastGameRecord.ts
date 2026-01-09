@@ -3,7 +3,7 @@ import { BaseballTeam } from "../../scheduledGame/valueObjects/BaseballTeam";
 import { GameCancelled } from "./GameCancelled";
 
 export interface CreatePastGameRecordProps {
-  date: string;
+  date: Date;
   homeTeam: string;
   awayTeam: string;
   ballPark: string;
@@ -29,7 +29,7 @@ export class PastGameRecord {
       normalizedDate,
       BaseballTeam.from(props.homeTeam),
       BaseballTeam.from(props.awayTeam),
-      BallPark.from(props.ballPark),
+      BallPark.fromString(props.ballPark),
       GameCancelled.fromBoolean(props.cancelled)
     );
   }

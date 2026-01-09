@@ -4,9 +4,21 @@
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "scripts": {
+    "prisma:generate": "prisma generate --schema src/infra/persistence/mysql/prisma/schema.prisma",
+    "prisma:push": "prisma db push --schema src/infra/persistence/mysql/prisma/schema.prisma",
+    "prisma:migrate": "prisma migrate dev --schema src/infra/persistence/mysql/prisma/schema.prisma"
+  },
   "dependencies": {
+    "@prisma/client": "^7.1.0",
+    "cheerio": "^1.1.2",
+    "googleapis": "^170.0.0",
     "ml-logistic-regression": "^2.0.0",
     "ml-matrix": "^6.12.1",
+    "openmeteo": "^1.2.3",
     "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "prisma": "^7.1.0"
   }
 }

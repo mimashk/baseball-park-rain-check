@@ -1,7 +1,7 @@
 import LogisticRegression from "ml-logistic-regression";
 import { Matrix } from "ml-matrix";
 import { CancellationModelTrainer } from "../../../application/training/interfaces/CancellationModelTrainer";
-import { TrainingRow } from "../../../domain/training/dtos/TrainingRow";
+import { TrainingRow } from "../../../application/training/dtos/TrainingRow";
 import { CancellationModelDto } from "../../../domain/model/dtos/CancellationModelDto";
 import { CancellationFeaturePreprocessor } from "./CancellationFeaturePreprocessor";
 import { featureOrder } from "./FeatureOrder";

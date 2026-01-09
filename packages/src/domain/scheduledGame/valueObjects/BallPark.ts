@@ -38,7 +38,8 @@ export const BallParkCatalog = {
 } as const;
 
 export type BallParkId =
-  (typeof BallParkCatalog)[keyof typeof BallParkCatalog]["id"];
+  | (typeof BallParkCatalog)[keyof typeof BallParkCatalog]["id"]
+  | 0;
 
 type BallParkCatalogItem =
   (typeof BallParkCatalog)[keyof typeof BallParkCatalog];
@@ -47,13 +48,13 @@ type BallParkRoofType = "OPEN_AIR" | "DOME" | "UNKNOWN";
 
 export class BallPark {
   private constructor(
-    private readonly _id: number,
+    private readonly _id: BallParkId,
     private readonly _name: string,
     private readonly _roof: BallParkRoofType
   ) {}
 
   /** 唯一の生成口：呼び出し側は known/unknown を意識しない */
-  static from(rawName: string): BallPark {
+  static fromString(rawName: string): BallPark {
     const name = this.normalize(rawName);
     this.validate(name);
 
@@ -65,6 +66,14 @@ export class BallPark {
 
     // 未知球場：最低限通して UNKNOWN 扱い
     return new BallPark(0, name, "UNKNOWN");
+  }
+
+  static fromId(id: BallParkId): BallPark {
+    const hit = Object.values(BallParkCatalog).find((item) => item.id === id);
+    if (hit) {
+      return new BallPark(hit.id, hit.labelJa, hit.roof);
+    }
+    return new BallPark(0, "", "UNKNOWN");
   }
 
   private static normalize(name: string): string {
@@ -86,7 +95,7 @@ export class BallPark {
     return null;
   }
 
-  id(): number {
+  id(): BallParkId {
     return this._id;
   }
 

@@ -38,7 +38,7 @@ export class ScheduledGame {
       GameCategory.from(props.category),
       BaseballTeam.from(props.homeTeam),
       BaseballTeam.from(props.awayTeam),
-      BallPark.from(props.ballPark),
+      BallPark.fromString(props.ballPark),
       GameStatus.scheduled()
     );
   }
@@ -50,7 +50,7 @@ export class ScheduledGame {
       props.category ? GameCategory.from(props.category) : this.category,
       props.homeTeam ? BaseballTeam.from(props.homeTeam) : this.homeTeam,
       props.awayTeam ? BaseballTeam.from(props.awayTeam) : this.awayTeam,
-      props.ballPark ? BallPark.from(props.ballPark) : this.ballPark,
+      props.ballPark ? BallPark.fromString(props.ballPark) : this.ballPark,
       this._status
     );
   }

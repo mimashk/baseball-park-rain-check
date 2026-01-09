@@ -1,4 +1,4 @@
-import { TrainingRow } from "../../../domain/training/dtos/TrainingRow";
+import { TrainingRow } from "../dtos/TrainingRow";
 import { CancellationModelDto } from "../../../domain/model/dtos/CancellationModelDto";
 
 export interface CancellationModelTrainer {
