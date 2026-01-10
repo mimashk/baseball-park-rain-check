@@ -1,14 +1,15 @@
+import { ValidationError } from "../../../shared/errors/ValidationError";
 import { RainFall } from "../../weatherForecast/valueObjects/RainFall";
 import { TemperatureCelsius } from "../../weatherForecast/valueObjects/Temperature";
 import { AggregatedTrainingWeatherFeatures } from "../valueObjects/AggregatedTrainingWeatherFeatures";
-import { ObservedHourlyWeather } from "../valueObjects/ObservedHourlyWeather";
+import { BallParkObservedHourlyWeather } from "../valueObjects/BallParkObservedHourlyWeather";
 
 export class TrainingWeatherFeatureAggregator {
   static aggregate(
-    hourly: ObservedHourlyWeather[]
+    hourly: BallParkObservedHourlyWeather[]
   ): AggregatedTrainingWeatherFeatures {
     if (!hourly || hourly.length === 0) {
-      throw new Error("観測された気象データがありません");
+      throw new ValidationError("観測された気象データがありません");
     }
 
     const avgTemp = this.avg(hourly.map((h) => h.temperature.toNumber()));
@@ -27,7 +28,9 @@ export class TrainingWeatherFeatureAggregator {
 
   private static avg(values: number[]): number {
     const finite = values.filter((v) => Number.isFinite(v));
-    if (finite.length === 0) throw new Error("平均値を計算できません");
+    if (finite.length === 0) {
+      throw new ValidationError("平均値を計算できません", { values });
+    }
     return finite.reduce((acc, value) => acc + value, 0) / finite.length;
   }
 }

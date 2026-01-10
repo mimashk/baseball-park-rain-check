@@ -1,4 +1,5 @@
 import { v7 as uuidv7 } from "uuid";
+import { ensureTextPresent } from "../../shared/ensurePresent";
 
 export class GameId {
   private constructor(readonly value: string) {}
@@ -8,10 +9,8 @@ export class GameId {
   }
 
   static fromString(value: string): GameId {
-    if (!value || typeof value !== "string") {
-      throw new Error("不正な試合IDです");
-    }
-    return new GameId(value);
+    const id = ensureTextPresent("試合ID", value);
+    return new GameId(id);
   }
 
   toString(): string {

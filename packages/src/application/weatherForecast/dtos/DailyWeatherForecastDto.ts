@@ -1,6 +1,6 @@
 export interface DailyWeatherForecastDto {
   date: Date;
-  weatherPattern: number;
+  weatherCode: number;
   temperatureMin: number;
   temperatureMax: number;
   precipitationProbability: number;

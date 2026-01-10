@@ -1,7 +1,8 @@
+import { BallParkId } from "../../scheduledGame/valueObjects/BallPark";
 import {
-  BallPark,
-  BallParkId,
-} from "../../scheduledGame/valueObjects/BallPark";
+  ensureDatePresent,
+  ensureNumberPresent,
+} from "../../shared/ensurePresent";
 import { PrecipitationProbability } from "./PrecipitationProbability";
 import { RainFall } from "./RainFall";
 import { TemperatureCelsius } from "./Temperature";
@@ -9,7 +10,7 @@ import { WeatherPattern } from "./WeatherPattern";
 
 export interface BallParkHourlyWeatherForecastProps {
   date: Date;
-  weatherPattern: number;
+  weatherCode: number;
   temperature: number;
   precipitationProbability: number;
   rainFall: number;
@@ -28,20 +29,15 @@ export class BallParkHourlyWeatherForecast {
   static create(
     props: BallParkHourlyWeatherForecastProps
   ): BallParkHourlyWeatherForecast {
-    if (
-      !props.date ||
-      !props.weatherPattern ||
-      !props.temperature ||
-      !props.precipitationProbability ||
-      !props.rainFall ||
-      !props.ballParkId
-    ) {
-      throw new Error("必須項目が不足しています");
-    }
-    const normalizedDate = new Date(props.date);
+    ensureDatePresent("日付", props.date);
+    ensureNumberPresent("天気コード", props.weatherCode);
+    ensureNumberPresent("気温", props.temperature);
+    ensureNumberPresent("降水確率", props.precipitationProbability);
+    ensureNumberPresent("降水量", props.rainFall);
+    ensureNumberPresent("球場ID", props.ballParkId);
     return new BallParkHourlyWeatherForecast(
-      normalizedDate,
-      WeatherPattern.fromCode(props.weatherPattern),
+      ensureDatePresent("日付", props.date),
+      WeatherPattern.fromCode(props.weatherCode),
       TemperatureCelsius.from(props.temperature),
       PrecipitationProbability.fromPercent(props.precipitationProbability),
       RainFall.fromMillimeters(props.rainFall),

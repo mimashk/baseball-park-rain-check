@@ -1,3 +1,6 @@
+import { DomainError } from "../../../shared/errors/DomainError";
+import { ValidationError } from "../../../shared/errors/ValidationError";
+import { ensurePositiveInteger } from "../../shared/ensurePositiveInteger";
 import { WeatherCodeCatalog } from "./WeatherCodeCatalog";
 
 export class WeatherPattern {
@@ -17,11 +20,13 @@ export class WeatherPattern {
   }
 
   private static validate(code: number): void {
-    if (!Number.isInteger(code)) {
-      throw new Error("天気コードは整数でなければなりません");
+    const normalizedCode = ensurePositiveInteger("天気コード", code);
+    if (!Object.keys(WeatherCodeCatalog).includes(normalizedCode.toString())) {
+      throw new DomainError("未知の天気コードです", { code });
     }
-    if (Object.keys(WeatherCodeCatalog).includes(code.toString())) {
-      throw new Error(`未知の天気コードです: ${code}`);
-    }
+  }
+
+  code(): number {
+    return this._code;
   }
 }

@@ -1,3 +1,5 @@
+import { ensureBooleanPresent } from "../../shared/ensurePresent";
+
 export type GameCancelledType = "CANCELLED" | "PLAYED";
 
 export class GameCancelled {
@@ -12,7 +14,13 @@ export class GameCancelled {
   }
 
   static fromBoolean(isCancelled: boolean): GameCancelled {
-    return isCancelled ? GameCancelled.cancelled() : GameCancelled.played();
+    const normalizedIsCancelled = ensureBooleanPresent(
+      "キャンセルフラグ",
+      isCancelled
+    );
+    return normalizedIsCancelled
+      ? GameCancelled.cancelled()
+      : GameCancelled.played();
   }
 
   toNumber(): 0 | 1 {

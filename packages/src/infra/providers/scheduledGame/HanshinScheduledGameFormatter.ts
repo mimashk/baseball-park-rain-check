@@ -1,6 +1,7 @@
 import { ScheduledGameDto } from "../../../application/scheduledGame/dtos/ScheduledGameDto";
 import { TeamNameMapper } from "../../../application/shared/interfaces/TeamNameMapper";
 import { BaseballTeamType } from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
+import { InfrastructureError } from "../../../shared/errors/InfrastructureError";
 import { ScheduledGameInfo } from "./HanshinScheduledGameScraper";
 
 export class HanshinScheduledGameFormatter {
@@ -41,7 +42,7 @@ export class HanshinScheduledGameFormatter {
   private requireTeam(external: string): BaseballTeamType {
     const team = this.teamNameMapper.toDomainTeam(external);
     if (!team) {
-      throw new Error(`未知のチーム名: ${external}`);
+      throw new InfrastructureError("mapping", `未知のチーム名: ${external}`);
     }
     return team;
   }

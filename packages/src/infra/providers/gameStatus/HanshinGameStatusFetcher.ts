@@ -2,6 +2,7 @@ import { GameStatusDto } from "../../../application/scheduledGame/dtos/GameStatu
 import { GameStatusFetcher } from "../../../application/scheduledGame/interfaces/GameStatusFetcher";
 import { TeamNameMapper } from "../../../application/shared/interfaces/TeamNameMapper";
 import { BaseballTeamType } from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
+import { InfrastructureError } from "../../../shared/errors/InfrastructureError";
 import { GameStatusFormatter } from "./GameStatusFormatter";
 import { GameStatusScraper } from "./GameStatusScraper";
 
@@ -25,7 +26,16 @@ export class HanshinGameStatusFetcher implements GameStatusFetcher {
       );
     });
     if (filtered.length > 1) {
-      throw new Error("複数の試合情報が見つかりました");
+      throw new InfrastructureError(
+        "mapping",
+        "複数の試合情報が見つかりました"
+      );
+    }
+    if (!filtered.length) {
+      throw new InfrastructureError(
+        "not_found",
+        "試合情報が見つかりませんでした"
+      );
     }
     return filtered[0];
   }

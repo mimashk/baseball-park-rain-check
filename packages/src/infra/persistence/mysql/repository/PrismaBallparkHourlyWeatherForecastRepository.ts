@@ -1,7 +1,9 @@
-// PrismaBallparkHourlyWeatherForecastRepository.ts
 import { BallParkId } from "../../../../domain/scheduledGame/valueObjects/BallPark";
 import { BallParkHourlyWeatherForecastRepository } from "../../../../domain/weatherForecast/repositoryInterface.ts/BallParkHourlyWeatherForecastRepository";
 import { BallParkHourlyWeatherForecast } from "../../../../domain/weatherForecast/valueObjects/BallParkHourlyWeatherForecast";
+import { AppError } from "../../../../shared/errors/AppError";
+import { DbError } from "../../../../shared/errors/DbError";
+import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
 import { BallParkHourlyWeatherForecastModel } from "../prisma/generate/models";
 import { PrismaClientWrapper } from "../PrismaClientWrapper";
 
@@ -10,31 +12,43 @@ type BallParkHourlyWeatherForecastPersistence = Omit<
   "id" | "createdAt" | "updatedAt"
 >;
 
-export class PrismaBallparkHourlyWeatherForecastRepository
+export class PrismaBallParkHourlyWeatherForecastRepository
   implements BallParkHourlyWeatherForecastRepository
 {
   private prisma = PrismaClientWrapper.getInstance();
 
   async updateMany(forecasts: BallParkHourlyWeatherForecast[]): Promise<void> {
     const rows = forecasts.map(this.toPersistence);
-    await this.prisma.$transaction(
-      rows.map((row) =>
-        this.prisma.ballParkHourlyWeatherForecast.upsert({
-          where: {
-            ballParkId_date: { ballParkId: row.ballParkId, date: row.date },
-          },
-          create: row,
-          update: row,
-        })
-      )
-    );
+    try {
+      await this.prisma.$transaction(
+        rows.map((row) =>
+          this.prisma.ballParkHourlyWeatherForecast.upsert({
+            where: {
+              ballParkId_date: { ballParkId: row.ballParkId, date: row.date },
+            },
+            create: row,
+            update: row,
+          })
+        )
+      );
+    } catch (err) {
+      throw new DbError("時間別予報のupsertに失敗しました", {
+        cause: err,
+        details: { count: rows.length },
+      });
+    }
   }
 
   async findAll(): Promise<BallParkHourlyWeatherForecast[]> {
-    const rows = await this.prisma.ballParkHourlyWeatherForecast.findMany({
-      orderBy: { date: "asc" },
-    });
-    return rows.map(this.toDomain);
+    let rows: BallParkHourlyWeatherForecastModel[];
+    try {
+      rows = await this.prisma.ballParkHourlyWeatherForecast.findMany({
+        orderBy: { date: "asc" },
+      });
+    } catch (err) {
+      throw new DbError("時間別予報の取得に失敗しました", { cause: err });
+    }
+    return this.mapRows(rows);
   }
 
   async findByDateAndBallPark(
@@ -42,11 +56,36 @@ export class PrismaBallparkHourlyWeatherForecastRepository
     to: Date,
     ballParkId: number
   ): Promise<BallParkHourlyWeatherForecast[]> {
-    const rows = await this.prisma.ballParkHourlyWeatherForecast.findMany({
-      where: { date: { gte: from, lte: to }, ballParkId },
-      orderBy: { date: "asc" },
-    });
-    return rows.map(this.toDomain);
+    let rows: BallParkHourlyWeatherForecastModel[];
+    try {
+      rows = await this.prisma.ballParkHourlyWeatherForecast.findMany({
+        where: { date: { gte: from, lte: to }, ballParkId },
+        orderBy: { date: "asc" },
+      });
+    } catch (err) {
+      throw new DbError("時間別予報の取得に失敗しました", {
+        cause: err,
+        details: { from, to, ballParkId },
+      });
+    }
+    return this.mapRows(rows);
+  }
+
+  private mapRows(
+    rows: BallParkHourlyWeatherForecastModel[]
+  ): BallParkHourlyWeatherForecast[] {
+    try {
+      return rows.map(this.toDomain);
+    } catch (err) {
+      if (err instanceof AppError) throw err; // ドメインの Validation/DomainError はそのまま
+      throw new InfrastructureError(
+        "mapping",
+        "DBレコードをドメインに変換できません",
+        {
+          cause: err,
+        }
+      );
+    }
   }
 
   private toPersistence(
@@ -54,7 +93,7 @@ export class PrismaBallparkHourlyWeatherForecastRepository
   ): BallParkHourlyWeatherForecastPersistence {
     return {
       date: f.date,
-      weatherPattern: f.weatherPattern.labelJa(),
+      weatherCode: f.weatherPattern.code(),
       temperature: f.temperature.toNumber(),
       precipitationProbability: f.precipitationProbability.toPercent(),
       rainFall: f.rainFall.toNumber(),
@@ -67,7 +106,7 @@ export class PrismaBallparkHourlyWeatherForecastRepository
   ): BallParkHourlyWeatherForecast =>
     BallParkHourlyWeatherForecast.create({
       date: row.date,
-      weatherPattern: Number(row.weatherPattern),
+      weatherCode: Number(row.weatherCode),
       temperature: row.temperature,
       precipitationProbability: row.precipitationProbability,
       rainFall: row.rainFall,

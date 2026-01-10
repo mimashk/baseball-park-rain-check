@@ -1,3 +1,4 @@
+import { ValidationError } from "../../../shared/errors/ValidationError";
 import { featureOrder } from "./FeatureOrder";
 
 type FeatureVector = number[];
@@ -9,7 +10,10 @@ export class CancellationFeaturePreprocessor {
     return this.featureOrder.map((key) => {
       const v = x[key];
       if (!Number.isFinite(v)) {
-        throw new Error(`特徴量 ${key} が欠損または非数です`);
+        throw new ValidationError(`特徴量 ${key} が欠損または非数です`, {
+          field: key,
+          value: v,
+        });
       }
       return v;
     });
@@ -21,7 +25,8 @@ export class CancellationFeaturePreprocessor {
     const validRows = rows.filter((r) =>
       this.featureOrder.every((k) => Number.isFinite(r.x[k]))
     );
-    if (!validRows.length) throw new Error("有限な特徴量の行がありません");
+    if (!validRows.length)
+      throw new ValidationError("有限な特徴量の行がありません");
     return validRows;
   }
 
@@ -31,6 +36,22 @@ export class CancellationFeaturePreprocessor {
     std: number[];
   } {
     const dim = this.featureOrder.length;
+    if (!vectors.length) {
+      throw new ValidationError("標準化対象のベクトルが空です");
+    }
+
+    // 長さ・有限値チェック
+    for (const v of vectors) {
+      if (v.length !== dim) {
+        throw new ValidationError("特徴量の次元が一致しません", {
+          expected: dim,
+          actual: v.length,
+        });
+      }
+      if (!v.every(Number.isFinite)) {
+        throw new ValidationError("特徴量に非数または欠損が含まれています");
+      }
+    }
     const mean = Array(dim).fill(0);
     const std = Array(dim).fill(0);
 

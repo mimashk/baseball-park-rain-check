@@ -1,5 +1,5 @@
 import { TrainingRow } from "../dtos/TrainingRow";
-import { CancellationModelDto } from "../../../domain/model/dtos/CancellationModelDto";
+import { CancellationModelDto } from "../../shared/dtos/CancellationModelDto";
 
 export interface CancellationModelTrainer {
   train(examples: TrainingRow[]): Promise<CancellationModelDto>;

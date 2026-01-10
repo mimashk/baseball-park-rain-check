@@ -106,7 +106,7 @@ export type PastGameRecordScalarFieldEnum = (typeof PastGameRecordScalarFieldEnu
 export const BallParkHourlyWeatherForecastScalarFieldEnum = {
   id: 'id',
   date: 'date',
-  weatherPattern: 'weatherPattern',
+  weatherCode: 'weatherCode',
   temperature: 'temperature',
   precipitationProbability: 'precipitationProbability',
   rainFall: 'rainFall',
@@ -121,7 +121,7 @@ export type BallParkHourlyWeatherForecastScalarFieldEnum = (typeof BallParkHourl
 export const BallParkDailyWeatherForecastScalarFieldEnum = {
   id: 'id',
   date: 'date',
-  weatherPattern: 'weatherPattern',
+  weatherCode: 'weatherCode',
   temperatureMin: 'temperatureMin',
   temperatureMax: 'temperatureMax',
   precipitationProbability: 'precipitationProbability',
@@ -174,18 +174,4 @@ export const PastGameRecordOrderByRelevanceFieldEnum = {
 } as const
 
 export type PastGameRecordOrderByRelevanceFieldEnum = (typeof PastGameRecordOrderByRelevanceFieldEnum)[keyof typeof PastGameRecordOrderByRelevanceFieldEnum]
-
-
-export const BallParkHourlyWeatherForecastOrderByRelevanceFieldEnum = {
-  weatherPattern: 'weatherPattern'
-} as const
-
-export type BallParkHourlyWeatherForecastOrderByRelevanceFieldEnum = (typeof BallParkHourlyWeatherForecastOrderByRelevanceFieldEnum)[keyof typeof BallParkHourlyWeatherForecastOrderByRelevanceFieldEnum]
-
-
-export const BallParkDailyWeatherForecastOrderByRelevanceFieldEnum = {
-  weatherPattern: 'weatherPattern'
-} as const
-
-export type BallParkDailyWeatherForecastOrderByRelevanceFieldEnum = (typeof BallParkDailyWeatherForecastOrderByRelevanceFieldEnum)[keyof typeof BallParkDailyWeatherForecastOrderByRelevanceFieldEnum]
 

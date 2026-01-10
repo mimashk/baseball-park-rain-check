@@ -1,3 +1,5 @@
+import { DomainError } from "../../../shared/errors/DomainError";
+
 export const GameStatusType = {
   SCHEDULED: "scheduled",
   IN_PROGRESS: "in_progress",
@@ -46,9 +48,10 @@ export class GameStatus {
     target: GameStatusType
   ) {
     if (!allowedFrom.includes(this.value)) {
-      throw new Error(
-        `${this.value} から ${target} への遷移は許可されていません`
-      );
+      throw new DomainError("試合ステータスの遷移が許可されていません", {
+        from: this.value,
+        to: target,
+      });
     }
   }
 }

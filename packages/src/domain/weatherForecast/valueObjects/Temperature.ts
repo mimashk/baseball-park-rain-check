@@ -1,10 +1,16 @@
+import { ValidationError } from "../../../shared/errors/ValidationError";
+import { ensureNumberPresent } from "../../shared/ensurePresent";
+
 export class TemperatureCelsius {
   private constructor(private readonly value: number) {}
 
   static from(value: number): TemperatureCelsius {
-    if (value < -20 || value > 50)
-      throw new Error(`気温の範囲外です: ${value}`);
-    return new TemperatureCelsius(value);
+    const normalizedValue = ensureNumberPresent("気温", value);
+    if (normalizedValue < -20 || normalizedValue > 50)
+      throw new ValidationError("気温の範囲外です", {
+        temperature: normalizedValue,
+      });
+    return new TemperatureCelsius(normalizedValue);
   }
 
   toNumber(): number {

@@ -1,14 +1,21 @@
 import { ObservedHourlyWeatherDto } from "../../../../application/training/dtos/ObservedHourlyWeatherDto";
-import { HourlyWeatherForecastDto } from "../../../../application/weatherForecast/dtos/HourlyWeatherForecastDto";
+import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
 import { TimeSeriesGenerator } from "../generators/TimeSeriesGenerator";
+import { HourlyObservationResponse } from "../types/OpenMeteoTypes";
 
 export class HourlyObservationMapper {
-  static toDto(response: any): ObservedHourlyWeatherDto[] {
-    const hourly = response.hourly();
-    if (!hourly)
-      throw new Error("Open-Meteo APIのレスポンスにhourlyが含まれていません");
-
+  static toDto(
+    response: HourlyObservationResponse
+  ): ObservedHourlyWeatherDto[] {
+    const hourly = response.hourlyObservation();
     const utcOffsetSeconds = response.utcOffsetSeconds();
+    if (!hourly)
+      if (!hourly)
+        throw new InfrastructureError(
+          "mapping",
+          "Open-Meteo APIのレスポンスにhourlyが含まれていません",
+          { details: { utcOffsetSeconds } }
+        );
 
     const times = TimeSeriesGenerator.generate({
       timeStartSec: Number(hourly.time()),

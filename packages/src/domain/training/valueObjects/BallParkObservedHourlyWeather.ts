@@ -1,4 +1,6 @@
 import { BallParkId } from "../../scheduledGame/valueObjects/BallPark";
+import { ensureNumberPresent } from "../../shared/ensurePresent";
+import { ensureValidDate } from "../../shared/ensureValidDate";
 import { RainFall } from "../../weatherForecast/valueObjects/RainFall";
 import { TemperatureCelsius } from "../../weatherForecast/valueObjects/Temperature";
 import { RainfallOccurred } from "./RainfallOccurred";
@@ -21,10 +23,13 @@ export class BallParkObservedHourlyWeather {
   static create(
     props: BallParkObservedHourlyWeatherProps
   ): BallParkObservedHourlyWeather {
-    if (!props.date || !props.temperature || !props.rainFall) {
-      throw new Error("必須項目が不足しています");
-    }
-    const normalizedDate = new Date(props.date);
+    const normalizedDate = ensureValidDate("日付", props.date);
+    const normalizedTemperature = ensureNumberPresent(
+      "気温",
+      props.temperature
+    );
+    const normalizedRainFall = ensureNumberPresent("降水量", props.rainFall);
+    if (!props.ballParkId) throw new Error("球場IDは必須です");
     const rainFallMillimeters = RainFall.fromMillimeters(
       props.rainFall
     ).toNumber();
@@ -34,9 +39,9 @@ export class BallParkObservedHourlyWeather {
         : RainfallOccurred.notOccurred();
     return new BallParkObservedHourlyWeather(
       normalizedDate,
-      TemperatureCelsius.from(props.temperature),
+      TemperatureCelsius.from(normalizedTemperature),
       rainFallOccurred,
-      RainFall.fromMillimeters(props.rainFall),
+      RainFall.fromMillimeters(normalizedRainFall),
       props.ballParkId
     );
   }

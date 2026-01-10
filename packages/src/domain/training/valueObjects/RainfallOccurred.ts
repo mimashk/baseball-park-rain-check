@@ -1,3 +1,5 @@
+import { ensureBooleanPresent } from "../../shared/ensurePresent";
+
 export type RainfallOccurredType = "OCCURRED" | "NOT_OCCURRED";
 
 export class RainfallOccurred {
@@ -12,7 +14,11 @@ export class RainfallOccurred {
   }
 
   static fromBoolean(isOccurred: boolean): RainfallOccurred {
-    return isOccurred
+    const normalizedIsOccurred = ensureBooleanPresent(
+      "雨発生フラグ",
+      isOccurred
+    );
+    return normalizedIsOccurred
       ? RainfallOccurred.occurred()
       : RainfallOccurred.notOccurred();
   }

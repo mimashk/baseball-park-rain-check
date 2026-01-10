@@ -5,6 +5,9 @@ import { RainFall } from "../../../../domain/weatherForecast/valueObjects/RainFa
 import { TemperatureCelsius } from "../../../../domain/weatherForecast/valueObjects/Temperature";
 import { BallParkObservedHourlyWeatherModel } from "../prisma/generate/models";
 import { BallParkId } from "../../../../domain/scheduledGame/valueObjects/BallPark";
+import { DbError } from "../../../../shared/errors/DbError";
+import { AppError } from "../../../../shared/errors/AppError";
+import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
 
 type BallParkObservedHourlyWeatherPersistence = Omit<
   BallParkObservedHourlyWeatherModel,
@@ -20,17 +23,24 @@ export class PrismaBallParkObservedHourlyWeatherRepository
     observedHourlyWeathers: BallParkObservedHourlyWeather[]
   ): Promise<void> {
     const rows = observedHourlyWeathers.map(this.toPersistence);
-    await this.prisma.$transaction(
-      rows.map((row) =>
-        this.prisma.ballParkObservedHourlyWeather.upsert({
-          where: {
-            ballParkId_date: { ballParkId: row.ballParkId, date: row.date },
-          },
-          create: row,
-          update: row,
-        })
-      )
-    );
+    try {
+      await this.prisma.$transaction(
+        rows.map((row) =>
+          this.prisma.ballParkObservedHourlyWeather.upsert({
+            where: {
+              ballParkId_date: { ballParkId: row.ballParkId, date: row.date },
+            },
+            create: row,
+            update: row,
+          })
+        )
+      );
+    } catch (err) {
+      throw new DbError("観測データのupsertに失敗しました", {
+        cause: err,
+        details: { count: rows.length },
+      });
+    }
   }
 
   async findByDateAndBallPark(
@@ -38,11 +48,30 @@ export class PrismaBallParkObservedHourlyWeatherRepository
     to: Date,
     ballParkId: number
   ): Promise<BallParkObservedHourlyWeather[]> {
-    const rows = await this.prisma.ballParkObservedHourlyWeather.findMany({
-      where: { date: { gte: from, lte: to }, ballParkId },
-      orderBy: { date: "asc" },
-    });
-    return rows.map(this.toDomain);
+    let rows: BallParkObservedHourlyWeatherModel[];
+    try {
+      rows = await this.prisma.ballParkObservedHourlyWeather.findMany({
+        where: { date: { gte: from, lte: to }, ballParkId },
+        orderBy: { date: "asc" },
+      });
+    } catch (err) {
+      throw new DbError("観測データの取得に失敗しました", {
+        cause: err,
+        details: { from, to, ballParkId },
+      });
+    }
+    try {
+      return rows.map(this.toDomain);
+    } catch (err) {
+      if (err instanceof AppError) throw err; // ドメインの ValidationError/DomainError はそのまま
+      throw new InfrastructureError(
+        "mapping",
+        "DBレコードをドメインに変換できません",
+        {
+          cause: err,
+        }
+      );
+    }
   }
 
   private toPersistence = (

@@ -1,6 +1,7 @@
 // infra/gcp/CloudSchedulerCheckpointAdapter.ts
 import { google } from "googleapis";
 import { CheckpointScheduler } from "../../../application/scheduledGame/interfaces/CheckpointScheduler";
+import { ExternalServiceError } from "../../../shared/errors/ExternalServiceError";
 
 /**
  * Cloud Scheduler は cron なので、1回きり相当を
@@ -24,9 +25,7 @@ export class CloudSchedulerCheckpointAdapter implements CheckpointScheduler {
     endpointPath: string;
     query: Record<string, string>;
   }): Promise<void> {
-    const auth = await google.auth.getClient({
-      scopes: this.config.scopes,
-    });
+    const auth = await this.getAuth();
 
     const scheduler = google.cloudscheduler({ version: "v1", auth });
 
@@ -55,42 +54,48 @@ export class CloudSchedulerCheckpointAdapter implements CheckpointScheduler {
           },
         },
       });
-    } catch (e: unknown) {
+    } catch (err: unknown) {
       // NotFound などの場合は create
-      await scheduler.projects.locations.jobs.create({
-        parent,
-        requestBody: {
-          name,
-          schedule,
-          timeZone: this.config.timeZone,
-          httpTarget: {
-            uri,
-            httpMethod: "POST",
-            oidcToken: {
-              serviceAccountEmail: this.config.invokerServiceAccountEmail,
+      try {
+        await scheduler.projects.locations.jobs.create({
+          parent,
+          requestBody: {
+            name,
+            schedule,
+            timeZone: this.config.timeZone,
+            httpTarget: {
+              uri,
+              httpMethod: "POST",
+              oidcToken: {
+                serviceAccountEmail: this.config.invokerServiceAccountEmail,
+              },
+              headers: { "Content-Type": "application/json" },
             },
-            headers: { "Content-Type": "application/json" },
           },
-        },
-      });
+        });
+      } catch (err: unknown) {
+        throw new ExternalServiceError("チェックポイントの作成に失敗しました", {
+          cause: err,
+          details: { name, uri, schedule },
+        });
+      }
     }
   }
 
   async deleteCheckpoint(jobKey: string): Promise<void> {
-    const auth = await google.auth.getClient({
-      scopes: this.config.scopes,
-    });
-
+    const auth = await this.getAuth();
     const scheduler = google.cloudscheduler({ version: "v1", auth });
 
     const name = `projects/${this.config.projectId}/locations/${this.config.location}/jobs/${jobKey}`;
-
     try {
       await scheduler.projects.locations.jobs.delete({
         name,
       });
     } catch (e: unknown) {
-      throw new Error("チェックポイントの削除に失敗しました");
+      throw new ExternalServiceError("チェックポイントの削除に失敗しました", {
+        cause: e,
+        details: { name },
+      });
     }
   }
 
@@ -108,5 +113,19 @@ export class CloudSchedulerCheckpointAdapter implements CheckpointScheduler {
     const day = runAt.getDate();
     const month = runAt.getMonth() + 1;
     return `${min} ${hour} ${day} ${month} *`;
+  }
+
+  private async getAuth() {
+    try {
+      return await google.auth.getClient({ scopes: this.config.scopes });
+    } catch (err) {
+      throw new ExternalServiceError("Cloud Scheduler 認証に失敗しました", {
+        cause: err,
+        details: {
+          scopes: this.config.scopes,
+          projectId: this.config.projectId,
+        },
+      });
+    }
   }
 }

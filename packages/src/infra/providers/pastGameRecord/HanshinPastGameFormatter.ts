@@ -1,6 +1,7 @@
 import { TeamNameMapper } from "../../../application/shared/interfaces/TeamNameMapper";
 import { PastGameRecordDto } from "../../../application/training/dtos/PastGameRecordDto";
 import { BaseballTeamType } from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
+import { InfrastructureError } from "../../../shared/errors/InfrastructureError";
 import { BaseballTeamDictionary } from "../shared/BaseballTeamDictionary";
 import { PastGameInfo } from "./HanshinPastGameScraper";
 
@@ -48,7 +49,7 @@ export class HanshinPastGameFormatter {
   private requireTeam(external: string): BaseballTeamType {
     const team = this.teamNameMapper.toDomainTeam(external);
     if (!team) {
-      throw new Error(`未知のチーム名: ${external}`);
+      throw new InfrastructureError("mapping", `未知のチーム名: ${external}`);
     }
     return team;
   }

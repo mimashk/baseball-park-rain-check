@@ -9,7 +9,7 @@ export function mapTrainingExampleToRow(example: TrainingExample): TrainingRow {
     sampleCount: example.features.sampleCount,
   };
   return {
-    y: this.label.toNumber(),
+    y: example.label.toNumber(),
     x,
   };
 }

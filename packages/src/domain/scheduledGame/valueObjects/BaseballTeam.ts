@@ -1,3 +1,6 @@
+import { DomainError } from "../../../shared/errors/DomainError";
+import { ensureTextPresent } from "../../shared/ensurePresent";
+
 export const BaseballTeamType = [
   "東京ヤクルトスワローズ",
   "読売ジャイアンツ",
@@ -19,10 +22,11 @@ export class BaseballTeam {
   private constructor(readonly value: BaseballTeamType) {}
 
   static from(rawValue: string): BaseballTeam {
-    if (!this.isBaseballTeam(rawValue)) {
-      throw new Error("不正なチーム名です");
+    const name = ensureTextPresent("チーム名", rawValue); // 空/undefined/null/空白のみを弾く
+    if (!this.isBaseballTeam(name)) {
+      throw new DomainError("不正なチーム名です");
     }
-    return new BaseballTeam(rawValue);
+    return new BaseballTeam(name);
   }
 
   private static isBaseballTeam(value: string): value is BaseballTeamType {

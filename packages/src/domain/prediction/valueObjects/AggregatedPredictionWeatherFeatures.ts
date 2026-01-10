@@ -1,3 +1,5 @@
+import { ValidationError } from "../../../shared/errors/ValidationError";
+import { ensurePositiveInteger } from "../../shared/ensurePositiveInteger";
 import { PrecipitationProbability } from "../../weatherForecast/valueObjects/PrecipitationProbability";
 import { RainFall } from "../../weatherForecast/valueObjects/RainFall";
 import { TemperatureCelsius } from "../../weatherForecast/valueObjects/Temperature";
@@ -16,18 +18,25 @@ export class AggregatedPredictionWeatherFeatures {
     precipitationProbability: PrecipitationProbability;
     sampleCount: number;
   }): AggregatedPredictionWeatherFeatures {
-    if (!props.avgTemperature) throw new Error("平均気温は必須です");
-    if (!props.avgRainFall) throw new Error("平均降水量は必須です");
-    if (!props.precipitationProbability) throw new Error("降水確率は必須です");
-    if (!Number.isInteger(props.sampleCount) || props.sampleCount <= 0) {
-      throw new Error("サンプル数は正の整数でなければなりません");
+    if (!props.avgTemperature) {
+      throw new ValidationError("平均気温は必須です");
     }
+    if (!props.avgRainFall) {
+      throw new ValidationError("平均降水量は必須です");
+    }
+    if (!props.precipitationProbability) {
+      throw new ValidationError("降水確率は必須です");
+    }
+    const normalizedSampleCount = ensurePositiveInteger(
+      "サンプル数",
+      props.sampleCount
+    );
 
     return new AggregatedPredictionWeatherFeatures(
       props.avgTemperature,
       props.avgRainFall,
       props.precipitationProbability,
-      props.sampleCount
+      normalizedSampleCount
     );
   }
 }

@@ -1,4 +1,4 @@
-import { CancellationModelDto } from "../../../domain/model/dtos/CancellationModelDto";
+import { CancellationModelDto } from "../../shared/dtos/CancellationModelDto";
 import { FeatureRow } from "../dtos/FeatureRow";
 
 export interface CancellationPredictor {

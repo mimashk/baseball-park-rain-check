@@ -1,3 +1,5 @@
+import { DomainError } from "../../../shared/errors/DomainError";
+import { ensureValidDate } from "../../shared/ensureValidDate";
 import { BallPark } from "../valueObjects/BallPark";
 import { BaseballTeam } from "../valueObjects/BaseballTeam";
 import { GameCategory } from "../valueObjects/GameCategory";
@@ -32,9 +34,11 @@ export class ScheduledGame {
   ) {}
 
   static create(props: CreateScheduledGameProps): ScheduledGame {
+    const date = ensureValidDate("試合日時", props.date);
+    this.ensureTeamsDiffer(props.homeTeam, props.awayTeam);
     return new ScheduledGame(
       GameId.generate(),
-      props.date,
+      date,
       GameCategory.from(props.category),
       BaseballTeam.from(props.homeTeam),
       BaseballTeam.from(props.awayTeam),
@@ -44,9 +48,16 @@ export class ScheduledGame {
   }
 
   update(props: UpdateScheduledGameProps): ScheduledGame {
+    const date = props.date
+      ? ensureValidDate("試合日時", props.date)
+      : this.date;
+    // 更新時に両方指定されて同一にならないようチェック
+    if (props.homeTeam && props.awayTeam) {
+      ScheduledGame.ensureTeamsDiffer(props.homeTeam, props.awayTeam);
+    }
     return new ScheduledGame(
       this.id,
-      props.date ?? this.date,
+      date,
       props.category ? GameCategory.from(props.category) : this.category,
       props.homeTeam ? BaseballTeam.from(props.homeTeam) : this.homeTeam,
       props.awayTeam ? BaseballTeam.from(props.awayTeam) : this.awayTeam,
@@ -73,5 +84,11 @@ export class ScheduledGame {
 
   cancel() {
     this._status = this._status.toCancelled();
+  }
+
+  private static ensureTeamsDiffer(home: string, away: string): void {
+    if (home && away && home === away) {
+      throw new DomainError("ホームとビジターが同一です", { team: home });
+    }
   }
 }

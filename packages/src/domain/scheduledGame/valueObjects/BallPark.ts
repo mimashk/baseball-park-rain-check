@@ -1,3 +1,6 @@
+import { ValidationError } from "../../../shared/errors/ValidationError";
+import { ensureTextPresent } from "../../shared/ensurePresent";
+
 export const BallParkCatalog = {
   TOKYO_DOME: { id: 1, labelJa: "東京ドーム", roof: "DOME" },
   HANSHIN_KOSHIEN_STADIUM: {
@@ -81,10 +84,11 @@ export class BallPark {
   }
 
   private static validate(name: string): void {
-    if (name.length === 0) throw new Error("球場名が空です");
-    if (name.length > 80) throw new Error("球場名が長すぎます");
-    if (/[\u0000-\u001F\u007F]/.test(name))
-      throw new Error("球場名に不正な文字が含まれています");
+    const normalizedName = ensureTextPresent("球場名", name);
+    if (normalizedName.length > 80)
+      throw new ValidationError("球場名が長すぎます");
+    if (/[\u0000-\u001F\u007F]/.test(normalizedName))
+      throw new ValidationError("球場名に不正な文字が含まれています");
   }
 
   private static findInCatalog(name: string): BallParkCatalogItem | null {

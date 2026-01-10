@@ -3,6 +3,7 @@ import { GameStatusMapper } from "../../../application/scheduledGame/interfaces/
 import { TeamNameMapper } from "../../../application/shared/interfaces/TeamNameMapper";
 import { BaseballTeamType } from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
 import { GameStatusType } from "../../../domain/scheduledGame/valueObjects/GameStatus";
+import { InfrastructureError } from "../../../shared/errors/InfrastructureError";
 import { GameStatusInfo } from "./GameStatusScraper";
 
 export class GameStatusFormatter {
@@ -24,7 +25,7 @@ export class GameStatusFormatter {
   private requireTeam(external: string): BaseballTeamType {
     const team = this.teamNameMapper.toDomainTeam(external);
     if (!team) {
-      throw new Error(`未知のチーム名: ${external}`);
+      throw new InfrastructureError("mapping", `未知のチーム名: ${external}`);
     }
     return team;
   }
@@ -32,7 +33,7 @@ export class GameStatusFormatter {
   private requireStatus(external: string): GameStatusType {
     const status = this.gameStatusMapper.toDomainStatus(external);
     if (!status) {
-      throw new Error(`未知のステータス: ${external}`);
+      throw new InfrastructureError("mapping", `未知のステータス: ${external}`);
     }
     return status;
   }

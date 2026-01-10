@@ -1,4 +1,6 @@
 import { GameStatusType } from "../../../domain/scheduledGame/valueObjects/GameStatus";
+import { ValidationError } from "../../../shared/errors/ValidationError";
+import { ensureValidDateRange } from "../../shared/utils/ensureValidDateRange";
 
 const MINUTES_BEFORE_START = 120;
 const MINUTES_AFTER_START = 180;
@@ -13,14 +15,8 @@ export class DecideNextIntervalMinutesService {
   }): number | null {
     const { now, startAt, status } = params;
 
-    // 終了条件
-    if (
-      status === GameStatusType.CANCELLED ||
-      status === GameStatusType.COMPLETED
-    )
-      return null;
-
-    const diffMs = now.getTime() - startAt.getTime();
+    const { from, to } = ensureValidDateRange("now", "startAt", now, startAt);
+    const diffMs = from.getTime() - to.getTime();
     const diffMin = diffMs / 60_000;
 
     // 試合前：開始2時間前〜開始まで = 10分間隔

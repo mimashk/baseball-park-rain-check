@@ -1,3 +1,6 @@
+import { DomainError } from "../../../shared/errors/DomainError";
+import { ensureTextPresent } from "../../shared/ensurePresent";
+
 export const GameCategoryType = {
   REGULAR_SEASON: "セ・リーグ公式戦",
   EXHIBITION: "オープン戦",
@@ -14,8 +17,9 @@ export class GameCategory {
   private constructor(readonly value: GameCategoryType) {}
 
   static from(rawValue: string): GameCategory {
+    const value = ensureTextPresent("試合カテゴリ", rawValue); // 空/undefined/nullを弾く
     if (!this.isGameCategory(rawValue)) {
-      throw new Error("不正な試合カテゴリです");
+      throw new DomainError("不正な試合カテゴリです");
     }
     return new GameCategory(rawValue);
   }

@@ -4,6 +4,8 @@ import {
   HourlyForecastResponse,
   HourlyObservationResponse,
 } from "./types/OpenMeteoTypes";
+import { InfrastructureError } from "../../../shared/errors/InfrastructureError";
+import { ExternalServiceError } from "../../../shared/errors/ExternalServiceError";
 
 export type OpenMeteoAnyResponse = {
   daily?: () => unknown;
@@ -15,9 +17,20 @@ export class OpenMeteoClient {
     url: string,
     params: Record<string, string | number | boolean | string[]>
   ): Promise<DailyForecastResponse> {
-    const responses = this.ensureArray(await fetchWeatherApi(url, params));
+    let responses: OpenMeteoAnyResponse[];
+    try {
+      responses = this.ensureArray(await fetchWeatherApi(url, params));
+    } catch (err: unknown) {
+      throw new ExternalServiceError("OpenMeteo API呼び出しに失敗しました", {
+        cause: err,
+        details: { url, params },
+      });
+    }
     const first = this.ensureNonEmpty(responses);
-    if (!first.daily) throw new Error("dailyが含まれていません");
+    if (!first.daily)
+      throw new InfrastructureError("mapping", "daily が含まれていません", {
+        details: { url, params },
+      });
     return first as DailyForecastResponse;
   }
 
@@ -25,9 +38,20 @@ export class OpenMeteoClient {
     url: string,
     params: Record<string, string | number | boolean | string[]>
   ): Promise<HourlyForecastResponse> {
-    const responses = this.ensureArray(await fetchWeatherApi(url, params));
+    let responses: OpenMeteoAnyResponse[];
+    try {
+      responses = this.ensureArray(await fetchWeatherApi(url, params));
+    } catch (err: unknown) {
+      throw new ExternalServiceError("OpenMeteo API呼び出しに失敗しました", {
+        cause: err,
+        details: { url, params },
+      });
+    }
     const first = this.ensureNonEmpty(responses);
-    if (!first.hourly) throw new Error("hourlyが含まれていません");
+    if (!first.hourly)
+      throw new InfrastructureError("mapping", "hourlyが含まれていません", {
+        details: { url, params },
+      });
     return first as HourlyForecastResponse;
   }
 
@@ -35,22 +59,37 @@ export class OpenMeteoClient {
     url: string,
     params: Record<string, string | number | boolean | string[]>
   ): Promise<HourlyObservationResponse> {
-    const responses = this.ensureArray(await fetchWeatherApi(url, params));
+    let responses: OpenMeteoAnyResponse[];
+    try {
+      responses = this.ensureArray(await fetchWeatherApi(url, params));
+    } catch (err: unknown) {
+      throw new ExternalServiceError("OpenMeteo API呼び出しに失敗しました", {
+        cause: err,
+        details: { url, params },
+      });
+    }
     const first = this.ensureNonEmpty(responses);
-    if (!first.hourly) throw new Error("hourlyが含まれていません");
+    if (!first.hourly)
+      throw new InfrastructureError("mapping", "hourlyが含まれていません", {
+        details: { url, params },
+      });
     return first as HourlyObservationResponse;
   }
 
   private ensureArray(responses: unknown): OpenMeteoAnyResponse[] {
     if (!Array.isArray(responses)) {
-      throw new Error("OpenMeteo APIのレスポンスが配列ではありません");
+      throw new InfrastructureError(
+        "mapping",
+        "OpenMeteo APIのレスポンスが配列ではありません",
+        { details: { responses } }
+      );
     }
     return responses as OpenMeteoAnyResponse[];
   }
 
   private ensureNonEmpty<T>(responses: T[]): T {
     if (!responses.length)
-      throw new Error("OpenMeteo APIからのレスポンスが空です");
+      throw new ExternalServiceError("OpenMeteo APIからのレスポンスが空です");
     return responses[0];
   }
 }

@@ -1,6 +1,6 @@
 export interface HourlyWeatherForecastDto {
   date: Date;
-  weatherPattern: number;
+  weatherCode: number;
   temperature: number;
   precipitationProbability: number;
   rainFall: number;

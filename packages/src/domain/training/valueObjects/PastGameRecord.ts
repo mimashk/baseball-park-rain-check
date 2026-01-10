@@ -1,5 +1,7 @@
+import { DomainError } from "../../../shared/errors/DomainError";
 import { BallPark } from "../../scheduledGame/valueObjects/BallPark";
 import { BaseballTeam } from "../../scheduledGame/valueObjects/BaseballTeam";
+import { ensureValidDate } from "../../shared/ensureValidDate";
 import { GameCancelled } from "./GameCancelled";
 
 export interface CreatePastGameRecordProps {
@@ -20,10 +22,13 @@ export class PastGameRecord {
   ) {}
 
   static create(props: CreatePastGameRecordProps): PastGameRecord {
-    const normalizedDate = new Date(props.date);
+    const normalizedDate = ensureValidDate("日付", props.date);
     const today = new Date();
     if (normalizedDate > today) {
-      throw new Error("過去の試合ではありません");
+      throw new DomainError("過去の試合ではありません", {
+        date: normalizedDate,
+        today,
+      });
     }
     return new PastGameRecord(
       normalizedDate,

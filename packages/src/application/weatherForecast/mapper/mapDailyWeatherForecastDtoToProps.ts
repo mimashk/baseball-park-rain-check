@@ -8,7 +8,7 @@ export function mapDailyWeatherForecastDtoToProps(
 ): BallParkDailyWeatherForecastProps {
   return {
     date: dto.date,
-    weatherPattern: dto.weatherPattern,
+    weatherCode: dto.weatherCode,
     temperatureMin: dto.temperatureMin,
     temperatureMax: dto.temperatureMax,
     precipitationProbability: dto.precipitationProbability,

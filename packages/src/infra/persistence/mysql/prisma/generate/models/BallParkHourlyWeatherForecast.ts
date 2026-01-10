@@ -28,6 +28,7 @@ export type AggregateBallParkHourlyWeatherForecast = {
 
 export type BallParkHourlyWeatherForecastAvgAggregateOutputType = {
   id: number | null
+  weatherCode: number | null
   temperature: number | null
   precipitationProbability: number | null
   rainFall: number | null
@@ -36,6 +37,7 @@ export type BallParkHourlyWeatherForecastAvgAggregateOutputType = {
 
 export type BallParkHourlyWeatherForecastSumAggregateOutputType = {
   id: number | null
+  weatherCode: number | null
   temperature: number | null
   precipitationProbability: number | null
   rainFall: number | null
@@ -45,7 +47,7 @@ export type BallParkHourlyWeatherForecastSumAggregateOutputType = {
 export type BallParkHourlyWeatherForecastMinAggregateOutputType = {
   id: number | null
   date: Date | null
-  weatherPattern: string | null
+  weatherCode: number | null
   temperature: number | null
   precipitationProbability: number | null
   rainFall: number | null
@@ -57,7 +59,7 @@ export type BallParkHourlyWeatherForecastMinAggregateOutputType = {
 export type BallParkHourlyWeatherForecastMaxAggregateOutputType = {
   id: number | null
   date: Date | null
-  weatherPattern: string | null
+  weatherCode: number | null
   temperature: number | null
   precipitationProbability: number | null
   rainFall: number | null
@@ -69,7 +71,7 @@ export type BallParkHourlyWeatherForecastMaxAggregateOutputType = {
 export type BallParkHourlyWeatherForecastCountAggregateOutputType = {
   id: number
   date: number
-  weatherPattern: number
+  weatherCode: number
   temperature: number
   precipitationProbability: number
   rainFall: number
@@ -82,6 +84,7 @@ export type BallParkHourlyWeatherForecastCountAggregateOutputType = {
 
 export type BallParkHourlyWeatherForecastAvgAggregateInputType = {
   id?: true
+  weatherCode?: true
   temperature?: true
   precipitationProbability?: true
   rainFall?: true
@@ -90,6 +93,7 @@ export type BallParkHourlyWeatherForecastAvgAggregateInputType = {
 
 export type BallParkHourlyWeatherForecastSumAggregateInputType = {
   id?: true
+  weatherCode?: true
   temperature?: true
   precipitationProbability?: true
   rainFall?: true
@@ -99,7 +103,7 @@ export type BallParkHourlyWeatherForecastSumAggregateInputType = {
 export type BallParkHourlyWeatherForecastMinAggregateInputType = {
   id?: true
   date?: true
-  weatherPattern?: true
+  weatherCode?: true
   temperature?: true
   precipitationProbability?: true
   rainFall?: true
@@ -111,7 +115,7 @@ export type BallParkHourlyWeatherForecastMinAggregateInputType = {
 export type BallParkHourlyWeatherForecastMaxAggregateInputType = {
   id?: true
   date?: true
-  weatherPattern?: true
+  weatherCode?: true
   temperature?: true
   precipitationProbability?: true
   rainFall?: true
@@ -123,7 +127,7 @@ export type BallParkHourlyWeatherForecastMaxAggregateInputType = {
 export type BallParkHourlyWeatherForecastCountAggregateInputType = {
   id?: true
   date?: true
-  weatherPattern?: true
+  weatherCode?: true
   temperature?: true
   precipitationProbability?: true
   rainFall?: true
@@ -222,7 +226,7 @@ export type BallParkHourlyWeatherForecastGroupByArgs<ExtArgs extends runtime.Typ
 export type BallParkHourlyWeatherForecastGroupByOutputType = {
   id: number
   date: Date
-  weatherPattern: string
+  weatherCode: number
   temperature: number
   precipitationProbability: number
   rainFall: number
@@ -257,7 +261,7 @@ export type BallParkHourlyWeatherForecastWhereInput = {
   NOT?: Prisma.BallParkHourlyWeatherForecastWhereInput | Prisma.BallParkHourlyWeatherForecastWhereInput[]
   id?: Prisma.IntFilter<"BallParkHourlyWeatherForecast"> | number
   date?: Prisma.DateTimeFilter<"BallParkHourlyWeatherForecast"> | Date | string
-  weatherPattern?: Prisma.StringFilter<"BallParkHourlyWeatherForecast"> | string
+  weatherCode?: Prisma.IntFilter<"BallParkHourlyWeatherForecast"> | number
   temperature?: Prisma.FloatFilter<"BallParkHourlyWeatherForecast"> | number
   precipitationProbability?: Prisma.FloatFilter<"BallParkHourlyWeatherForecast"> | number
   rainFall?: Prisma.FloatFilter<"BallParkHourlyWeatherForecast"> | number
@@ -269,14 +273,13 @@ export type BallParkHourlyWeatherForecastWhereInput = {
 export type BallParkHourlyWeatherForecastOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   date?: Prisma.SortOrder
-  weatherPattern?: Prisma.SortOrder
+  weatherCode?: Prisma.SortOrder
   temperature?: Prisma.SortOrder
   precipitationProbability?: Prisma.SortOrder
   rainFall?: Prisma.SortOrder
   ballParkId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  _relevance?: Prisma.BallParkHourlyWeatherForecastOrderByRelevanceInput
 }
 
 export type BallParkHourlyWeatherForecastWhereUniqueInput = Prisma.AtLeast<{
@@ -286,7 +289,7 @@ export type BallParkHourlyWeatherForecastWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.BallParkHourlyWeatherForecastWhereInput[]
   NOT?: Prisma.BallParkHourlyWeatherForecastWhereInput | Prisma.BallParkHourlyWeatherForecastWhereInput[]
   date?: Prisma.DateTimeFilter<"BallParkHourlyWeatherForecast"> | Date | string
-  weatherPattern?: Prisma.StringFilter<"BallParkHourlyWeatherForecast"> | string
+  weatherCode?: Prisma.IntFilter<"BallParkHourlyWeatherForecast"> | number
   temperature?: Prisma.FloatFilter<"BallParkHourlyWeatherForecast"> | number
   precipitationProbability?: Prisma.FloatFilter<"BallParkHourlyWeatherForecast"> | number
   rainFall?: Prisma.FloatFilter<"BallParkHourlyWeatherForecast"> | number
@@ -298,7 +301,7 @@ export type BallParkHourlyWeatherForecastWhereUniqueInput = Prisma.AtLeast<{
 export type BallParkHourlyWeatherForecastOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   date?: Prisma.SortOrder
-  weatherPattern?: Prisma.SortOrder
+  weatherCode?: Prisma.SortOrder
   temperature?: Prisma.SortOrder
   precipitationProbability?: Prisma.SortOrder
   rainFall?: Prisma.SortOrder
@@ -318,7 +321,7 @@ export type BallParkHourlyWeatherForecastScalarWhereWithAggregatesInput = {
   NOT?: Prisma.BallParkHourlyWeatherForecastScalarWhereWithAggregatesInput | Prisma.BallParkHourlyWeatherForecastScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"BallParkHourlyWeatherForecast"> | number
   date?: Prisma.DateTimeWithAggregatesFilter<"BallParkHourlyWeatherForecast"> | Date | string
-  weatherPattern?: Prisma.StringWithAggregatesFilter<"BallParkHourlyWeatherForecast"> | string
+  weatherCode?: Prisma.IntWithAggregatesFilter<"BallParkHourlyWeatherForecast"> | number
   temperature?: Prisma.FloatWithAggregatesFilter<"BallParkHourlyWeatherForecast"> | number
   precipitationProbability?: Prisma.FloatWithAggregatesFilter<"BallParkHourlyWeatherForecast"> | number
   rainFall?: Prisma.FloatWithAggregatesFilter<"BallParkHourlyWeatherForecast"> | number
@@ -329,7 +332,7 @@ export type BallParkHourlyWeatherForecastScalarWhereWithAggregatesInput = {
 
 export type BallParkHourlyWeatherForecastCreateInput = {
   date: Date | string
-  weatherPattern: string
+  weatherCode: number
   temperature: number
   precipitationProbability: number
   rainFall: number
@@ -341,7 +344,7 @@ export type BallParkHourlyWeatherForecastCreateInput = {
 export type BallParkHourlyWeatherForecastUncheckedCreateInput = {
   id?: number
   date: Date | string
-  weatherPattern: string
+  weatherCode: number
   temperature: number
   precipitationProbability: number
   rainFall: number
@@ -352,7 +355,7 @@ export type BallParkHourlyWeatherForecastUncheckedCreateInput = {
 
 export type BallParkHourlyWeatherForecastUpdateInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherPattern?: Prisma.StringFieldUpdateOperationsInput | string
+  weatherCode?: Prisma.IntFieldUpdateOperationsInput | number
   temperature?: Prisma.FloatFieldUpdateOperationsInput | number
   precipitationProbability?: Prisma.FloatFieldUpdateOperationsInput | number
   rainFall?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -364,7 +367,7 @@ export type BallParkHourlyWeatherForecastUpdateInput = {
 export type BallParkHourlyWeatherForecastUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherPattern?: Prisma.StringFieldUpdateOperationsInput | string
+  weatherCode?: Prisma.IntFieldUpdateOperationsInput | number
   temperature?: Prisma.FloatFieldUpdateOperationsInput | number
   precipitationProbability?: Prisma.FloatFieldUpdateOperationsInput | number
   rainFall?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -376,7 +379,7 @@ export type BallParkHourlyWeatherForecastUncheckedUpdateInput = {
 export type BallParkHourlyWeatherForecastCreateManyInput = {
   id?: number
   date: Date | string
-  weatherPattern: string
+  weatherCode: number
   temperature: number
   precipitationProbability: number
   rainFall: number
@@ -387,7 +390,7 @@ export type BallParkHourlyWeatherForecastCreateManyInput = {
 
 export type BallParkHourlyWeatherForecastUpdateManyMutationInput = {
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherPattern?: Prisma.StringFieldUpdateOperationsInput | string
+  weatherCode?: Prisma.IntFieldUpdateOperationsInput | number
   temperature?: Prisma.FloatFieldUpdateOperationsInput | number
   precipitationProbability?: Prisma.FloatFieldUpdateOperationsInput | number
   rainFall?: Prisma.FloatFieldUpdateOperationsInput | number
@@ -399,19 +402,13 @@ export type BallParkHourlyWeatherForecastUpdateManyMutationInput = {
 export type BallParkHourlyWeatherForecastUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   date?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  weatherPattern?: Prisma.StringFieldUpdateOperationsInput | string
+  weatherCode?: Prisma.IntFieldUpdateOperationsInput | number
   temperature?: Prisma.FloatFieldUpdateOperationsInput | number
   precipitationProbability?: Prisma.FloatFieldUpdateOperationsInput | number
   rainFall?: Prisma.FloatFieldUpdateOperationsInput | number
   ballParkId?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-}
-
-export type BallParkHourlyWeatherForecastOrderByRelevanceInput = {
-  fields: Prisma.BallParkHourlyWeatherForecastOrderByRelevanceFieldEnum | Prisma.BallParkHourlyWeatherForecastOrderByRelevanceFieldEnum[]
-  sort: Prisma.SortOrder
-  search: string
 }
 
 export type BallParkHourlyWeatherForecastBallParkIdDateCompoundUniqueInput = {
@@ -422,7 +419,7 @@ export type BallParkHourlyWeatherForecastBallParkIdDateCompoundUniqueInput = {
 export type BallParkHourlyWeatherForecastCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   date?: Prisma.SortOrder
-  weatherPattern?: Prisma.SortOrder
+  weatherCode?: Prisma.SortOrder
   temperature?: Prisma.SortOrder
   precipitationProbability?: Prisma.SortOrder
   rainFall?: Prisma.SortOrder
@@ -433,6 +430,7 @@ export type BallParkHourlyWeatherForecastCountOrderByAggregateInput = {
 
 export type BallParkHourlyWeatherForecastAvgOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  weatherCode?: Prisma.SortOrder
   temperature?: Prisma.SortOrder
   precipitationProbability?: Prisma.SortOrder
   rainFall?: Prisma.SortOrder
@@ -442,7 +440,7 @@ export type BallParkHourlyWeatherForecastAvgOrderByAggregateInput = {
 export type BallParkHourlyWeatherForecastMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   date?: Prisma.SortOrder
-  weatherPattern?: Prisma.SortOrder
+  weatherCode?: Prisma.SortOrder
   temperature?: Prisma.SortOrder
   precipitationProbability?: Prisma.SortOrder
   rainFall?: Prisma.SortOrder
@@ -454,7 +452,7 @@ export type BallParkHourlyWeatherForecastMaxOrderByAggregateInput = {
 export type BallParkHourlyWeatherForecastMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   date?: Prisma.SortOrder
-  weatherPattern?: Prisma.SortOrder
+  weatherCode?: Prisma.SortOrder
   temperature?: Prisma.SortOrder
   precipitationProbability?: Prisma.SortOrder
   rainFall?: Prisma.SortOrder
@@ -465,6 +463,7 @@ export type BallParkHourlyWeatherForecastMinOrderByAggregateInput = {
 
 export type BallParkHourlyWeatherForecastSumOrderByAggregateInput = {
   id?: Prisma.SortOrder
+  weatherCode?: Prisma.SortOrder
   temperature?: Prisma.SortOrder
   precipitationProbability?: Prisma.SortOrder
   rainFall?: Prisma.SortOrder
@@ -484,7 +483,7 @@ export type FloatFieldUpdateOperationsInput = {
 export type BallParkHourlyWeatherForecastSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   date?: boolean
-  weatherPattern?: boolean
+  weatherCode?: boolean
   temperature?: boolean
   precipitationProbability?: boolean
   rainFall?: boolean
@@ -498,7 +497,7 @@ export type BallParkHourlyWeatherForecastSelect<ExtArgs extends runtime.Types.Ex
 export type BallParkHourlyWeatherForecastSelectScalar = {
   id?: boolean
   date?: boolean
-  weatherPattern?: boolean
+  weatherCode?: boolean
   temperature?: boolean
   precipitationProbability?: boolean
   rainFall?: boolean
@@ -507,7 +506,7 @@ export type BallParkHourlyWeatherForecastSelectScalar = {
   updatedAt?: boolean
 }
 
-export type BallParkHourlyWeatherForecastOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "date" | "weatherPattern" | "temperature" | "precipitationProbability" | "rainFall" | "ballParkId" | "createdAt" | "updatedAt", ExtArgs["result"]["ballParkHourlyWeatherForecast"]>
+export type BallParkHourlyWeatherForecastOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "date" | "weatherCode" | "temperature" | "precipitationProbability" | "rainFall" | "ballParkId" | "createdAt" | "updatedAt", ExtArgs["result"]["ballParkHourlyWeatherForecast"]>
 
 export type $BallParkHourlyWeatherForecastPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "BallParkHourlyWeatherForecast"
@@ -515,7 +514,7 @@ export type $BallParkHourlyWeatherForecastPayload<ExtArgs extends runtime.Types.
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     date: Date
-    weatherPattern: string
+    weatherCode: number
     temperature: number
     precipitationProbability: number
     rainFall: number
@@ -893,7 +892,7 @@ export interface Prisma__BallParkHourlyWeatherForecastClient<T, Null = never, Ex
 export interface BallParkHourlyWeatherForecastFieldRefs {
   readonly id: Prisma.FieldRef<"BallParkHourlyWeatherForecast", 'Int'>
   readonly date: Prisma.FieldRef<"BallParkHourlyWeatherForecast", 'DateTime'>
-  readonly weatherPattern: Prisma.FieldRef<"BallParkHourlyWeatherForecast", 'String'>
+  readonly weatherCode: Prisma.FieldRef<"BallParkHourlyWeatherForecast", 'Int'>
   readonly temperature: Prisma.FieldRef<"BallParkHourlyWeatherForecast", 'Float'>
   readonly precipitationProbability: Prisma.FieldRef<"BallParkHourlyWeatherForecast", 'Float'>
   readonly rainFall: Prisma.FieldRef<"BallParkHourlyWeatherForecast", 'Float'>

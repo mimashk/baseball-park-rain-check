@@ -1,6 +1,7 @@
 import { CancellationModel } from "../valueObjects/CancellationModel";
+import { ModelVersion } from "../valueObjects/ModelVersion";
 
 export interface CancellationModelRepository {
   save(model: CancellationModel): Promise<void>;
-  load(version: string): Promise<CancellationModel | null>;
+  load(version: ModelVersion): Promise<CancellationModel | null>;
 }

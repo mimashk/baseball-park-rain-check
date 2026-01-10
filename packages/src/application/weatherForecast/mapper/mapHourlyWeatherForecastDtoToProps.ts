@@ -8,7 +8,7 @@ export function mapHourlyWeatherForecastDtoToProps(
 ): BallParkHourlyWeatherForecastProps {
   return {
     date: dto.date,
-    weatherPattern: dto.weatherPattern,
+    weatherCode: dto.weatherCode,
     temperature: dto.temperature,
     precipitationProbability: dto.precipitationProbability,
     rainFall: dto.rainFall,

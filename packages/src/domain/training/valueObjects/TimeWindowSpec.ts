@@ -1,3 +1,7 @@
+import { ValidationError } from "../../../shared/errors/ValidationError";
+import { ensurePositiveInteger } from "../../shared/ensurePositiveInteger";
+import { ensureValidDate } from "../../shared/ensureValidDate";
+
 export class TimeWindowSpec {
   private constructor(
     readonly beforeHours: number,
@@ -10,29 +14,36 @@ export class TimeWindowSpec {
   }): TimeWindowSpec {
     const { beforeHours, afterHours } = props;
 
-    if (!Number.isInteger(beforeHours) || beforeHours < 0) {
-      throw new Error("集計時間窓の開始時間は0以上でなければなりません");
-    }
-    if (!Number.isInteger(afterHours) || afterHours < 0) {
-      throw new Error("集計時間窓の終了時間は0以上でなければなりません");
-    }
-    if (beforeHours === 0 && afterHours === 0) {
-      throw new Error("集計時間窓は最低でも1時間分でなければなりません");
+    const normalizedBeforeHours = ensurePositiveInteger(
+      "集計時間窓の開始時間",
+      beforeHours
+    );
+    const normalizedAfterHours = ensurePositiveInteger(
+      "集計時間窓の終了時間",
+      afterHours
+    );
+    if (normalizedBeforeHours === 0 && normalizedAfterHours === 0) {
+      throw new ValidationError(
+        "集計時間窓は最低でも1時間分でなければなりません",
+        {
+          beforeHours: normalizedBeforeHours,
+          afterHours: normalizedAfterHours,
+        }
+      );
     }
 
-    return new TimeWindowSpec(beforeHours, afterHours);
+    return new TimeWindowSpec(normalizedBeforeHours, normalizedAfterHours);
   }
 
   /** 集約対象の開始/終了時刻を返す（endはexclusive） */
   toRange(date: Date): { from: Date; to: Date } {
-    const hour = date.getHours();
-    const minute = date.getMinutes();
-    const from = new Date(date);
-    from.setHours(hour - this.beforeHours);
-    from.setMinutes(minute);
-    const to = new Date(date);
-    to.setHours(hour + this.afterHours);
-    to.setMinutes(minute);
+    const normalizedDate = ensureValidDate("集計基準時刻", date);
+    const hour = normalizedDate.getHours();
+    const minute = normalizedDate.getMinutes();
+    const from = new Date(normalizedDate);
+    from.setHours(hour - this.beforeHours, minute);
+    const to = new Date(normalizedDate);
+    to.setHours(hour + this.afterHours, minute);
     return { from, to };
   }
 }

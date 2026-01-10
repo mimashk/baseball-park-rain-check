@@ -1,10 +1,12 @@
-// PrismaBallparkDailyWeatherForecastRepository.ts
 import {
   BallPark,
   BallParkId,
 } from "../../../../domain/scheduledGame/valueObjects/BallPark";
 import { BallParkDailyWeatherForecastRepository } from "../../../../domain/weatherForecast/repositoryInterface.ts/BallParkDailyWeatherForecastRepository";
 import { BallParkDailyWeatherForecast } from "../../../../domain/weatherForecast/valueObjects/BallParkDailyWeatherForecast";
+import { AppError } from "../../../../shared/errors/AppError";
+import { DbError } from "../../../../shared/errors/DbError";
+import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
 import { BallParkDailyWeatherForecastModel } from "../prisma/generate/models";
 import { PrismaClientWrapper } from "../PrismaClientWrapper";
 
@@ -13,31 +15,54 @@ type BallParkDailyWeatherForecastPersistence = Omit<
   "id" | "createdAt" | "updatedAt"
 >;
 
-export class PrismaBallparkDailyWeatherForecastRepository
+export class PrismaBallParkDailyWeatherForecastRepository
   implements BallParkDailyWeatherForecastRepository
 {
   private prisma = PrismaClientWrapper.getInstance();
 
   async updateMany(forecasts: BallParkDailyWeatherForecast[]): Promise<void> {
     const rows = forecasts.map(this.toPersistence);
-    await this.prisma.$transaction(
-      rows.map((row) =>
-        this.prisma.ballParkDailyWeatherForecast.upsert({
-          where: {
-            ballParkId_date: { ballParkId: row.ballParkId, date: row.date },
-          },
-          create: row,
-          update: row,
-        })
-      )
-    );
+    try {
+      await this.prisma.$transaction(
+        rows.map((row) =>
+          this.prisma.ballParkDailyWeatherForecast.upsert({
+            where: {
+              ballParkId_date: { ballParkId: row.ballParkId, date: row.date },
+            },
+            create: row,
+            update: row,
+          })
+        )
+      );
+    } catch (err) {
+      throw new DbError("日次予報のupsertに失敗しました", {
+        cause: err,
+        details: { count: rows.length },
+      });
+    }
   }
 
   async findAll(): Promise<BallParkDailyWeatherForecast[]> {
-    const rows = await this.prisma.ballParkDailyWeatherForecast.findMany({
-      orderBy: { date: "asc" },
-    });
-    return rows.map(this.toDomain);
+    let rows: BallParkDailyWeatherForecastModel[];
+    try {
+      rows = await this.prisma.ballParkDailyWeatherForecast.findMany({
+        orderBy: { date: "asc" },
+      });
+    } catch (err) {
+      throw new DbError("日次予報の取得に失敗しました", { cause: err });
+    }
+    try {
+      return rows.map(this.toDomain);
+    } catch (err) {
+      if (err instanceof AppError) throw err;
+      throw new InfrastructureError(
+        "mapping",
+        "DBレコードをドメインに変換できません",
+        {
+          cause: err,
+        }
+      );
+    }
   }
 
   private toPersistence(
@@ -45,7 +70,7 @@ export class PrismaBallparkDailyWeatherForecastRepository
   ): BallParkDailyWeatherForecastPersistence {
     return {
       date: f.date,
-      weatherPattern: f.weatherPattern.labelJa(),
+      weatherCode: f.weatherPattern.code(),
       temperatureMin: f.temperatureMin.toNumber(),
       temperatureMax: f.temperatureMax.toNumber(),
       precipitationProbability: f.precipitationProbability.toPercent(),
@@ -59,7 +84,7 @@ export class PrismaBallparkDailyWeatherForecastRepository
   ): BallParkDailyWeatherForecast =>
     BallParkDailyWeatherForecast.create({
       date: row.date,
-      weatherPattern: Number(row.weatherPattern),
+      weatherCode: Number(row.weatherCode),
       temperatureMin: row.temperatureMin,
       temperatureMax: row.temperatureMax,
       precipitationProbability: row.precipitationProbability,

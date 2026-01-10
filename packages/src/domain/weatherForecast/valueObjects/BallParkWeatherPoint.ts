@@ -1,3 +1,5 @@
+import { DomainError } from "../../../shared/errors/DomainError";
+import { ValidationError } from "../../../shared/errors/ValidationError";
 import { BallParkId } from "../../scheduledGame/valueObjects/BallPark";
 
 type BallParkWeatherPointItem = {
@@ -34,7 +36,10 @@ export class BallParkWeatherPoint {
 
   static create(ballParkId: BallParkId): BallParkWeatherPoint {
     const hit = BallParkWeatherPointCatalog[ballParkId];
-    if (!hit) throw new Error("球場付近の天気予報地点が見つかりません");
+    if (!hit)
+      throw new DomainError("球場付近の天気予報地点が見つかりません", {
+        ballParkId,
+      });
     this.validate(hit);
 
     return new BallParkWeatherPoint(
@@ -53,18 +58,28 @@ export class BallParkWeatherPoint {
       ballParkWeatherPoint.latitude < -90 ||
       ballParkWeatherPoint.latitude > 90
     )
-      throw new Error("緯度が範囲外です");
+      throw new ValidationError("緯度が範囲外です", {
+        latitude: ballParkWeatherPoint.latitude,
+      });
     if (
       ballParkWeatherPoint.longitude < -180 ||
       ballParkWeatherPoint.longitude > 180
     )
-      throw new Error("経度が範囲外です");
+      throw new ValidationError("経度が範囲外です", {
+        longitude: ballParkWeatherPoint.longitude,
+      });
     if (ballParkWeatherPoint.prefectureName.length > 100)
-      throw new Error("都道府県名が長すぎます");
+      throw new ValidationError("都道府県名が長すぎます", {
+        length: ballParkWeatherPoint.prefectureName.length,
+      });
     if (ballParkWeatherPoint.municipalitiesName.length > 100)
-      throw new Error("市区町村名が長すぎます");
+      throw new ValidationError("市区町村名が長すぎます", {
+        length: ballParkWeatherPoint.municipalitiesName.length,
+      });
     if (ballParkWeatherPoint.nearestWeatherStationName.length > 100)
-      throw new Error("最寄りの気象台名が長すぎます");
+      throw new ValidationError("最寄りの気象台名が長すぎます", {
+        length: ballParkWeatherPoint.nearestWeatherStationName.length,
+      });
   }
 
   prefectureName(): string {
