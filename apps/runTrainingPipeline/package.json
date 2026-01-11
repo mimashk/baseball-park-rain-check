@@ -1,0 +1,12 @@
+{
+  "name": "@baseball/runTrainingPipeline",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/apps/runTrainingPipeline/src/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@baseball/packages": "workspace:*"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "name": "@baseball/refreshScheduledGame",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/apps/refreshScheduledGame/src/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@baseball/packages": "workspace:*"
+  }
+}

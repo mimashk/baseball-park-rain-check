@@ -55,7 +55,8 @@ export const ModelName = {
   PastGameRecord: 'PastGameRecord',
   BallParkHourlyWeatherForecast: 'BallParkHourlyWeatherForecast',
   BallParkDailyWeatherForecast: 'BallParkDailyWeatherForecast',
-  BallParkObservedHourlyWeather: 'BallParkObservedHourlyWeather'
+  BallParkObservedHourlyWeather: 'BallParkObservedHourlyWeather',
+  CancellationModel: 'CancellationModel'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -148,12 +149,41 @@ export const BallParkObservedHourlyWeatherScalarFieldEnum = {
 export type BallParkObservedHourlyWeatherScalarFieldEnum = (typeof BallParkObservedHourlyWeatherScalarFieldEnum)[keyof typeof BallParkObservedHourlyWeatherScalarFieldEnum]
 
 
+export const CancellationModelScalarFieldEnum = {
+  id: 'id',
+  version: 'version',
+  featureOrder: 'featureOrder',
+  coefficients: 'coefficients',
+  intercept: 'intercept',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CancellationModelScalarFieldEnum = (typeof CancellationModelScalarFieldEnum)[keyof typeof CancellationModelScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: 'JsonNull'
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: 'DbNull',
+  JsonNull: 'JsonNull'
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const ScheduledGameOrderByRelevanceFieldEnum = {
@@ -174,4 +204,37 @@ export const PastGameRecordOrderByRelevanceFieldEnum = {
 } as const
 
 export type PastGameRecordOrderByRelevanceFieldEnum = (typeof PastGameRecordOrderByRelevanceFieldEnum)[keyof typeof PastGameRecordOrderByRelevanceFieldEnum]
+
+
+export const JsonNullValueFilter = {
+  DbNull: 'DbNull',
+  JsonNull: 'JsonNull',
+  AnyNull: 'AnyNull'
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
+
+
+export const QueryMode = {
+  default: 'default',
+  insensitive: 'insensitive'
+} as const
+
+export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
+
+
+export const NullsOrder = {
+  first: 'first',
+  last: 'last'
+} as const
+
+export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const CancellationModelOrderByRelevanceFieldEnum = {
+  id: 'id',
+  version: 'version'
+} as const
+
+export type CancellationModelOrderByRelevanceFieldEnum = (typeof CancellationModelOrderByRelevanceFieldEnum)[keyof typeof CancellationModelOrderByRelevanceFieldEnum]
 

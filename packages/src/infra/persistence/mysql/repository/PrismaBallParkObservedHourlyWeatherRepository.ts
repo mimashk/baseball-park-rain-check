@@ -1,4 +1,3 @@
-import { PrismaClientWrapper } from "../PrismaClientWrapper";
 import { BallParkObservedHourlyWeatherRepository } from "../../../../domain/training/repositoryInterface/BallParkObservedHourlyWeatherRepository";
 import { BallParkObservedHourlyWeather } from "../../../../domain/training/valueObjects/BallParkObservedHourlyWeather";
 import { RainFall } from "../../../../domain/weatherForecast/valueObjects/RainFall";
@@ -8,6 +7,9 @@ import { BallParkId } from "../../../../domain/scheduledGame/valueObjects/BallPa
 import { DbError } from "../../../../shared/errors/DbError";
 import { AppError } from "../../../../shared/errors/AppError";
 import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
+import { PrismaClient } from "../prisma/generate/client";
+import { TransactionContext } from "../../../../domain/shared/interfaces/TransactionContext";
+import { PrismaClientWrapper } from "../PrismaClientWrapper";
 
 type BallParkObservedHourlyWeatherPersistence = Omit<
   BallParkObservedHourlyWeatherModel,
@@ -17,14 +19,24 @@ type BallParkObservedHourlyWeatherPersistence = Omit<
 export class PrismaBallParkObservedHourlyWeatherRepository
   implements BallParkObservedHourlyWeatherRepository
 {
-  private prisma = PrismaClientWrapper.getInstance();
+  constructor(
+    private readonly prisma: PrismaClient = PrismaClientWrapper.getInstance()
+  ) {}
+
+  withTransaction(
+    tx: TransactionContext
+  ): BallParkObservedHourlyWeatherRepository {
+    return new PrismaBallParkObservedHourlyWeatherRepository(
+      tx as unknown as PrismaClient
+    );
+  }
 
   async upsertMany(
     observedHourlyWeathers: BallParkObservedHourlyWeather[]
   ): Promise<void> {
     const rows = observedHourlyWeathers.map(this.toPersistence);
     try {
-      await this.prisma.$transaction(
+      await Promise.all(
         rows.map((row) =>
           this.prisma.ballParkObservedHourlyWeather.upsert({
             where: {

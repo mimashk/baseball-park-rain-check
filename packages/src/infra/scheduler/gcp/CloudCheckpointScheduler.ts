@@ -7,17 +7,18 @@ import { ExternalServiceError } from "../../../shared/errors/ExternalServiceErro
  * Cloud Scheduler は cron なので、1回きり相当を
  * 「実行したら次回を upsert / 終了なら delete」で実現する想定。
  */
+
+export type CloudSchedulerConfig = {
+  projectId: string;
+  location: string;
+  timeZone: string;
+  baseUrl: string;
+  invokerServiceAccountEmail: string;
+  scopes: string[];
+};
+
 export class CloudSchedulerCheckpointAdapter implements CheckpointScheduler {
-  constructor(
-    private readonly config: {
-      projectId: "baseball-park-rain-check"; // 仮実装
-      location: "asia-northeast1"; // e.g. "asia-northeast1"
-      timeZone: "Asia/Tokyo"; // "Asia/Tokyo"
-      baseUrl: "https://asia-northeast1-baseball-park-rain-check.run.app"; // 仮実装
-      invokerServiceAccountEmail: "scheduler-invoker@baseball-park-rain-check.iam.gserviceaccount.com"; // 仮実装
-      scopes: ["https://www.googleapis.com/auth/cloud-platform"];
-    }
-  ) {}
+  constructor(private readonly config: CloudSchedulerConfig) {}
 
   async upsertCheckpoint(input: {
     jobKey: string;

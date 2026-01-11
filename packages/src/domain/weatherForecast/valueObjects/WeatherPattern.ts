@@ -11,7 +11,8 @@ export class WeatherPattern {
 
   static fromCode(code: number): WeatherPattern {
     this.validate(code);
-    const label = WeatherCodeCatalog[code];
+    const label =
+      WeatherCodeCatalog[code as keyof typeof WeatherCodeCatalog];
     return new WeatherPattern(code, label);
   }
 

@@ -1,14 +1,13 @@
 import { CancellationModelRepository } from "../../../domain/model/repositoryInterface/CancellationModelRepository";
-import { ModelVersion } from "../../../domain/model/valueObjects/ModelVersion";
 import { PredictionWeatherFeatureAggregator } from "../../../domain/prediction/services/PredictionWeatherFeatureAggregator";
 import { CancellationProbability } from "../../../domain/prediction/valueObjects/CancellationProbability";
 import { ScheduledGameRepository } from "../../../domain/scheduledGame/repositoryInterface/ScheduledGameRepository";
 import { GameId } from "../../../domain/scheduledGame/valueObjects/GameId";
 import { TimeWindowSpec } from "../../../domain/training/valueObjects/TimeWindowSpec";
-import { BallParkHourlyWeatherForecastRepository } from "../../../domain/weatherForecast/repositoryInterface.ts/BallParkHourlyWeatherForecastRepository";
 import { DomainError } from "../../../shared/errors/DomainError";
 import { NotFoundError } from "../../../shared/errors/NotFoundError";
 import { ValidationError } from "../../../shared/errors/ValidationError";
+import { RefreshHourlyWeatherForecastsService } from "../../weatherForecast/services/RefreshHourlyWeatherForecastsService";
 import { PredictCancellationRequest } from "../dtos/PredictCancellationRequest";
 import { PredictCancellationResponse } from "../dtos/PredictCancellationResponse";
 import { CancellationPredictor } from "../interfaces/CancellationPredictor";
@@ -18,7 +17,7 @@ import { mapCancellationModelToDto } from "../mapper/mapCancellationModelToDto";
 export class PredictCancellationUseCase {
   constructor(
     private readonly gameRepository: ScheduledGameRepository,
-    private readonly forecastRepository: BallParkHourlyWeatherForecastRepository,
+    private readonly refreshHourlyWeatherForecastsService: RefreshHourlyWeatherForecastsService,
     private readonly modelRepository: CancellationModelRepository,
     private readonly predictor: CancellationPredictor
   ) {}
@@ -27,19 +26,23 @@ export class PredictCancellationUseCase {
     req: PredictCancellationRequest
   ): Promise<PredictCancellationResponse> {
     try {
-      const game = await this.gameRepository.findById(
-        GameId.fromString(req.gameId)
-      );
-      if (!game)
-        throw new NotFoundError("試合が見つかりません", { gameId: req.gameId });
+      const games = await this.gameRepository.findTodayScheduledGames();
+      if (games.length === 0)
+        throw new NotFoundError("今日の試合が見つかりません");
+      // 一旦1試合のみなので先頭を取得
+      const game = games[0];
+      if (!game) throw new NotFoundError("今日の試合が見つかりません");
 
-      const modelVersion = ModelVersion.fromString(req.modelVersion);
+      const model = await this.modelRepository.findLatest();
+      if (!model) throw new NotFoundError("モデルが見つかりません", {});
 
-      const model = await this.modelRepository.load(modelVersion);
-      if (!model)
-        throw new NotFoundError("モデルが見つかりません", {
-          modelVersion: req.modelVersion,
+      const requiredDays = Math.ceil(req.timeWindowAfterHours / 24);
+      if (req.forecastDays < requiredDays) {
+        throw new ValidationError("予測に必要な予報日数が足りません", {
+          requiredDays,
+          forecastDays: req.forecastDays,
         });
+      }
 
       const window = TimeWindowSpec.create({
         beforeHours: req.timeWindowBeforeHours,
@@ -47,19 +50,28 @@ export class PredictCancellationUseCase {
       });
       const { from, to } = window.toRange(game.date);
 
-      const forecasts = await this.forecastRepository.findByDateAndBallPark(
-        from,
-        to,
-        game.ballPark.id()
+      const hourlyWeatherForecasts =
+        await this.refreshHourlyWeatherForecastsService.execute(
+          game.ballPark.id(),
+          req.forecastDays
+        );
+      if (hourlyWeatherForecasts.length === 0)
+        throw new ValidationError("予測に使える気象データがありません", {
+          from,
+          to,
+        });
+      const filteredHourlyWeatherForecasts = hourlyWeatherForecasts.filter(
+        (f) => from <= f.date && f.date <= to
       );
-      if (!forecasts)
+      if (filteredHourlyWeatherForecasts.length === 0)
         throw new ValidationError("予測に使える気象データがありません", {
           from,
           to,
         });
 
-      const aggregatedFeatures =
-        PredictionWeatherFeatureAggregator.aggregate(forecasts);
+      const aggregatedFeatures = PredictionWeatherFeatureAggregator.aggregate(
+        filteredHourlyWeatherForecasts
+      );
 
       const probability = this.predictor.predict({
         model: mapCancellationModelToDto(model),
@@ -69,7 +81,7 @@ export class PredictCancellationUseCase {
       return {
         message: "予測に成功しました",
         probability: CancellationProbability.from(probability).toNumber(),
-        modelVersion: req.modelVersion,
+        modelVersion: model.version.toString(),
       };
     } catch (err) {
       if (
@@ -81,8 +93,6 @@ export class PredictCancellationUseCase {
       }
       throw new DomainError("試合中止確率の予測に失敗しました", {
         cause: err,
-        gameId: req.gameId,
-        modelVersion: req.modelVersion,
       });
     }
   }

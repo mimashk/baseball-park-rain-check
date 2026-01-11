@@ -1,13 +1,22 @@
+import {
+  BallParkCatalog,
+  BallParkId,
+} from "../../../domain/scheduledGame/valueObjects/BallPark";
+import { PastGameRecord } from "../../../domain/training/valueObjects/PastGameRecord";
 import { DomainError } from "../../../shared/errors/DomainError";
 import { ValidationError } from "../../../shared/errors/ValidationError";
 import { ensureValidDateRange } from "../../shared/utils/ensureValidDateRange";
-import { PastGameRecordDto } from "../dtos/PastGameRecordDto";
 import { PastGameRecordFetcher } from "../interfaces/PastGameRecordFetcher";
+import { mapPastGameDtoToCreateProps } from "../mapper/mapPastGameDtoToCreateProps";
 
 export class FetchPastGamesService {
   constructor(private readonly fetcher: PastGameRecordFetcher) {}
 
-  async exec(from: Date, to: Date): Promise<PastGameRecordDto[]> {
+  async execute(
+    ballParkId: BallParkId,
+    from: Date,
+    to: Date
+  ): Promise<PastGameRecord[]> {
     const { from: normalizedFrom, to: normalizedTo } = ensureValidDateRange(
       "from",
       "to",
@@ -19,15 +28,35 @@ export class FetchPastGamesService {
         normalizedFrom,
         normalizedTo
       );
-      const inRange = games.filter((g) => {
+      const inRangePastGames = games.filter((g) => {
         const t = g.date.getTime();
         return t >= normalizedFrom.getTime() && t <= normalizedTo.getTime();
       });
-      const deduped = this.dedupeByKey(
-        inRange,
+      const dedupedPastGames = this.dedupeByKey(
+        inRangePastGames,
         (g) => `${g.date.toISOString()}::${g.homeTeam}::${g.awayTeam}`
       );
-      return deduped.sort((a, b) => a.date.getTime() - b.date.getTime());
+      const sortedPastGames = dedupedPastGames.sort(
+        (a, b) => a.date.getTime() - b.date.getTime()
+      );
+
+      const pastGames = sortedPastGames
+        .map((rawPastGame) => {
+          try {
+            const domainProps = mapPastGameDtoToCreateProps(rawPastGame);
+            return PastGameRecord.create(domainProps); // ドメイン例外は上へ
+          } catch (err: unknown) {
+            throw new ValidationError("過去試合データの変換に失敗しました", {
+              game: rawPastGame,
+              cause: err,
+            });
+          }
+        })
+        .filter(
+          (g): g is PastGameRecord =>
+            g !== null && g.ballPark.id() === ballParkId
+        );
+      return pastGames;
     } catch (err: unknown) {
       if (err instanceof ValidationError || err instanceof DomainError)
         throw err;

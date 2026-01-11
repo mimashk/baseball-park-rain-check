@@ -64,3 +64,8 @@ export type BallParkDailyWeatherForecast = Prisma.BallParkDailyWeatherForecastMo
  * 
  */
 export type BallParkObservedHourlyWeather = Prisma.BallParkObservedHourlyWeatherModel
+/**
+ * Model CancellationModel
+ * 
+ */
+export type CancellationModel = Prisma.CancellationModelModel

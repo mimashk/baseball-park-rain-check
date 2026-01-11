@@ -1,9 +1,11 @@
 import { BallParkId } from "../../../../domain/scheduledGame/valueObjects/BallPark";
+import { TransactionContext } from "../../../../domain/shared/interfaces/TransactionContext";
 import { BallParkHourlyWeatherForecastRepository } from "../../../../domain/weatherForecast/repositoryInterface.ts/BallParkHourlyWeatherForecastRepository";
 import { BallParkHourlyWeatherForecast } from "../../../../domain/weatherForecast/valueObjects/BallParkHourlyWeatherForecast";
 import { AppError } from "../../../../shared/errors/AppError";
 import { DbError } from "../../../../shared/errors/DbError";
 import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
+import { PrismaClient } from "../prisma/generate/client";
 import { BallParkHourlyWeatherForecastModel } from "../prisma/generate/models";
 import { PrismaClientWrapper } from "../PrismaClientWrapper";
 
@@ -15,12 +17,21 @@ type BallParkHourlyWeatherForecastPersistence = Omit<
 export class PrismaBallParkHourlyWeatherForecastRepository
   implements BallParkHourlyWeatherForecastRepository
 {
-  private prisma = PrismaClientWrapper.getInstance();
+  constructor(
+    private readonly prisma: PrismaClient = PrismaClientWrapper.getInstance()
+  ) {}
 
+  withTransaction(
+    tx: TransactionContext
+  ): BallParkHourlyWeatherForecastRepository {
+    return new PrismaBallParkHourlyWeatherForecastRepository(
+      tx as unknown as PrismaClient
+    );
+  }
   async updateMany(forecasts: BallParkHourlyWeatherForecast[]): Promise<void> {
     const rows = forecasts.map(this.toPersistence);
     try {
-      await this.prisma.$transaction(
+      await Promise.all(
         rows.map((row) =>
           this.prisma.ballParkHourlyWeatherForecast.upsert({
             where: {

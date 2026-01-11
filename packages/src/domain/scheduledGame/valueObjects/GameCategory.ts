@@ -31,6 +31,6 @@ export class GameCategory {
   }
 
   labelJa(): string {
-    return GameCategoryType[this.value];
+    return this.value;
   }
 }

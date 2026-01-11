@@ -1,4 +1,4 @@
-export interface TrainCancellationModelResponse {
+export interface RunTrainingPipelineResponse {
   message: string;
   model: {
     version: string;

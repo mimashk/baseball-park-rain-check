@@ -2,8 +2,8 @@ import { BallParkDailyWeatherForecastRepository } from "../../../domain/weatherF
 import { BallParkDailyWeatherForecast } from "../../../domain/weatherForecast/valueObjects/BallParkDailyWeatherForecast";
 import { BallParkWeatherPoint } from "../../../domain/weatherForecast/valueObjects/BallParkWeatherPoint";
 import { DomainError } from "../../../shared/errors/DomainError";
-import { NotFoundError } from "../../../shared/errors/NotFoundError";
 import { ValidationError } from "../../../shared/errors/ValidationError";
+import { TransactionExecutor } from "../../shared/interfaces/TransactionExecutor";
 import { RefreshDailyWeatherForecastsRequest } from "../dtos/RefreshDailyWeatherForecastsRequest";
 import { RefreshDailyWeatherForecastsResponse } from "../dtos/RefreshDailyWeatherForecastsResponse";
 import { DailyWeatherForecastProvider } from "../interfaces/DailyWeatherForecastProvider";
@@ -12,7 +12,8 @@ import { mapDailyWeatherForecastDtoToProps } from "../mapper/mapDailyWeatherFore
 export class RefreshDailyWeatherForecastsUsecase {
   constructor(
     private readonly weatherForecastProvider: DailyWeatherForecastProvider,
-    private readonly ballParkDailyWeatherForecastRepository: BallParkDailyWeatherForecastRepository
+    private readonly ballParkDailyWeatherForecastRepository: BallParkDailyWeatherForecastRepository,
+    private readonly txExecutor: TransactionExecutor
   ) {}
 
   async execute(
@@ -41,9 +42,12 @@ export class RefreshDailyWeatherForecastsUsecase {
           )
         )
         .map(BallParkDailyWeatherForecast.create);
-      await this.ballParkDailyWeatherForecastRepository.updateMany(
-        dailyWeatherOverviews
-      );
+
+      await this.txExecutor.run(async (trx) => {
+        await this.ballParkDailyWeatherForecastRepository
+          .withTransaction(trx)
+          .updateMany(dailyWeatherOverviews);
+      });
 
       return {
         message: `${request.forecastDays}日間の週間天気予報を更新しました`,

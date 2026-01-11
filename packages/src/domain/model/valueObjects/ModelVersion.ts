@@ -13,11 +13,11 @@ export class ModelVersion {
     const day = pad(normalizedDate.getDate());
     const hour = pad(normalizedDate.getHours());
     const minute = pad(normalizedDate.getMinutes());
-    return new ModelVersion(`v${year}${month}${day}${hour}${minute}`);
+    return new ModelVersion(`${year}${month}${day}${hour}${minute}`);
   }
   static fromString(value: string): ModelVersion {
     const normalizedValue = ensureTextPresent("モデルバージョン", value);
-    if (!/^v?\d{12}$/.test(normalizedValue)) {
+    if (!/^\d{12}$/.test(normalizedValue)) {
       throw new ValidationError("モデルバージョンの形式が不正です", {
         normalizedValue,
       });
@@ -30,12 +30,11 @@ export class ModelVersion {
   }
 
   toDate(): Date {
-    const v = this._value.startsWith("v") ? this._value.slice(1) : this._value;
-    const year = Number(v.slice(0, 4));
-    const month = Number(v.slice(4, 6)) - 1;
-    const day = Number(v.slice(6, 8));
-    const hour = Number(v.slice(8, 10));
-    const minute = Number(v.slice(10, 12));
+    const year = Number(this._value.slice(0, 4));
+    const month = Number(this._value.slice(4, 6)) - 1;
+    const day = Number(this._value.slice(6, 8));
+    const hour = Number(this._value.slice(8, 10));
+    const minute = Number(this._value.slice(10, 12));
     const date = new Date(year, month, day, hour, minute);
     if (Number.isNaN(date.getTime())) {
       throw new ValidationError("モデルバージョンの日時が解釈できません", {

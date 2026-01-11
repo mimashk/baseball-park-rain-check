@@ -13,6 +13,8 @@ import { PrismaClientWrapper } from "../PrismaClientWrapper";
 import { DbError } from "../../../../shared/errors/DbError";
 import { AppError } from "../../../../shared/errors/AppError";
 import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
+import { PrismaClient } from "../prisma/generate/client";
+import { TransactionContext } from "../../../../domain/shared/interfaces/TransactionContext";
 
 type ScheduledGamePersistence = Omit<
   ScheduledGameModel,
@@ -20,13 +22,18 @@ type ScheduledGamePersistence = Omit<
 >;
 
 export class PrismaScheduledGameRepository implements ScheduledGameRepository {
-  private prisma = PrismaClientWrapper.getInstance();
-  constructor() {}
+  constructor(
+    private readonly prisma: PrismaClient = PrismaClientWrapper.getInstance()
+  ) {}
+
+  withTransaction(tx: TransactionContext): ScheduledGameRepository {
+    return new PrismaScheduledGameRepository(tx as unknown as PrismaClient);
+  }
 
   async upsertMany(games: ScheduledGame[]): Promise<void> {
     const data = games.map(this.toPersistence);
     try {
-      await this.prisma.$transaction(
+      await Promise.all(
         data.map((row) =>
           this.prisma.scheduledGame.upsert({
             where: { id: row.id },
@@ -86,6 +93,22 @@ export class PrismaScheduledGameRepository implements ScheduledGameRepository {
       });
     }
     return row ? this.mapRow(row) : null;
+  }
+
+  async findTodayScheduledGames(): Promise<ScheduledGame[]> {
+    const today = new Date();
+    let rows: ScheduledGameModel[];
+    try {
+      rows = await this.prisma.scheduledGame.findMany({
+        where: { date: { gte: today, lte: today } },
+      });
+    } catch (err) {
+      throw new DbError("試合予定データの取得に失敗しました", {
+        cause: err,
+        details: { today },
+      });
+    }
+    return this.mapRows(rows);
   }
 
   private mapRows(rows: ScheduledGameModel[]): ScheduledGame[] {

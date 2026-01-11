@@ -1,48 +1,42 @@
-import { BallParkObservedHourlyWeatherRepository } from "../../../domain/training/repositoryInterface/BallParkObservedHourlyWeatherRepository";
+import { BallParkId } from "../../../domain/scheduledGame/valueObjects/BallPark";
 import { BallParkObservedHourlyWeather } from "../../../domain/training/valueObjects/BallParkObservedHourlyWeather";
 import { BallParkWeatherPoint } from "../../../domain/weatherForecast/valueObjects/BallParkWeatherPoint";
 import { DomainError } from "../../../shared/errors/DomainError";
 import { NotFoundError } from "../../../shared/errors/NotFoundError";
 import { ValidationError } from "../../../shared/errors/ValidationError";
 import { ensureValidDateRange } from "../../shared/utils/ensureValidDateRange";
-import { UpsertObservedHourlyWeatherRequest } from "../dtos/UpsertObservedHourlyWeatherRequest";
-import { UpsertObservedHourlyWeatherResponse } from "../dtos/UpsertObservedHourlyWeatherResponse";
 import { ObservedHourlyWeatherProvider } from "../interfaces/ObservedHourlyWeatherProvider";
 import { mapObservedHourlyWeatherDtoToProps } from "../mapper/mapObservedHourlyWeatherDtoToProps";
 
-export class UpsertObservedHourlyWeatherUsecase {
+export class FetchObservedHourlyWeatherService {
   constructor(
-    private readonly observedHourlyWeatherProvider: ObservedHourlyWeatherProvider,
-    private readonly observedHourlyWeatherRepository: BallParkObservedHourlyWeatherRepository
+    private readonly observedHourlyWeatherProvider: ObservedHourlyWeatherProvider
   ) {}
 
   async execute(
-    request: UpsertObservedHourlyWeatherRequest
-  ): Promise<UpsertObservedHourlyWeatherResponse> {
+    ballParkId: BallParkId,
+    from: Date,
+    to: Date
+  ): Promise<BallParkObservedHourlyWeather[]> {
     const { from: normalizedFrom, to: normalizedTo } = ensureValidDateRange(
       "from",
       "to",
-      request.from,
-      request.to
+      from,
+      to
     );
 
     try {
-      const ballParkWeatherPoint = BallParkWeatherPoint.create(
-        request.ballParkId
-      );
+      const ballParkWeatherPoint = BallParkWeatherPoint.create(ballParkId);
       const observedHourlyWeatherDtos =
         await this.observedHourlyWeatherProvider.fetchHourlyObservations(
           ballParkWeatherPoint.latitude(),
           ballParkWeatherPoint.longitude(),
-          request.from,
-          request.to
+          normalizedFrom,
+          normalizedTo
         );
       const observedHourlyWeathers = observedHourlyWeatherDtos.map((dto) => {
         try {
-          const props = mapObservedHourlyWeatherDtoToProps(
-            dto,
-            request.ballParkId
-          );
+          const props = mapObservedHourlyWeatherDtoToProps(dto, ballParkId);
           return BallParkObservedHourlyWeather.create(props);
         } catch (err: unknown) {
           // どのレコードで落ちたか分かるように補足
@@ -52,12 +46,7 @@ export class UpsertObservedHourlyWeatherUsecase {
           });
         }
       });
-      await this.observedHourlyWeatherRepository.upsertMany(
-        observedHourlyWeathers
-      );
-      return {
-        message: `${request.from.toISOString()}から${request.to.toISOString()}間の観測データを更新しました`,
-      };
+      return observedHourlyWeathers;
     } catch (err) {
       if (
         err instanceof DomainError ||
@@ -68,9 +57,9 @@ export class UpsertObservedHourlyWeatherUsecase {
       }
       throw new DomainError("観測データの更新に失敗しました", {
         cause: err,
-        ballParkId: request.ballParkId,
-        from: request.from,
-        to: request.to,
+        ballParkId,
+        from,
+        to,
       });
     }
   }

@@ -97,3 +97,17 @@ model BallParkObservedHourlyWeather {
   @@unique([ballParkId, date]) // 同一球場・同一日を一意に
   @@index([date])
 }
+
+model CancellationModel {
+  id           String   @id @default(cuid())
+  version      String
+  featureOrder Json     // string[]
+  coefficients Json     // number[]
+  intercept    Float
+  metadata     Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("cancellation_models")
+  @@unique([version])
+}

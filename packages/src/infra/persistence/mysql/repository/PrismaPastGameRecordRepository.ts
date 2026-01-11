@@ -1,9 +1,11 @@
+import { TransactionContext } from "../../../../domain/shared/interfaces/TransactionContext";
 import { PastGameRecordRepository } from "../../../../domain/training/repositoryInterface/PastGameRecordRepository";
 import { PastGameRecord } from "../../../../domain/training/valueObjects/PastGameRecord";
 import { AppError } from "../../../../shared/errors/AppError";
 import { DbError } from "../../../../shared/errors/DbError";
 import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
 import { PrismaClientWrapper } from "../PrismaClientWrapper";
+import { PrismaClient } from "../prisma/generate/client";
 import { PastGameRecordModel } from "../prisma/generate/models/PastGameRecord";
 
 type PastGameRecordPersistence = Omit<
@@ -14,12 +16,18 @@ type PastGameRecordPersistence = Omit<
 export class PrismaPastGameRecordRepository
   implements PastGameRecordRepository
 {
-  private prisma = PrismaClientWrapper.getInstance();
+  constructor(
+    private readonly prisma: PrismaClient = PrismaClientWrapper.getInstance()
+  ) {}
+
+  withTransaction(tx: TransactionContext): PastGameRecordRepository {
+    return new PrismaPastGameRecordRepository(tx as unknown as PrismaClient);
+  }
 
   async upsertMany(records: PastGameRecord[]): Promise<void> {
     const data = records.map(this.toPersistence);
     try {
-      await this.prisma.$transaction(
+      await Promise.all(
         data.map((row) =>
           this.prisma.pastGameRecord.upsert({
             where: { date_homeTeam_awayTeam: row },
