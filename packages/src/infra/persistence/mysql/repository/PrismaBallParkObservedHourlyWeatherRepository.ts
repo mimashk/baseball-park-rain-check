@@ -2,12 +2,12 @@ import { BallParkObservedHourlyWeatherRepository } from "../../../../domain/trai
 import { BallParkObservedHourlyWeather } from "../../../../domain/training/valueObjects/BallParkObservedHourlyWeather";
 import { RainFall } from "../../../../domain/weatherForecast/valueObjects/RainFall";
 import { TemperatureCelsius } from "../../../../domain/weatherForecast/valueObjects/Temperature";
-import { BallParkObservedHourlyWeatherModel } from "../prisma/generate/models";
+import { BallParkObservedHourlyWeather as BallParkObservedHourlyWeatherModel } from "@prisma/client";
 import { BallParkId } from "../../../../domain/scheduledGame/valueObjects/BallPark";
 import { DbError } from "../../../../shared/errors/DbError";
 import { AppError } from "../../../../shared/errors/AppError";
 import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
-import { PrismaClient } from "../prisma/generate/client";
+import { PrismaClient } from "@prisma/client";
 import { TransactionContext } from "../../../../domain/shared/interfaces/TransactionContext";
 import { PrismaClientWrapper } from "../PrismaClientWrapper";
 

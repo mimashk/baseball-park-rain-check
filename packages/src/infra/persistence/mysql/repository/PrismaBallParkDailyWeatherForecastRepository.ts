@@ -1,15 +1,12 @@
-import {
-  BallPark,
-  BallParkId,
-} from "../../../../domain/scheduledGame/valueObjects/BallPark";
+import { BallParkId } from "../../../../domain/scheduledGame/valueObjects/BallPark";
 import { TransactionContext } from "../../../../domain/shared/interfaces/TransactionContext";
 import { BallParkDailyWeatherForecastRepository } from "../../../../domain/weatherForecast/repositoryInterface.ts/BallParkDailyWeatherForecastRepository";
 import { BallParkDailyWeatherForecast } from "../../../../domain/weatherForecast/valueObjects/BallParkDailyWeatherForecast";
 import { AppError } from "../../../../shared/errors/AppError";
 import { DbError } from "../../../../shared/errors/DbError";
 import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
-import { PrismaClient } from "../prisma/generate/client";
-import { BallParkDailyWeatherForecastModel } from "../prisma/generate/models";
+import { PrismaClient } from "@prisma/client";
+import { BallParkDailyWeatherForecast as BallParkDailyWeatherForecastModel } from "@prisma/client";
 import { PrismaClientWrapper } from "../PrismaClientWrapper";
 
 type BallParkDailyWeatherForecastPersistence = Omit<

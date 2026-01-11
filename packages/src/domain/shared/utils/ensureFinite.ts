@@ -1,6 +1,6 @@
 // domain/shared/validation.ts
 
-import { ValidationError } from "../../shared/errors/ValidationError";
+import { ValidationError } from "../../../shared/errors/ValidationError";
 
 export function ensureFiniteNumber(name: string, value: number): void {
   if (!Number.isFinite(value)) {

@@ -2,7 +2,7 @@ import { BallParkId } from "../../scheduledGame/valueObjects/BallPark";
 import {
   ensureDatePresent,
   ensureNumberPresent,
-} from "../../shared/ensurePresent";
+} from "../../shared/utils/ensurePresent";
 import { PrecipitationProbability } from "./PrecipitationProbability";
 import { RainFall } from "./RainFall";
 import { TemperatureCelsius } from "./Temperature";

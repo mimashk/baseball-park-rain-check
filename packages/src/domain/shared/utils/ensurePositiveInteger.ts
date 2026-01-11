@@ -1,4 +1,4 @@
-import { ValidationError } from "../../shared/errors/ValidationError";
+import { ValidationError } from "../../../shared/errors/ValidationError";
 
 export function ensurePositiveInteger(
   label: string,

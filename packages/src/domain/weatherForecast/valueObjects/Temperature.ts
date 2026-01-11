@@ -1,5 +1,5 @@
 import { ValidationError } from "../../../shared/errors/ValidationError";
-import { ensureNumberPresent } from "../../shared/ensurePresent";
+import { ensureNumberPresent } from "../../shared/utils/ensurePresent";
 
 export class TemperatureCelsius {
   private constructor(private readonly value: number) {}

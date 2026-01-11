@@ -1,4 +1,4 @@
-import { Prisma, PrismaClient } from "./prisma/generate/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { TransactionExecutor } from "../../../application/shared/interfaces/TransactionExecutor";
 import { PrismaClientWrapper } from "./PrismaClientWrapper";
 import { TransactionContext } from "../../../domain/shared/interfaces/TransactionContext";

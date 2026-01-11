@@ -8,6 +8,6 @@ export interface ScheduledGameRepository {
   upsertMany(scheduledGames: ScheduledGame[]): Promise<void>;
   updateStatus(gameId: GameId, status: GameStatusType): Promise<void>;
   findByDate(from: Date, to: Date): Promise<ScheduledGame[]>;
-  findTodayScheduledGames(): Promise<ScheduledGame[]>;
+  findAtDate(date: Date): Promise<ScheduledGame[]>;
   findById(id: GameId): Promise<ScheduledGame | null>;
 }

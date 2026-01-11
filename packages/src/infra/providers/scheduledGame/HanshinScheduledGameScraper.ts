@@ -69,7 +69,7 @@ export class HanshinScheduledGameScraper {
       const $ = cheerio.load(html);
 
       // 1) 「試合一覧コンテナ」だけにスコープを絞る
-      const container = $("#calendar-list-cont");
+      const container = $("#article");
       if (!container.length) {
         throw new InfrastructureError(
           "mapping",
@@ -77,11 +77,15 @@ export class HanshinScheduledGameScraper {
           { details: { year, month } }
         );
       }
+      const table = container.is("table")
+        ? container
+        : container.find("table").first();
+      const rows = table.find("tbody tr");
 
       const results: ScheduledGameInfo[] = [];
 
       // 2) container 内の tr を走査
-      container.find("tbody tr").each((_, tr) => {
+      rows.each((_, tr) => {
         const row = $(tr);
 
         // 日付は th で取得する
@@ -90,7 +94,7 @@ export class HanshinScheduledGameScraper {
         if (day === null) return; // 日付取れない行はスキップ
 
         // ---- 残りは .match_info から ----
-        const matchInfo = row.find("td.match_info").first();
+        const matchInfo = row.find("td.match_info, td.match-info").first();
         if (!matchInfo.length) return;
 
         const startTime = this.emptyToNull(
@@ -146,7 +150,7 @@ export class HanshinScheduledGameScraper {
         "試合情報のパースに失敗しました",
         {
           cause: err,
-          details: { html },
+          details: { htmlBody: this.extractBodyForDebug(html) },
         }
       );
     }
@@ -191,5 +195,16 @@ export class HanshinScheduledGameScraper {
       awayTeam: this.normalizeText(m[1]),
       homeTeam: this.normalizeText(m[2]),
     };
+  }
+
+  private extractBodyForDebug(html: string, limit = 4000): string {
+    try {
+      const $ = cheerio.load(html);
+      const body = $("body").html() ?? "";
+      return body.slice(0, limit);
+    } catch {
+      // cheerio で失敗しても全文ではなく上限付きで返す
+      return html.slice(0, limit);
+    }
   }
 }

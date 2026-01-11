@@ -1,5 +1,5 @@
 import { DomainError } from "../../../shared/errors/DomainError";
-import { ensureValidDate } from "../../shared/ensureValidDate";
+import { ensureValidDate } from "../../shared/utils/ensureValidDate";
 import { BallPark } from "../valueObjects/BallPark";
 import { BaseballTeam } from "../valueObjects/BaseballTeam";
 import { GameCategory } from "../valueObjects/GameCategory";

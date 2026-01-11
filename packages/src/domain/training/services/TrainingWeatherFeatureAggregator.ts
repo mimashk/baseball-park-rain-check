@@ -22,7 +22,6 @@ export class TrainingWeatherFeatureAggregator {
       avgTemperature: TemperatureCelsius.from(avgTemp),
       avgRainFall: RainFall.fromMillimeters(avgRain),
       rainOccurRate,
-      sampleCount: hourly.length,
     });
   }
 

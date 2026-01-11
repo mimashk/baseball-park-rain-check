@@ -1,7 +1,7 @@
 import { DomainError } from "../../../shared/errors/DomainError";
 import { BallPark } from "../../scheduledGame/valueObjects/BallPark";
 import { BaseballTeam } from "../../scheduledGame/valueObjects/BaseballTeam";
-import { ensureValidDate } from "../../shared/ensureValidDate";
+import { ensureValidDate } from "../../shared/utils/ensureValidDate";
 import { GameCancelled } from "./GameCancelled";
 
 export interface CreatePastGameRecordProps {

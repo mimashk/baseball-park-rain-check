@@ -1,19 +1,27 @@
-import { DomainError } from "packages/src/shared/errors/DomainError";
+import { DomainError } from "../../../packages/src/shared/errors/DomainError";
 import { createInfraContainer } from "../../../packages/src/infra/di/container";
-import { ValidationError } from "packages/src/shared/errors/ValidationError";
-import { NotFoundError } from "packages/src/shared/errors/NotFoundError";
-import { AppError } from "packages/src/shared/errors/AppError";
+import { ValidationError } from "../../../packages/src/shared/errors/ValidationError";
+import { NotFoundError } from "../../../packages/src/shared/errors/NotFoundError";
+import { AppError } from "../../../packages/src/shared/errors/AppError";
 
 const container = createInfraContainer();
 
-const from = new Date();
+const from =
+  process.env.FIXED_FROM_DATE != null
+    ? new Date(process.env.FIXED_FROM_DATE) // 例: FIXED_FROM_DATE=2025-06-01T00:00:00+09:00
+    : new Date();
 const to = new Date(from);
 to.setDate(to.getDate() + 7);
 async function main() {
   const scope = container.createScope();
 
-  const usecase = scope.resolve("refreshScheduledGameUsecase");
-  await usecase.execute({ from, to });
+  try {
+    const usecase = scope.resolve("refreshScheduledGameUsecase");
+    await usecase.execute({ from, to });
+  } finally {
+    const prisma = scope.resolve("prisma");
+    await prisma.$disconnect();
+  }
 }
 
 main().catch((err) => {

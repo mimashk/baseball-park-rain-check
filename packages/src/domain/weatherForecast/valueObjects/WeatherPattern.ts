@@ -1,19 +1,18 @@
+import { ensureNonNegativeInteger } from "../../shared/utils/ensureNonNegativeInteger";
 import { DomainError } from "../../../shared/errors/DomainError";
-import { ValidationError } from "../../../shared/errors/ValidationError";
-import { ensurePositiveInteger } from "../../shared/ensurePositiveInteger";
-import { WeatherCodeCatalog } from "./WeatherCodeCatalog";
+import { WeatherCategory, WeatherCodeCatalog } from "./WeatherCodeCatalog";
 
 export class WeatherPattern {
   private constructor(
     private readonly _code: number,
-    private readonly _labelJa: string
+    private readonly _labelJa: string,
+    private readonly _category: WeatherCategory
   ) {}
 
   static fromCode(code: number): WeatherPattern {
     this.validate(code);
-    const label =
-      WeatherCodeCatalog[code as keyof typeof WeatherCodeCatalog];
-    return new WeatherPattern(code, label);
+    const label = WeatherCodeCatalog[code];
+    return new WeatherPattern(code, label.labelJa, label.category);
   }
 
   labelJa(): string {
@@ -21,7 +20,7 @@ export class WeatherPattern {
   }
 
   private static validate(code: number): void {
-    const normalizedCode = ensurePositiveInteger("天気コード", code);
+    const normalizedCode = ensureNonNegativeInteger("天気コード", code);
     if (!Object.keys(WeatherCodeCatalog).includes(normalizedCode.toString())) {
       throw new DomainError("未知の天気コードです", { code });
     }

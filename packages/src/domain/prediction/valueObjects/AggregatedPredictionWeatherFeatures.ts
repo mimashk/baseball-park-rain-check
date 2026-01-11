@@ -1,5 +1,5 @@
 import { ValidationError } from "../../../shared/errors/ValidationError";
-import { ensurePositiveInteger } from "../../shared/ensurePositiveInteger";
+import { ensurePositiveInteger } from "../../shared/utils/ensurePositiveInteger";
 import { PrecipitationProbability } from "../../weatherForecast/valueObjects/PrecipitationProbability";
 import { RainFall } from "../../weatherForecast/valueObjects/RainFall";
 import { TemperatureCelsius } from "../../weatherForecast/valueObjects/Temperature";

@@ -5,7 +5,7 @@ import { DailyForecastResponse } from "../types/OpenMeteoTypes";
 
 export class DailyForecastMapper {
   static toDto(response: DailyForecastResponse): DailyWeatherForecastDto[] {
-    const daily = response.dailyForecast();
+    const daily = response.daily();
     const utcOffsetSeconds = response.utcOffsetSeconds();
 
     if (!daily)
@@ -23,8 +23,8 @@ export class DailyForecastMapper {
     });
 
     const weatherCodes = daily.variables(0)!.valuesArray();
-    const temperaturesMin = daily.variables(1)!.valuesArray();
-    const temperaturesMax = daily.variables(2)!.valuesArray();
+    const temperaturesMax = daily.variables(1)!.valuesArray();
+    const temperaturesMin = daily.variables(2)!.valuesArray();
     const precipitationProbabilities = daily.variables(3)!.valuesArray();
     const precipitationAmounts = daily.variables(4)!.valuesArray();
 
@@ -41,7 +41,7 @@ export class DailyForecastMapper {
         weatherCode: weatherCode,
         temperatureMin: temperatureMin,
         temperatureMax: temperatureMax,
-        precipitationProbability: precipitationProbability,
+        precipitationProbability: precipitationProbability / 100,
         rainFall: precipitationAmount,
       });
     }

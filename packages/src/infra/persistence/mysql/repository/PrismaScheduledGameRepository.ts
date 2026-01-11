@@ -1,4 +1,4 @@
-import { ScheduledGameModel } from "../prisma/generate/models/ScheduledGame";
+import { ScheduledGame as ScheduledGameModel } from "@prisma/client";
 import { ScheduledGame } from "../../../../domain/scheduledGame/entities/ScheduledGame";
 import { ScheduledGameRepository } from "../../../../domain/scheduledGame/repositoryInterface/ScheduledGameRepository";
 import { BallPark } from "../../../../domain/scheduledGame/valueObjects/BallPark";
@@ -13,7 +13,7 @@ import { PrismaClientWrapper } from "../PrismaClientWrapper";
 import { DbError } from "../../../../shared/errors/DbError";
 import { AppError } from "../../../../shared/errors/AppError";
 import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
-import { PrismaClient } from "../prisma/generate/client";
+import { PrismaClient } from "@prisma/client";
 import { TransactionContext } from "../../../../domain/shared/interfaces/TransactionContext";
 
 type ScheduledGamePersistence = Omit<
@@ -95,17 +95,16 @@ export class PrismaScheduledGameRepository implements ScheduledGameRepository {
     return row ? this.mapRow(row) : null;
   }
 
-  async findTodayScheduledGames(): Promise<ScheduledGame[]> {
-    const today = new Date();
+  async findAtDate(date: Date): Promise<ScheduledGame[]> {
     let rows: ScheduledGameModel[];
     try {
       rows = await this.prisma.scheduledGame.findMany({
-        where: { date: { gte: today, lte: today } },
+        where: { date: { gte: date, lte: date } },
       });
     } catch (err) {
       throw new DbError("試合予定データの取得に失敗しました", {
         cause: err,
-        details: { today },
+        details: { date },
       });
     }
     return this.mapRows(rows);

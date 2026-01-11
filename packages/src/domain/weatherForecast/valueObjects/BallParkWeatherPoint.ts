@@ -13,7 +13,7 @@ type BallParkWeatherPointItem = {
 export const BallParkWeatherPointCatalog: Partial<
   Record<BallParkId, BallParkWeatherPointItem>
 > = {
-  1: {
+  2: {
     prefectureName: "兵庫県",
     municipalitiesName: "西宮市",
     latitude: 34.72113,

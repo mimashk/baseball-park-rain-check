@@ -5,7 +5,7 @@ import { HourlyForecastResponse } from "../types/OpenMeteoTypes";
 
 export class HourlyForecastMapper {
   static toDto(response: HourlyForecastResponse): HourlyWeatherForecastDto[] {
-    const hourly = response.hourlyForecast();
+    const hourly = response.hourly();
     const utcOffsetSeconds = response.utcOffsetSeconds();
     if (!hourly)
       throw new InfrastructureError(
@@ -37,7 +37,7 @@ export class HourlyForecastMapper {
         date: time,
         weatherCode: weatherCode,
         temperature: temperature,
-        precipitationProbability: precipitationProbability,
+        precipitationProbability: precipitationProbability / 100,
         rainFall: precipitationAmount,
       });
     }

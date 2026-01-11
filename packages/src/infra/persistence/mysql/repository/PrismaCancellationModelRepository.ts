@@ -4,7 +4,7 @@ import {
   CancellationModel as CancellationModelModel,
   Prisma,
   PrismaClient,
-} from "../prisma/generate/client";
+} from "@prisma/client";
 import { PrismaClientWrapper } from "../PrismaClientWrapper";
 import { ModelVersion } from "../../../../domain/model/valueObjects/ModelVersion";
 import { TransactionContext } from "../../../../domain/shared/interfaces/TransactionContext";

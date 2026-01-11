@@ -1,5 +1,5 @@
 import { DomainError } from "../../../shared/errors/DomainError";
-import { ensureTextPresent } from "../../shared/ensurePresent";
+import { ensureTextPresent } from "../../shared/utils/ensurePresent";
 
 export const GameCategoryType = {
   REGULAR_SEASON: "セ・リーグ公式戦",

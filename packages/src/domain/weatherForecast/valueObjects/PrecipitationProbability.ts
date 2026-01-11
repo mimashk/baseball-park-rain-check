@@ -1,6 +1,6 @@
 import { ValidationError } from "../../../shared/errors/ValidationError";
-import { ensureNumberPresent } from "../../shared/ensurePresent";
-import { ensureProbability } from "../../shared/ensureProbability";
+import { ensureNumberPresent } from "../../shared/utils/ensurePresent";
+import { ensureProbability } from "../../shared/utils/ensureProbability";
 
 export class PrecipitationProbability {
   private constructor(private readonly percent: number) {}

@@ -1,6 +1,6 @@
 import { BallParkId } from "../../scheduledGame/valueObjects/BallPark";
-import { ensureNumberPresent } from "../../shared/ensurePresent";
-import { ensureValidDate } from "../../shared/ensureValidDate";
+import { ensureNumberPresent } from "../../shared/utils/ensurePresent";
+import { ensureValidDate } from "../../shared/utils/ensureValidDate";
 import { RainFall } from "../../weatherForecast/valueObjects/RainFall";
 import { TemperatureCelsius } from "../../weatherForecast/valueObjects/Temperature";
 import { RainfallOccurred } from "./RainfallOccurred";

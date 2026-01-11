@@ -26,7 +26,7 @@ export class PredictCancellationUseCase {
     req: PredictCancellationRequest
   ): Promise<PredictCancellationResponse> {
     try {
-      const games = await this.gameRepository.findTodayScheduledGames();
+      const games = await this.gameRepository.findAtDate(req.todayDate);
       if (games.length === 0)
         throw new NotFoundError("今日の試合が見つかりません");
       // 一旦1試合のみなので先頭を取得

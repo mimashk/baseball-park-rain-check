@@ -17,6 +17,7 @@ export type PastGameInfo = {
 export class HanshinPastGameScraper {
   async fetchYearlyGames(params: { year: number }): Promise<PastGameInfo[]> {
     const html = await this.fetchHtml(params.year);
+    await this.sleep(3000);
     return this.parseYearlyGames(html, params.year);
   }
   private async fetchHtml(year: number): Promise<string> {
@@ -61,7 +62,7 @@ export class HanshinPastGameScraper {
       const $ = cheerio.load(html);
 
       // 1) 「試合一覧コンテナ」だけにスコープを絞る
-      const container = $("#dmain_f");
+      const container = $("#dmain_f table.Base tbody");
       if (!container.length) {
         throw new InfrastructureError(
           "mapping",
@@ -69,13 +70,14 @@ export class HanshinPastGameScraper {
         );
       }
       const results: PastGameInfo[] = [];
+      const rows = container.find("tr");
+      if (!rows.length) return [];
 
       // 2) container 内の tr を走査
-      container.find('tbody tr[onmouseover="M_over(this)"]').each((_, tr) => {
+      rows.each((_, tr) => {
         const row = $(tr);
-
         const tds = row.find("td");
-
+        if (tds.length < 6) return; // ヘッダー/空行を弾く
         // index: 0=日付, 2=対戦相手, 3=球場, 4=ホーム/ビジター区分, 5=開始時刻, 18=試合結果
         // 日付
         const { month, day } = this.extractDate(tds.eq(0).text().trim());
@@ -140,7 +142,6 @@ export class HanshinPastGameScraper {
         "試合情報のパースに失敗しました",
         {
           cause: err,
-          details: { html },
         }
       );
     }
@@ -176,5 +177,9 @@ export class HanshinPastGameScraper {
     const m = text.match(/\b(\d{1,2}:\d{1,2})\b/);
     if (!m) return null;
     return m[1];
+  }
+
+  private sleep(ms: number) {
+    return new Promise((r) => setTimeout(r, ms));
   }
 }

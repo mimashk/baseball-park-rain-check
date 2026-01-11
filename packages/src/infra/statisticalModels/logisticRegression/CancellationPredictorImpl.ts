@@ -37,7 +37,6 @@ export class CancellationPredictorImpl implements CancellationPredictor {
       avgTemperature: features.avgTemperature,
       avgRainFall: features.avgRainFall,
       rainOccurRate: features.rainOccurRate,
-      sampleCount: features.sampleCount,
     };
 
     // 1) 特徴ベクトル化（欠損/非数チェック含む）

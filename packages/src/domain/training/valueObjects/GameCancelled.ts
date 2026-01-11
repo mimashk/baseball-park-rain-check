@@ -1,4 +1,4 @@
-import { ensureBooleanPresent } from "../../shared/ensurePresent";
+import { ensureBooleanPresent } from "../../shared/utils/ensurePresent";
 
 export type GameCancelledType = "CANCELLED" | "PLAYED";
 

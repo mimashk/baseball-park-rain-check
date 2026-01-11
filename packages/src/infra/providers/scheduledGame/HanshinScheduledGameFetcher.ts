@@ -16,7 +16,10 @@ export class HanshinScheduledGameFetcher implements ScheduledGameFetcher {
         this.scraper.fetchMonthlyGames({ year, month })
       )
     );
-    return monthly.flat().map((raw) => this.formatter.toDto(raw));
+    return monthly
+      .flat()
+      .map((raw) => this.formatter.toDto(raw))
+      .filter((dto): dto is ScheduledGameDto => dto !== null);
   }
 
   private rangeMonths(from: Date, to: Date) {

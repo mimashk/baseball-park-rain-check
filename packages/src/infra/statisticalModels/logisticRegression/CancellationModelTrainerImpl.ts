@@ -19,7 +19,8 @@ export class CancellationModelTrainerImpl implements CancellationModelTrainer {
     const { normalized, mean, std } =
       CancellationFeaturePreprocessor.standardize(features);
     try {
-      const X = new Matrix(normalized);
+      const normalizedWithBias = normalized.map((v) => [...v, 1]);
+      const X = new Matrix(normalizedWithBias);
       const y = Matrix.columnVector(labels);
 
       const logisticRegression = new LogisticRegression({
@@ -27,9 +28,11 @@ export class CancellationModelTrainerImpl implements CancellationModelTrainer {
         learningRate: 5e-3,
       });
       logisticRegression.train(X, y);
+      console.log(logisticRegression);
 
-      const coefficients = logisticRegression.weights.to1DArray(); // featureOrderと同順
-      const intercept = logisticRegression.bias; // ライブラリAPIに合わせて取得
+      const weights = logisticRegression.classifiers[0].weights.to1DArray();
+      const intercept = weights[weights.length - 1];
+      const coefficients = weights.slice(0, -1);
 
       return {
         date: new Date(),

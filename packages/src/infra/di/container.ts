@@ -8,7 +8,7 @@ import {
   AwilixContainer,
 } from "awilix";
 
-import { PrismaClient } from "../persistence/mysql/prisma/generate/client";
+import { PrismaClient } from "@prisma/client";
 import { PrismaClientWrapper } from "../persistence/mysql/PrismaClientWrapper";
 import { PrismaTransactionExecutor } from "../persistence/mysql/PrismaTransactionExecutor";
 import { PrismaScheduledGameRepository } from "../persistence/mysql/repository/PrismaScheduledGameRepository";
@@ -53,6 +53,7 @@ import { FetchObservedHourlyWeatherService } from "../../application/training/se
 import { TrainModelService } from "../../application/training/services/TrainModelService";
 import { UpdateGameStatusService } from "../../application/scheduledGame/services/UpdateGameStatusService";
 import { PrismaBallParkHourlyWeatherForecastRepository } from "../persistence/mysql/repository/PrismaBallParkHourlyWeatherForecastRepository";
+import { BallParkNameMapperImpl } from "../providers/shared/BallParkNameMapperImpl";
 
 const defaultCloudSchedulerConfig: CloudSchedulerConfig = {
   projectId: "baseball-park-rain-check",
@@ -71,6 +72,7 @@ export type InfraCradle = {
   transactionExecutor: PrismaTransactionExecutor;
 
   teamNameMapper: TeamNameMapperImpl;
+  ballParkNameMapper: BallParkNameMapperImpl;
   gameStatusMapper: GameStatusMapperImpl;
 
   gameStatusScraper: GameStatusScraper;
@@ -138,6 +140,11 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
 
     teamNameMapper: asClass(TeamNameMapperImpl, {
       lifetime: Lifetime.SINGLETON,
+      injectionMode: InjectionMode.CLASSIC, // 追加
+    }),
+    ballParkNameMapper: asClass(BallParkNameMapperImpl, {
+      lifetime: Lifetime.SINGLETON,
+      injectionMode: InjectionMode.CLASSIC,
     }),
     gameStatusMapper: asClass(GameStatusMapperImpl, {
       lifetime: Lifetime.SINGLETON,
@@ -161,8 +168,8 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
       lifetime: Lifetime.SINGLETON,
     }),
     scheduledGameFormatter: asFunction(
-      ({ teamNameMapper }: InfraCradle) =>
-        new HanshinScheduledGameFormatter(teamNameMapper),
+      ({ teamNameMapper, ballParkNameMapper }: InfraCradle) =>
+        new HanshinScheduledGameFormatter(teamNameMapper, ballParkNameMapper),
       { lifetime: Lifetime.SINGLETON }
     ),
     scheduledGameFetcher: asFunction(
@@ -178,8 +185,8 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
       lifetime: Lifetime.SINGLETON,
     }),
     pastGameFormatter: asFunction(
-      ({ teamNameMapper }: InfraCradle) =>
-        new HanshinPastGameFormatter(teamNameMapper),
+      ({ teamNameMapper, ballParkNameMapper }: InfraCradle) =>
+        new HanshinPastGameFormatter(teamNameMapper, ballParkNameMapper),
       { lifetime: Lifetime.SINGLETON }
     ),
     pastGameFetcher: asFunction(

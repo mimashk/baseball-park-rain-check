@@ -5,8 +5,8 @@ import { BallParkHourlyWeatherForecast } from "../../../../domain/weatherForecas
 import { AppError } from "../../../../shared/errors/AppError";
 import { DbError } from "../../../../shared/errors/DbError";
 import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
-import { PrismaClient } from "../prisma/generate/client";
-import { BallParkHourlyWeatherForecastModel } from "../prisma/generate/models";
+import { PrismaClient } from "@prisma/client";
+import { BallParkHourlyWeatherForecast as BallParkHourlyWeatherForecastModel } from "@prisma/client";
 import { PrismaClientWrapper } from "../PrismaClientWrapper";
 
 type BallParkHourlyWeatherForecastPersistence = Omit<

@@ -1,5 +1,5 @@
 import { v7 as uuidv7 } from "uuid";
-import { ensureTextPresent } from "../../shared/ensurePresent";
+import { ensureTextPresent } from "../../shared/utils/ensurePresent";
 
 export class GameId {
   private constructor(readonly value: string) {}

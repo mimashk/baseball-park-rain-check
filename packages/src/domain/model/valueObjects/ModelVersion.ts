@@ -1,6 +1,6 @@
 import { ValidationError } from "../../../shared/errors/ValidationError";
-import { ensureTextPresent } from "../../shared/ensurePresent";
-import { ensureValidDate } from "../../shared/ensureValidDate";
+import { ensureTextPresent } from "../../shared/utils/ensurePresent";
+import { ensureValidDate } from "../../shared/utils/ensureValidDate";
 
 export class ModelVersion {
   private constructor(private readonly _value: string) {}

@@ -3,7 +3,7 @@ import { ValidationError } from "../../../shared/errors/ValidationError";
 import {
   ensureFiniteArray,
   ensureFiniteNumber,
-} from "../../shared/ensureFinite";
+} from "../../shared/utils/ensureFinite";
 import { ModelVersion } from "./ModelVersion";
 
 export interface CancellationModelProps {

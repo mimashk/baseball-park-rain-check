@@ -1,20 +1,24 @@
-import { DomainError } from "packages/src/shared/errors/DomainError";
+import { DomainError } from "../../../packages/src/shared/errors/DomainError";
 import { createInfraContainer } from "../../../packages/src/infra/di/container";
-import { ValidationError } from "packages/src/shared/errors/ValidationError";
-import { NotFoundError } from "packages/src/shared/errors/NotFoundError";
-import { AppError } from "packages/src/shared/errors/AppError";
+import { ValidationError } from "../../../packages/src/shared/errors/ValidationError";
+import { NotFoundError } from "../../../packages/src/shared/errors/NotFoundError";
+import { AppError } from "../../../packages/src/shared/errors/AppError";
 
 const container = createInfraContainer();
 // 一旦甲子園のみ
-const ballParkId = 1;
+const ballParkId = 2;
 // 一旦3日分の予報を取得
 const forecastDays = 3;
 
 async function main() {
   const scope = container.createScope();
-
-  const usecase = scope.resolve("refreshDailyWeatherForecastsUsecase");
-  await usecase.execute({ ballParkId, forecastDays });
+  try {
+    const usecase = scope.resolve("refreshDailyWeatherForecastsUsecase");
+    await usecase.execute({ ballParkId, forecastDays });
+  } finally {
+    const prisma = scope.resolve("prisma");
+    await prisma.$disconnect();
+  }
 }
 
 main().catch((err) => {

@@ -7,7 +7,7 @@ export class HourlyObservationMapper {
   static toDto(
     response: HourlyObservationResponse
   ): ObservedHourlyWeatherDto[] {
-    const hourly = response.hourlyObservation();
+    const hourly = response.hourly();
     const utcOffsetSeconds = response.utcOffsetSeconds();
     if (!hourly)
       if (!hourly)

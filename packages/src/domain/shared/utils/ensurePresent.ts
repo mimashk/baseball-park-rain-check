@@ -1,4 +1,4 @@
-import { ValidationError } from "../../shared/errors/ValidationError";
+import { ValidationError } from "../../../shared/errors/ValidationError";
 
 export function ensureNumberPresent(
   label: string,
@@ -17,7 +17,7 @@ export function ensureDatePresent(
   if (value === undefined || value === null) {
     throw new ValidationError(`${label} は必須です`);
   }
-  if (value instanceof Date) {
+  if (!(value instanceof Date) || Number.isNaN(value.getTime())) {
     throw new ValidationError(`${label} は日付ではありません`);
   }
   return value;

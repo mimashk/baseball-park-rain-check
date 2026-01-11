@@ -32,7 +32,7 @@ export class RunTrainingPipelineUseCase {
       request.from,
       request.to
     );
-    const model = await this.trainModelService.execute(
+    const { model, usedWeathers } = await this.trainModelService.execute(
       pastGames,
       weathers,
       request.timeWindowBeforeHours,
@@ -40,7 +40,9 @@ export class RunTrainingPipelineUseCase {
     );
     await this.txExecutor.run(async (trx) => {
       await this.pastGameRepository.withTransaction(trx).upsertMany(pastGames);
-      await this.weatherRepository.withTransaction(trx).upsertMany(weathers);
+      await this.weatherRepository
+        .withTransaction(trx)
+        .upsertMany(usedWeathers);
       await this.modelRepository.withTransaction(trx).save(model);
     });
     return {

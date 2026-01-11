@@ -1,5 +1,5 @@
 import { ValidationError } from "../../../shared/errors/ValidationError";
-import { ensureTextPresent } from "../../shared/ensurePresent";
+import { ensureTextPresent } from "../../shared/utils/ensurePresent";
 
 export const BallParkCatalog = {
   TOKYO_DOME: { id: 1, labelJa: "東京ドーム", roof: "DOME" },
@@ -48,6 +48,9 @@ type BallParkCatalogItem =
   (typeof BallParkCatalog)[keyof typeof BallParkCatalog];
 
 type BallParkRoofType = "OPEN_AIR" | "DOME" | "UNKNOWN";
+
+export type KnownBallParkName =
+  (typeof BallParkCatalog)[keyof typeof BallParkCatalog]["labelJa"];
 
 export class BallPark {
   private constructor(

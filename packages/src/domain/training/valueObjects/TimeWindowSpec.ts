@@ -1,6 +1,6 @@
 import { ValidationError } from "../../../shared/errors/ValidationError";
-import { ensurePositiveInteger } from "../../shared/ensurePositiveInteger";
-import { ensureValidDate } from "../../shared/ensureValidDate";
+import { ensurePositiveInteger } from "../../shared/utils/ensurePositiveInteger";
+import { ensureValidDate } from "../../shared/utils/ensureValidDate";
 
 export class TimeWindowSpec {
   private constructor(

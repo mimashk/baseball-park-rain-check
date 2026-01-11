@@ -5,8 +5,8 @@ import { AppError } from "../../../../shared/errors/AppError";
 import { DbError } from "../../../../shared/errors/DbError";
 import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
 import { PrismaClientWrapper } from "../PrismaClientWrapper";
-import { PrismaClient } from "../prisma/generate/client";
-import { PastGameRecordModel } from "../prisma/generate/models/PastGameRecord";
+import { PrismaClient } from "@prisma/client";
+import { PastGameRecord as PastGameRecordModel } from "@prisma/client";
 
 type PastGameRecordPersistence = Omit<
   PastGameRecordModel,
@@ -30,7 +30,13 @@ export class PrismaPastGameRecordRepository
       await Promise.all(
         data.map((row) =>
           this.prisma.pastGameRecord.upsert({
-            where: { date_homeTeam_awayTeam: row },
+            where: {
+              date_homeTeam_awayTeam: {
+                date: row.date,
+                homeTeam: row.homeTeam,
+                awayTeam: row.awayTeam,
+              },
+            },
             create: row,
             update: row,
           })

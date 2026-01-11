@@ -9,19 +9,18 @@ export interface OpenMeteoDataset {
 }
 export interface OpenMeteoResponse {
   utcOffsetSeconds(): number;
-  dailyForecast(): OpenMeteoDataset | undefined;
-  hourlyForecast(): OpenMeteoDataset | undefined;
-  hourlyObservation(): OpenMeteoDataset | undefined;
+  daily(): OpenMeteoDataset | undefined;
+  hourly(): OpenMeteoDataset | undefined;
 }
 export type DailyForecastResponse = Pick<
   OpenMeteoResponse,
-  "utcOffsetSeconds" | "dailyForecast"
+  "utcOffsetSeconds" | "daily"
 >;
 export type HourlyForecastResponse = Pick<
   OpenMeteoResponse,
-  "utcOffsetSeconds" | "hourlyForecast"
+  "utcOffsetSeconds" | "hourly"
 >;
 export type HourlyObservationResponse = Pick<
   OpenMeteoResponse,
-  "utcOffsetSeconds" | "hourlyObservation"
+  "utcOffsetSeconds" | "hourly"
 >;

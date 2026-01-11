@@ -6,7 +6,6 @@ export function mapTrainingExampleToRow(example: TrainingExample): TrainingRow {
     avgTemperature: example.features.avgTemperature.toNumber(),
     avgRainFall: example.features.avgRainFall.toNumber(),
     rainOccurRate: example.features.rainOccurRate,
-    sampleCount: example.features.sampleCount,
   };
   return {
     y: example.label.toNumber(),
