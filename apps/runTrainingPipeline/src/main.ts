@@ -8,7 +8,7 @@ const container = createInfraContainer();
 
 const ballParkId = 2;
 const to = new Date();
-// [REMIND] 2025年のデータがまだないのでこの対応
+// [TODO] 2025年のデータがまだないのでこの対応
 to.setMonth(to.getMonth() - 14); // 今日から1か月前
 const from = new Date(to);
 from.setFullYear(from.getFullYear() - 10); // to から5年前

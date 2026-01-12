@@ -12,6 +12,7 @@ export const BaseballTeamDictionary: Record<string, BaseballTeamType> = {
   ヤ: "東京ヤクルトスワローズ",
   ヤクルト: "東京ヤクルトスワローズ",
   デイ: "横浜DeNAベイスターズ",
+  ディ: "横浜DeNAベイスターズ",
   DeNA: "横浜DeNAベイスターズ",
   オ: "オリックスバファローズ",
   オリックス: "オリックスバファローズ",

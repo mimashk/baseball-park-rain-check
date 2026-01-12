@@ -1,8 +1,8 @@
+import { ScheduledGame } from "../../../domain/scheduledGame/entities/ScheduledGame";
 import { CancellationModelRepository } from "../../../domain/model/repositoryInterface/CancellationModelRepository";
 import { PredictionWeatherFeatureAggregator } from "../../../domain/prediction/services/PredictionWeatherFeatureAggregator";
 import { CancellationProbability } from "../../../domain/prediction/valueObjects/CancellationProbability";
 import { ScheduledGameRepository } from "../../../domain/scheduledGame/repositoryInterface/ScheduledGameRepository";
-import { GameId } from "../../../domain/scheduledGame/valueObjects/GameId";
 import { TimeWindowSpec } from "../../../domain/training/valueObjects/TimeWindowSpec";
 import { DomainError } from "../../../shared/errors/DomainError";
 import { NotFoundError } from "../../../shared/errors/NotFoundError";
@@ -13,6 +13,7 @@ import { PredictCancellationResponse } from "../dtos/PredictCancellationResponse
 import { CancellationPredictor } from "../interfaces/CancellationPredictor";
 import { mapAggregatedPredictionWeatherFeaturesToRow } from "../mapper/mapAggregatedPredictionWeatherFeaturesToRow";
 import { mapCancellationModelToDto } from "../mapper/mapCancellationModelToDto";
+import { BallParkCatalog } from "../../../domain/scheduledGame/valueObjects/BallPark";
 
 export class PredictCancellationUseCase {
   constructor(
@@ -27,10 +28,25 @@ export class PredictCancellationUseCase {
   ): Promise<PredictCancellationResponse> {
     try {
       const games = await this.gameRepository.findAtDate(req.todayDate);
+
+      // [TODO] 消す
+      if (games.length === 0 && process.env.USE_TEST_GAME === "1") {
+        const date = new Date(req.todayDate);
+        date.setHours(14, 0, 0, 0);
+        const testGame = ScheduledGame.create({
+          date, // その日の任意時刻でもOK
+          category: "オープン戦", // 既知カテゴリを使う
+          homeTeam: "阪神タイガース", // BaseballTeamTypeにある名前
+          awayTeam: "読売ジャイアンツ",
+          ballPark: BallParkCatalog.HANSHIN_KOSHIEN_STADIUM.labelJa,
+        });
+        games.push(testGame);
+      }
       if (games.length === 0)
         throw new NotFoundError("今日の試合が見つかりません");
       // 一旦1試合のみなので先頭を取得
       const game = games[0];
+
       if (!game) throw new NotFoundError("今日の試合が見つかりません");
 
       const model = await this.modelRepository.findLatest();
@@ -78,6 +94,7 @@ export class PredictCancellationUseCase {
         features:
           mapAggregatedPredictionWeatherFeaturesToRow(aggregatedFeatures),
       });
+      console.log("雨天中止確率は", probability, "です");
       return {
         message: "予測に成功しました",
         probability: CancellationProbability.from(probability).toNumber(),

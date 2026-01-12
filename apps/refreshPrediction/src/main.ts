@@ -9,7 +9,7 @@ const container = createInfraContainer();
 const timeWindowBeforeHours = 3;
 const timeWindowAfterHours = 3;
 const forecastDays = 3;
-const todayDate = new Date("2026-02-08T00:00:00+09:00");
+const todayDate = new Date();
 async function main() {
   const scope = container.createScope();
 

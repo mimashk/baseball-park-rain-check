@@ -8,29 +8,34 @@ export const GameCategoryType = {
   CLIMAX_SERIES: "クライマックスシリーズ",
   JAPAN_SERIES: "日本シリーズ",
   PRACTICE: "練習試合",
+  PRE_SEASON: "プレーシーズンゲーム",
 } as const;
 
 export type GameCategoryType =
   (typeof GameCategoryType)[keyof typeof GameCategoryType];
+type GameCategoryValue = GameCategoryType | string;
 
 export class GameCategory {
-  private constructor(readonly value: GameCategoryType) {}
+  private constructor(readonly value: GameCategoryValue) {}
 
   static from(rawValue: string): GameCategory {
     const value = ensureTextPresent("試合カテゴリ", rawValue); // 空/undefined/nullを弾く
-    if (!this.isGameCategory(rawValue)) {
-      throw new DomainError("不正な試合カテゴリです");
+    const knownOrRaw = this.toKnownOrRaw(value);
+    if (knownOrRaw.length > 30) {
+      throw new DomainError("試合カテゴリが長すぎます");
     }
-    return new GameCategory(rawValue);
-  }
-
-  private static isGameCategory(value: string): value is GameCategoryType {
-    return (Object.values(GameCategoryType) as readonly string[]).includes(
-      value
-    );
+    return new GameCategory(knownOrRaw);
   }
 
   labelJa(): string {
     return this.value;
+  }
+
+  private static toKnownOrRaw(value: string): GameCategoryValue {
+    return (Object.values(GameCategoryType) as readonly string[]).includes(
+      value
+    )
+      ? (value as GameCategoryType)
+      : value;
   }
 }

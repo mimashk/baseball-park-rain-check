@@ -18,12 +18,17 @@ export class HanshinScheduledGameScraper {
     year: number;
     month: number;
   }): Promise<ScheduledGameInfo[]> {
+    // 2月から11月までしかでページがないので、それに合わせてチェックする
+    if (params.month < 2 || params.month > 11) {
+      return [];
+    }
     const html = await this.fetchHtml(params.year, params.month);
     return this.parseMonthlyGames(html, params.year, params.month);
   }
 
   private async fetchHtml(year: number, month: number): Promise<string> {
     const mm = String(month).padStart(2, "0");
+
     const url = `https://hanshintigers.jp/game/schedule/${year}/${mm}l.html`;
 
     let res: Response;
@@ -187,14 +192,27 @@ export class HanshinScheduledGameScraper {
   } {
     // strong の例: "中 - 神" / "中-神" / "中 − 神" など揺れを吸収
     const normalized = text.replace(/[－−—]/g, "-"); // 全角ダッシュ等を "-" に寄せる
-    const m = normalized.match(/^\s*(.+?)\s*-\s*(.+?)\s*$/);
-    if (!m) return { awayTeam: null, homeTeam: null };
+    const match = normalized.match(/^\s*(.+?)\s*-\s*(.+?)\s*$/);
+    if (!match) return { awayTeam: null, homeTeam: null };
+    // 実績だった場合は'3 ソ','神 2'のようにスコアが入っているので削除する
+    const awayTeam = this.stripScore(match[1]);
+    const homeTeam = this.stripScore(match[2]);
+    if (awayTeam === null || homeTeam === null)
+      return { awayTeam: null, homeTeam: null };
 
     // ここでは「左がビジター、右がホーム」という前提
     return {
-      awayTeam: this.normalizeText(m[1]),
-      homeTeam: this.normalizeText(m[2]),
+      awayTeam,
+      homeTeam,
     };
+  }
+
+  private stripScore(side: string): string | null {
+    const noScore = side
+      .replace(/^\s*\d+\s*/, "") // drop leading score
+      .replace(/\s*\d+\s*$/, ""); // drop trailing score
+    const name = this.normalizeText(noScore);
+    return name.length ? name : null;
   }
 
   private extractBodyForDebug(html: string, limit = 4000): string {

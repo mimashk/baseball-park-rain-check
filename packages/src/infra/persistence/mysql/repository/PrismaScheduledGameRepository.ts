@@ -96,10 +96,15 @@ export class PrismaScheduledGameRepository implements ScheduledGameRepository {
   }
 
   async findAtDate(date: Date): Promise<ScheduledGame[]> {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(start);
+    end.setDate(end.getDate() + 1);
     let rows: ScheduledGameModel[];
     try {
       rows = await this.prisma.scheduledGame.findMany({
-        where: { date: { gte: date, lte: date } },
+        where: { date: { gte: start, lte: end } },
       });
     } catch (err) {
       throw new DbError("試合予定データの取得に失敗しました", {

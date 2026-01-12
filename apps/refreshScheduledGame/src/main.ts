@@ -6,12 +6,13 @@ import { AppError } from "../../../packages/src/shared/errors/AppError";
 
 const container = createInfraContainer();
 
+// [TODO] 修正する
 const from =
   process.env.FIXED_FROM_DATE != null
     ? new Date(process.env.FIXED_FROM_DATE) // 例: FIXED_FROM_DATE=2025-06-01T00:00:00+09:00
     : new Date();
 const to = new Date(from);
-to.setDate(to.getDate() + 7);
+to.setMonth(to.getMonth() + 10);
 async function main() {
   const scope = container.createScope();
 
