@@ -54,6 +54,7 @@ import { TrainModelService } from "../../application/training/services/TrainMode
 import { UpdateGameStatusService } from "../../application/scheduledGame/services/UpdateGameStatusService";
 import { PrismaBallParkHourlyWeatherForecastRepository } from "../persistence/mysql/repository/PrismaBallParkHourlyWeatherForecastRepository";
 import { BallParkNameMapperImpl } from "../providers/shared/BallParkNameMapperImpl";
+import { ScheduleInitialGameCheckpointUseCase } from "@application/scheduledGame/usecases/ScheduleInitialGameCheckpointUseCase";
 
 const defaultCloudSchedulerConfig: CloudSchedulerConfig = {
   projectId: "baseball-park-rain-check",
@@ -110,6 +111,7 @@ export type InfraCradle = {
   refreshHourlyWeatherForecastsService: RefreshHourlyWeatherForecastsService;
   refreshDailyWeatherForecastsUsecase: RefreshDailyWeatherForecastsUsecase;
   refreshScheduledGameUsecase: RefreshScheduledGameUsecase;
+  scheduleInitialGameCheckpointUseCase: ScheduleInitialGameCheckpointUseCase;
   runGameCheckpointUseCase: RunGameCheckpointUseCase;
   predictCancellationUseCase: PredictCancellationUseCase;
   runTrainingPipelineUseCase: RunTrainingPipelineUseCase;
@@ -303,6 +305,15 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
     updateGameStatusService: asFunction(
       ({ scheduledGameRepository, gameStatusFetcher }: InfraCradle) =>
         new UpdateGameStatusService(scheduledGameRepository, gameStatusFetcher),
+      { lifetime: Lifetime.SINGLETON }
+    ),
+
+    scheduleInitialGameCheckpointUseCase: asFunction(
+      ({ checkpointScheduler, scheduledGameRepository }: InfraCradle) =>
+        new ScheduleInitialGameCheckpointUseCase(
+          checkpointScheduler,
+          scheduledGameRepository
+        ),
       { lifetime: Lifetime.SINGLETON }
     ),
 

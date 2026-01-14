@@ -21,7 +21,8 @@ export class RunGameCheckpointUseCase {
     request: RunGameCheckpointRequest
   ): Promise<RunGameCheckpointResponse> {
     try {
-      const gameId = GameId.fromString(request.gameId);
+      const gameIdStr = this.gameIdFromJobKey(request.jobKey);
+      const gameId = GameId.fromString(gameIdStr);
       const game = await this.gameRepository.findById(gameId);
       if (!game) {
         throw new NotFoundError("試合が見つかりません", { gameId });
@@ -53,7 +54,7 @@ export class RunGameCheckpointUseCase {
         jobKey: request.jobKey,
         runAt: nextRunAt,
         endpointPath: "/cron/checkpoint",
-        query: { gameId: request.gameId, jobKey: request.jobKey },
+        query: { gameId: gameIdStr, jobKey: request.jobKey },
       });
 
       return {
@@ -73,9 +74,18 @@ export class RunGameCheckpointUseCase {
         {
           cause: err,
           jobKey: request.jobKey,
-          gameId: request.gameId,
         }
       );
     }
+  }
+
+  private gameIdFromJobKey(jobKey: string): string {
+    const parts = jobKey.split("-");
+    const gameId = parts[parts.length - 1];
+    if (!gameId)
+      throw new ValidationError("jobKey から gameId を取得できません", {
+        jobKey,
+      });
+    return gameId;
   }
 }

@@ -1,0 +1,13 @@
+{
+  "name": "@baseball/runGameCheckpoint",
+  "private": true,
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/apps/runGameCheckpoint/src/main.js",
+    "start:local": "DOTENV_CONFIG_PATH=../../../.env node -r dotenv/config dist/apps/runGameCheckpoint/src/main.js",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@baseball/packages": "file:../../../packages"
+  }
+}

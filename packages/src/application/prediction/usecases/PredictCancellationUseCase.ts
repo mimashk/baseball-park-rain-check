@@ -44,7 +44,7 @@ export class PredictCancellationUseCase {
       }
       if (games.length === 0)
         throw new NotFoundError("今日の試合が見つかりません");
-      // 一旦1試合のみなので先頭を取得
+      // [TODO]一旦1試合のみなので先頭を取得
       const game = games[0];
 
       if (!game) throw new NotFoundError("今日の試合が見つかりません");

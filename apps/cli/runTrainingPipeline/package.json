@@ -4,10 +4,10 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node dist/apps/runTrainingPipeline/src/main.js",
-    "start:local": "DOTENV_CONFIG_PATH=../../.env node -r dotenv/config dist/apps/runTrainingPipeline/src/main.js",
+    "start:local": "DOTENV_CONFIG_PATH=../../../.env node -r dotenv/config dist/apps/runTrainingPipeline/src/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@baseball/packages": "file:../../packages"
+    "@baseball/packages": "file:../../../packages"
   }
 }

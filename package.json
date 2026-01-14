@@ -2,7 +2,7 @@
   "name": "baseball_park_rain_check",
   "private": true,
   "workspaces": [
-    "apps/*",
+    "apps/*/*",
     "packages"
   ],
   "keywords": [],
