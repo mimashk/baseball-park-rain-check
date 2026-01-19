@@ -9,4 +9,9 @@ export interface BallParkDailyWeatherForecastRepository {
     ballParkDailyWeatherForecasts: BallParkDailyWeatherForecast[]
   ): Promise<void>;
   findAll(): Promise<BallParkDailyWeatherForecast[]>;
+  findByDateAndBallPark(
+    from: Date,
+    to: Date,
+    ballParkId: number
+  ): Promise<BallParkDailyWeatherForecast[]>;
 }

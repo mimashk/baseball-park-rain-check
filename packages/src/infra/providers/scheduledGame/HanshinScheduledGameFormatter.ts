@@ -1,5 +1,5 @@
 import { BallParkNameMapper } from "../../../application/shared/interfaces/BallParkNameMapper";
-import { ScheduledGameDto } from "../../../application/scheduledGame/dtos/ScheduledGameDto";
+import { ScheduledGameDto } from "../../../application/refresher/dtos/ScheduledGameDto";
 import { TeamNameMapper } from "../../../application/shared/interfaces/TeamNameMapper";
 import { ScheduledGameInfo } from "./HanshinScheduledGameScraper";
 

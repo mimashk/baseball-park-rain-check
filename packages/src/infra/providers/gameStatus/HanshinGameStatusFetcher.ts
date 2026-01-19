@@ -1,7 +1,7 @@
 import { GameStatusDto } from "../../../application/scheduledGame/dtos/GameStatusDto";
 import { GameStatusFetcher } from "../../../application/scheduledGame/interfaces/GameStatusFetcher";
 import { TeamNameMapper } from "../../../application/shared/interfaces/TeamNameMapper";
-import { BaseballTeamType } from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
+import { TeamId } from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
 import { InfrastructureError } from "../../../shared/errors/InfrastructureError";
 import { GameStatusFormatter } from "./GameStatusFormatter";
 import { GameStatusScraper } from "./GameStatusScraper";
@@ -13,17 +13,15 @@ export class HanshinGameStatusFetcher implements GameStatusFetcher {
   ) {}
   async fetchStatus(input: {
     date: Date;
-    homeTeamName: BaseballTeamType;
-    awayTeamName: BaseballTeamType;
+    homeTeamId: TeamId;
+    awayTeamId: TeamId;
   }): Promise<GameStatusDto> {
     const gameStatusInfoList = await this.scraper.fetchStatus(input);
     const formatted = gameStatusInfoList.map((gameStatusInfo) =>
       this.formatter.toDto(gameStatusInfo)
     );
     const filtered = formatted.filter((g) => {
-      return (
-        g.homeTeam === input.homeTeamName && g.awayTeam === input.awayTeamName
-      );
+      return g.homeTeam === input.homeTeamId && g.awayTeam === input.awayTeamId;
     });
     if (filtered.length > 1) {
       throw new InfrastructureError(

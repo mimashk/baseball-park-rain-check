@@ -1,5 +1,5 @@
-import { BaseballTeamType } from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
+import { TeamId } from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
 
 export interface TeamNameMapper {
-  toDomainTeam(externalName: string): BaseballTeamType | undefined;
+  toDomainTeam(externalName: string): TeamId | undefined;
 }

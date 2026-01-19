@@ -7,20 +7,27 @@ import { TimeWindowSpec } from "../../../domain/training/valueObjects/TimeWindow
 import { DomainError } from "../../../shared/errors/DomainError";
 import { NotFoundError } from "../../../shared/errors/NotFoundError";
 import { ValidationError } from "../../../shared/errors/ValidationError";
-import { RefreshHourlyWeatherForecastsService } from "../../weatherForecast/services/RefreshHourlyWeatherForecastsService";
 import { PredictCancellationRequest } from "../dtos/PredictCancellationRequest";
 import { PredictCancellationResponse } from "../dtos/PredictCancellationResponse";
 import { CancellationPredictor } from "../interfaces/CancellationPredictor";
 import { mapAggregatedPredictionWeatherFeaturesToRow } from "../mapper/mapAggregatedPredictionWeatherFeaturesToRow";
 import { mapCancellationModelToDto } from "../mapper/mapCancellationModelToDto";
 import { BallParkCatalog } from "../../../domain/scheduledGame/valueObjects/BallPark";
+import { HourlyWeatherForecastProvider } from "../interfaces/HourlyWeatherForecastProvider";
+import { BallParkHourlyWeatherForecastRepository } from "../../../domain/weatherForecast/repositoryInterface.ts/BallParkHourlyWeatherForecastRepository";
+import { TransactionExecutor } from "../../shared/interfaces/TransactionExecutor";
+import { BallParkWeatherPoint } from "../../../domain/weatherForecast/valueObjects/BallParkWeatherPoint";
+import { mapHourlyWeatherForecastDtoToProps } from "../mapper/mapHourlyWeatherForecastDtoToProps";
+import { BallParkHourlyWeatherForecast } from "../../../domain/weatherForecast/valueObjects/BallParkHourlyWeatherForecast";
 
 export class PredictCancellationUseCase {
   constructor(
     private readonly gameRepository: ScheduledGameRepository,
-    private readonly refreshHourlyWeatherForecastsService: RefreshHourlyWeatherForecastsService,
     private readonly modelRepository: CancellationModelRepository,
-    private readonly predictor: CancellationPredictor
+    private readonly predictor: CancellationPredictor,
+    private readonly weatherForecastProvider: HourlyWeatherForecastProvider,
+    private readonly ballParkHourlyWeatherForecastRepository: BallParkHourlyWeatherForecastRepository,
+    private readonly txExecutor: TransactionExecutor
   ) {}
 
   async execute(
@@ -36,8 +43,8 @@ export class PredictCancellationUseCase {
         const testGame = ScheduledGame.create({
           date, // その日の任意時刻でもOK
           category: "オープン戦", // 既知カテゴリを使う
-          homeTeam: "阪神タイガース", // BaseballTeamTypeにある名前
-          awayTeam: "読売ジャイアンツ",
+          homeTeam: "HT", // BaseballTeamTypeにある名前
+          awayTeam: "YG",
           ballPark: BallParkCatalog.HANSHIN_KOSHIEN_STADIUM.labelJa,
         });
         games.push(testGame);
@@ -66,11 +73,38 @@ export class PredictCancellationUseCase {
       });
       const { from, to } = window.toRange(game.date);
 
-      const hourlyWeatherForecasts =
-        await this.refreshHourlyWeatherForecastsService.execute(
-          game.ballPark.id(),
-          req.forecastDays
-        );
+      // 気象データを取得して永続化
+      let hourlyWeatherForecasts: BallParkHourlyWeatherForecast[] = [];
+      try {
+        hourlyWeatherForecasts = (
+          await this.weatherForecastProvider.fetchHourlyForecasts(
+            BallParkWeatherPoint.create(game.ballPark.id()).latitude(),
+            BallParkWeatherPoint.create(game.ballPark.id()).longitude(),
+            req.forecastDays
+          )
+        )
+          .map((hourlyWeatherForecastDto) =>
+            mapHourlyWeatherForecastDtoToProps(
+              hourlyWeatherForecastDto,
+              game.ballPark.id()
+            )
+          )
+          .map(BallParkHourlyWeatherForecast.create);
+        await this.txExecutor.run(async (trx) => {
+          await this.ballParkHourlyWeatherForecastRepository
+            .withTransaction(trx)
+            .updateMany(hourlyWeatherForecasts);
+        });
+      } catch (err: unknown) {
+        if (err instanceof DomainError || err instanceof ValidationError) {
+          throw err;
+        }
+        throw new DomainError("気象データの取得に失敗しました", {
+          cause: err,
+          ballParkId: game.ballPark.id(),
+        });
+      }
+
       if (hourlyWeatherForecasts.length === 0)
         throw new ValidationError("予測に使える気象データがありません", {
           from,

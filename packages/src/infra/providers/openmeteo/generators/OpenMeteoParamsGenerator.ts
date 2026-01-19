@@ -2,13 +2,15 @@ export class OpenMeteoParamsGenerator {
   static buildDailyForecast(input: {
     latitude: number;
     longitude: number;
-    forecastDays: number;
+    startDate: string;
+    endDate: string;
   }) {
     return {
       latitude: input.latitude,
       longitude: input.longitude,
       timezone: "Asia/Tokyo",
-      forecast_days: input.forecastDays,
+      start_date: input.startDate,
+      end_date: input.endDate,
       daily: [
         "weather_code",
         "temperature_2m_max",

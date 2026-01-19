@@ -1,3 +1,4 @@
+import { BaseballTeam } from "../../../../domain/scheduledGame/valueObjects/BaseballTeam";
 import { TransactionContext } from "../../../../domain/shared/interfaces/TransactionContext";
 import { PastGameRecordRepository } from "../../../../domain/training/repositoryInterface/PastGameRecordRepository";
 import { PastGameRecord } from "../../../../domain/training/valueObjects/PastGameRecord";
@@ -80,8 +81,8 @@ export class PrismaPastGameRecordRepository
   private toPersistence(record: PastGameRecord): PastGameRecordPersistence {
     return {
       date: record.date,
-      homeTeam: record.homeTeam.value,
-      awayTeam: record.awayTeam.value,
+      homeTeam: record.homeTeam.id(),
+      awayTeam: record.awayTeam.id(),
       ballPark: record.ballPark.name(),
       cancelled: record.cancelled.value === "CANCELLED",
     };
@@ -90,8 +91,8 @@ export class PrismaPastGameRecordRepository
   private toDomain = (row: PastGameRecordPersistence): PastGameRecord =>
     PastGameRecord.create({
       date: row.date,
-      homeTeam: row.homeTeam,
-      awayTeam: row.awayTeam,
+      homeTeam: BaseballTeam.from(row.homeTeam).id(),
+      awayTeam: BaseballTeam.from(row.awayTeam).id(),
       ballPark: row.ballPark,
       cancelled: row.cancelled,
     });

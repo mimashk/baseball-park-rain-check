@@ -24,8 +24,8 @@ model ScheduledGame {
   id        String     @id @default(uuid()) @db.Char(36)
   date      DateTime
   category  String     @db.VarChar(32)   // GameCategory (日本語文字列)
-  homeTeam  String     @db.VarChar(32)   // BaseballTeam (日本語文字列)
-  awayTeam  String     @db.VarChar(32)
+  homeTeam  String     @db.VarChar(8)   // TeamId
+  awayTeam  String     @db.VarChar(8)   // TeamId
   ballPark  String     @db.VarChar(80)   // BallPark名（カタログ表記）
   status    GameStatus @default(scheduled)
   createdAt DateTime   @default(now())
@@ -38,8 +38,8 @@ model ScheduledGame {
 model PastGameRecord {
   id        Int      @id @default(autoincrement())
   date      DateTime
-  homeTeam  String   @db.VarChar(32)  // BaseballTeam (日本語)
-  awayTeam  String   @db.VarChar(32)
+  homeTeam  String   @db.VarChar(8)  // TeamId
+  awayTeam  String   @db.VarChar(8)  // TeamId
   ballPark  String   @db.VarChar(80)  // BallPark名
   cancelled Boolean  // GameCancelled.fromBoolean の元になる値
   createdAt DateTime @default(now())

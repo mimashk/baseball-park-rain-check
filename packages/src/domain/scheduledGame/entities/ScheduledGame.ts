@@ -1,7 +1,7 @@
 import { DomainError } from "../../../shared/errors/DomainError";
 import { ensureValidDate } from "../../shared/utils/ensureValidDate";
 import { BallPark } from "../valueObjects/BallPark";
-import { BaseballTeam } from "../valueObjects/BaseballTeam";
+import { BaseballTeam, TeamId } from "../valueObjects/BaseballTeam";
 import { GameCategory } from "../valueObjects/GameCategory";
 import { GameId } from "../valueObjects/GameId";
 import { GameStatus } from "../valueObjects/GameStatus";
@@ -9,21 +9,31 @@ import { GameStatus } from "../valueObjects/GameStatus";
 export interface CreateScheduledGameProps {
   date: Date;
   category: string;
-  homeTeam: string;
-  awayTeam: string;
+  homeTeam: TeamId;
+  awayTeam: TeamId;
   ballPark: string;
 }
 
 export interface UpdateScheduledGameProps {
   date?: Date;
   category?: string;
-  homeTeam?: string;
-  awayTeam?: string;
+  homeTeam?: TeamId;
+  awayTeam?: TeamId;
   ballPark?: string;
 }
 
+export interface ReconstructScheduledGameProps {
+  id: string;
+  date: Date;
+  category: string;
+  homeTeam: TeamId;
+  awayTeam: TeamId;
+  ballPark: string;
+  status: string;
+}
+
 export class ScheduledGame {
-  constructor(
+  private constructor(
     readonly id: GameId,
     readonly date: Date,
     readonly category: GameCategory,
@@ -63,6 +73,25 @@ export class ScheduledGame {
       props.awayTeam ? BaseballTeam.from(props.awayTeam) : this.awayTeam,
       props.ballPark ? BallPark.fromString(props.ballPark) : this.ballPark,
       this._status
+    );
+  }
+
+  static reconstruct(props: ReconstructScheduledGameProps): ScheduledGame {
+    return new ScheduledGame(
+      GameId.fromString(props.id),
+      props.date,
+      GameCategory.from(props.category),
+      BaseballTeam.from(props.homeTeam as TeamId),
+      BaseballTeam.from(props.awayTeam as TeamId),
+      BallPark.fromString(props.ballPark),
+      (() => {
+        let status = GameStatus.scheduled();
+        if (props.status === "in_progress") status = status.toInProgress();
+        if (props.status === "completed")
+          status = status.toInProgress().toCompleted();
+        if (props.status === "cancelled") status = status.toCancelled();
+        return status;
+      })()
     );
   }
 

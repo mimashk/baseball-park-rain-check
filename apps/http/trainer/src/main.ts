@@ -4,7 +4,6 @@ import { ValidationError } from "../../../../packages/src/shared/errors/Validati
 import { DomainError } from "../../../../packages/src/shared/errors/DomainError";
 import { NotFoundError } from "../../../../packages/src/shared/errors/NotFoundError";
 import { AppError } from "../../../../packages/src/shared/errors/AppError";
-import { BallParkId } from "@domain/scheduledGame/valueObjects/BallPark";
 
 const app = express();
 app.use(express.json());

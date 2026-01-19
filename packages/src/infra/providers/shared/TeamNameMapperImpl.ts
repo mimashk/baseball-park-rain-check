@@ -1,8 +1,5 @@
 import { TeamNameMapper } from "../../../application/shared/interfaces/TeamNameMapper";
-import {
-  AnyTeamName,
-  BaseballTeamType,
-} from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
+import { TeamId } from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
 import { BaseballTeamDictionary } from "./BaseballTeamDictionary";
 
 export class TeamNameMapperImpl implements TeamNameMapper {
@@ -11,10 +8,10 @@ export class TeamNameMapperImpl implements TeamNameMapper {
     this.dictionary = dictionary;
   }
 
-  toDomainTeam(externalName: string): BaseballTeamType | undefined {
+  toDomainTeam(externalName: string): TeamId | undefined {
     const mapped = this.dictionary[externalName];
     // 辞書未登録でも非空ならそのまま返す
-    if (mapped) return mapped as BaseballTeamType;
+    if (mapped) return mapped as TeamId;
     return undefined;
   }
 }

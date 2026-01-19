@@ -1,8 +1,8 @@
-import { createInfraContainer } from "@infra/di/container";
+import { createInfraContainer } from "../../../../packages/src/infra/di/container";
 import { AppError } from "packages/src/shared/errors/AppError";
-import { DomainError } from "packages/src/shared/errors/DomainError";
-import { NotFoundError } from "packages/src/shared/errors/NotFoundError";
-import { ValidationError } from "packages/src/shared/errors/ValidationError";
+import { DomainError } from "../../../../packages/src/shared/errors/DomainError";
+import { NotFoundError } from "../../../../packages/src/shared/errors/NotFoundError";
+import { ValidationError } from "../../../../packages/src/shared/errors/ValidationError";
 
 const container = createInfraContainer();
 

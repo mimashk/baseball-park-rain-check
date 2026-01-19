@@ -1,4 +1,4 @@
-import { HourlyWeatherForecastDto } from "../../../../application/weatherForecast/dtos/HourlyWeatherForecastDto";
+import { HourlyWeatherForecastDto } from "../../../../application/prediction/dtos/HourlyWeatherForecastDto";
 import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
 import { TimeSeriesGenerator } from "../generators/TimeSeriesGenerator";
 import { HourlyForecastResponse } from "../types/OpenMeteoTypes";

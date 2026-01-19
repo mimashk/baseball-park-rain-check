@@ -1,8 +1,8 @@
-import { ScheduledGameRepository } from "@domain/scheduledGame/repositoryInterface/ScheduledGameRepository";
+import { ScheduledGameRepository } from "../../../domain/scheduledGame/repositoryInterface/ScheduledGameRepository";
 import { CheckpointScheduler } from "../interfaces/CheckpointScheduler";
-import { ensureValidDateRange } from "@application/shared/utils/ensureValidDateRange";
+import { ensureValidDateRange } from "../../shared/utils/ensureValidDateRange";
 import { DecideNextIntervalMinutesService } from "../services/DecideNextIntervalMinutesService";
-import { GameStatusType } from "@domain/scheduledGame/valueObjects/GameStatus";
+import { GameStatusType } from "../../../domain/scheduledGame/valueObjects/GameStatus";
 import { ScheduleInitialGameCheckpointRequest } from "../dtos/ScheduleInitialGameCheckpointRequest";
 import { ScheduleInitialGameCheckpointResponse } from "../dtos/ScheduleInitialGameCheckpointResponse";
 

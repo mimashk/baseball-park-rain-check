@@ -1,5 +1,5 @@
-import { ScheduledGameDto } from "../../../application/scheduledGame/dtos/ScheduledGameDto";
-import { ScheduledGameFetcher } from "../../../application/scheduledGame/interfaces/ScheduledGameFetcher";
+import { ScheduledGameDto } from "../../../application/refresher/dtos/ScheduledGameDto";
+import { ScheduledGameFetcher } from "../../../application/refresher/interfaces/ScheduledGameFetcher";
 import { HanshinScheduledGameFormatter } from "./HanshinScheduledGameFormatter";
 import { HanshinScheduledGameScraper } from "./HanshinScheduledGameScraper";
 

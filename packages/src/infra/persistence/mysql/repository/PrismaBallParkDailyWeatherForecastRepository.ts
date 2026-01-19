@@ -74,6 +74,22 @@ export class PrismaBallParkDailyWeatherForecastRepository
     }
   }
 
+  async findByDateAndBallPark(from: Date, to: Date, ballParkId: number) {
+    let rows: BallParkDailyWeatherForecastModel[];
+    try {
+      rows = await this.prisma.ballParkDailyWeatherForecast.findMany({
+        where: { date: { gte: from, lte: to }, ballParkId },
+        orderBy: { date: "asc" },
+      });
+    } catch (err) {
+      throw new DbError("日次予報の取得に失敗しました", {
+        cause: err,
+        details: { from, to, ballParkId },
+      });
+    }
+    return rows.map(this.toDomain);
+  }
+
   private toPersistence(
     f: BallParkDailyWeatherForecast
   ): BallParkDailyWeatherForecastPersistence {

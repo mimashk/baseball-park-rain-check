@@ -18,7 +18,10 @@ export class HanshinPastGameFetcher implements PastGameRecordFetcher {
       years.map(({ year }) => this.scraper.fetchYearlyGames({ year }))
     );
 
-    return yearly.flat().map((raw) => this.formatter.toDto(raw));
+    return yearly
+      .flat()
+      .map((raw) => this.formatter.toDto(raw))
+      .filter((dto): dto is PastGameRecordDto => dto !== null);
   }
 
   private rangeYears(from: Date, to: Date) {

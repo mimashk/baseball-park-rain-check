@@ -1,14 +1,9 @@
 import { ScheduledGame as ScheduledGameModel } from "@prisma/client";
 import { ScheduledGame } from "../../../../domain/scheduledGame/entities/ScheduledGame";
 import { ScheduledGameRepository } from "../../../../domain/scheduledGame/repositoryInterface/ScheduledGameRepository";
-import { BallPark } from "../../../../domain/scheduledGame/valueObjects/BallPark";
-import { BaseballTeam } from "../../../../domain/scheduledGame/valueObjects/BaseballTeam";
-import { GameCategory } from "../../../../domain/scheduledGame/valueObjects/GameCategory";
+import { TeamId } from "../../../../domain/scheduledGame/valueObjects/BaseballTeam";
 import { GameId } from "../../../../domain/scheduledGame/valueObjects/GameId";
-import {
-  GameStatus,
-  GameStatusType,
-} from "../../../../domain/scheduledGame/valueObjects/GameStatus";
+import { GameStatusType } from "../../../../domain/scheduledGame/valueObjects/GameStatus";
 import { PrismaClientWrapper } from "../PrismaClientWrapper";
 import { DbError } from "../../../../shared/errors/DbError";
 import { AppError } from "../../../../shared/errors/AppError";
@@ -150,29 +145,21 @@ export class PrismaScheduledGameRepository implements ScheduledGameRepository {
       id: game.id.toString(),
       date: game.date,
       category: game.category.value,
-      homeTeam: game.homeTeam.value,
-      awayTeam: game.awayTeam.value,
+      homeTeam: game.homeTeam.id(),
+      awayTeam: game.awayTeam.id(),
       ballPark: game.ballPark.name(),
       status: game.status().value,
     };
   }
 
   private toDomain = (row: ScheduledGamePersistence): ScheduledGame =>
-    new ScheduledGame(
-      GameId.fromString(row.id),
-      row.date,
-      GameCategory.from(row.category),
-      BaseballTeam.from(row.homeTeam),
-      BaseballTeam.from(row.awayTeam),
-      BallPark.fromString(row.ballPark),
-      // GameStatus は遷移を踏んで再構築
-      (() => {
-        let status = GameStatus.scheduled();
-        if (row.status === "in_progress") status = status.toInProgress();
-        if (row.status === "completed")
-          status = status.toInProgress().toCompleted();
-        if (row.status === "cancelled") status = status.toCancelled();
-        return status;
-      })()
-    );
+    ScheduledGame.reconstruct({
+      id: row.id,
+      date: row.date,
+      category: row.category,
+      homeTeam: row.homeTeam as TeamId,
+      awayTeam: row.awayTeam as TeamId,
+      ballPark: row.ballPark,
+      status: row.status,
+    });
 }

@@ -4,7 +4,6 @@ import { ValidationError } from "../../../../packages/src/shared/errors/Validati
 import { DomainError } from "../../../../packages/src/shared/errors/DomainError";
 import { NotFoundError } from "../../../../packages/src/shared/errors/NotFoundError";
 import { AppError } from "../../../../packages/src/shared/errors/AppError";
-import { BallParkId } from "@domain/scheduledGame/valueObjects/BallPark";
 
 const app = express();
 app.use(express.json());
@@ -49,54 +48,32 @@ app.post("/cron/run-game-checkpoint", async (req, res, next) => {
   }
 });
 
-app.post("/cron/refresh-daily-forecast", async (req, res, next) => {
-  const ballParkIdParam =
-    (req.query as any)?.ballParkId || (req.body as any)?.ballParkId;
-  const ballParkId = ballParkIdParam ? Number(ballParkIdParam) : 2;
-  if (Number.isNaN(ballParkId)) {
-    return next(
-      new ValidationError("不正な球場IDが指定されました", {
-        ballParkId: ballParkIdParam,
-      })
-    );
+app.post(
+  "/cron/refresh-weather-forecast-and-scheduled-game",
+  async (req, res, next) => {
+    const from = new Date();
+    from.setDate(from.getDate() + 1);
+    const to = new Date();
+    to.setDate(to.getDate() + 8);
+    const scope = container.createScope();
+    try {
+      const usecase = scope.resolve(
+        "refreshScheduledGameAndDailyWeatherForecastUsecase"
+      );
+      const result = await usecase.execute({
+        from: new Date(),
+        to: new Date(),
+      });
+      res.json(result);
+    } catch (err) {
+      next(err);
+    } finally {
+      await scope.resolve("prisma").$disconnect();
+    }
   }
+);
 
-  const scope = container.createScope();
-  try {
-    const usecase = scope.resolve("refreshDailyWeatherForecastsUsecase");
-    const result = await usecase.execute({
-      ballParkId: ballParkId as BallParkId,
-      forecastDays: 3,
-    });
-    res.json(result);
-  } catch (err) {
-    next(err);
-  } finally {
-    await scope.resolve("prisma").$disconnect();
-  }
-});
-
-app.post("/cron/refresh-scheduled-games", async (req, res, next) => {
-  const from = new Date();
-  from.setDate(from.getDate() + 1);
-  const to = new Date();
-  to.setDate(to.getDate() + 8);
-  const scope = container.createScope();
-  try {
-    const usecase = scope.resolve("refreshScheduledGameUsecase");
-    const result = await usecase.execute({
-      from,
-      to,
-    });
-    res.json(result);
-  } catch (err) {
-    next(err);
-  } finally {
-    await scope.resolve("prisma").$disconnect();
-  }
-});
-
-app.post("/cron/refresh-prediction", async (req, res, next) => {
+app.post("/cron/update-prediction", async (req, res, next) => {
   const scope = container.createScope();
   const timeWindowBeforeHours = 3;
   const timeWindowAfterHours = 3;

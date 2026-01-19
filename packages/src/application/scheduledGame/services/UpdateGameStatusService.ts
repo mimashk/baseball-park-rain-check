@@ -22,8 +22,8 @@ export class UpdateGameStatusService {
       // 外部から最新ステータスを取得
       const latest = await this.fetcher.fetchStatus({
         date: game.date,
-        homeTeamName: game.homeTeam.labelJa(),
-        awayTeamName: game.awayTeam.labelJa(),
+        homeTeamId: game.homeTeam.id(),
+        awayTeamId: game.awayTeam.id(),
       });
 
       if (!Object.values(GameStatusType).includes(latest.status)) {

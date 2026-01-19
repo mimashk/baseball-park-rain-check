@@ -1,4 +1,4 @@
-import { DailyWeatherForecastDto } from "../../../../application/weatherForecast/dtos/DailyWeatherForecastDto";
+import { DailyWeatherForecastDto } from "../../../../application/refresher/dtos/DailyWeatherForecastDto";
 import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
 import { TimeSeriesGenerator } from "../generators/TimeSeriesGenerator";
 import { DailyForecastResponse } from "../types/OpenMeteoTypes";

@@ -1,6 +1,7 @@
 import * as cheerio from "cheerio";
 import { ExternalServiceError } from "../../../shared/errors/ExternalServiceError";
 import { InfrastructureError } from "../../../shared/errors/InfrastructureError";
+import { TeamId } from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
 
 export type GameStatusInfo = {
   homeTeam: string;
@@ -11,8 +12,8 @@ export type GameStatusInfo = {
 export class GameStatusScraper {
   async fetchStatus(params: {
     date: Date;
-    homeTeamName: string;
-    awayTeamName: string;
+    homeTeamId: TeamId;
+    awayTeamId: TeamId;
   }): Promise<GameStatusInfo[]> {
     const html = await this.fetchHtml(params.date);
     return this.parseGameStatus(html);

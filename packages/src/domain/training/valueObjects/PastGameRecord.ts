@@ -1,19 +1,22 @@
 import { DomainError } from "../../../shared/errors/DomainError";
 import { BallPark } from "../../scheduledGame/valueObjects/BallPark";
-import { BaseballTeam } from "../../scheduledGame/valueObjects/BaseballTeam";
+import {
+  BaseballTeam,
+  TeamId,
+} from "../../scheduledGame/valueObjects/BaseballTeam";
 import { ensureValidDate } from "../../shared/utils/ensureValidDate";
 import { GameCancelled } from "./GameCancelled";
 
 export interface CreatePastGameRecordProps {
   date: Date;
-  homeTeam: string;
-  awayTeam: string;
+  homeTeam: TeamId;
+  awayTeam: TeamId;
   ballPark: string;
   cancelled: boolean;
 }
 
 export class PastGameRecord {
-  constructor(
+  private constructor(
     readonly date: Date,
     readonly homeTeam: BaseballTeam,
     readonly awayTeam: BaseballTeam,

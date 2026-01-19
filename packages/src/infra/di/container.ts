@@ -42,10 +42,7 @@ import {
 
 import { CancellationModelTrainerImpl } from "../statisticalModels/logisticRegression/CancellationModelTrainerImpl";
 import { CancellationPredictorImpl } from "../statisticalModels/logisticRegression/CancellationPredictorImpl";
-import { RefreshHourlyWeatherForecastsService } from "../../application/weatherForecast/services/RefreshHourlyWeatherForecastsService";
 import { PredictCancellationUseCase } from "../../application/prediction/usecases/PredictCancellationUseCase";
-import { RefreshDailyWeatherForecastsUsecase } from "../../application/weatherForecast/usecases/RefreshDailyWeatherForecastsUsecase";
-import { RefreshScheduledGameUsecase } from "../../application/scheduledGame/usecases/RefreshScheduledGameUsecase";
 import { RunGameCheckpointUseCase } from "../../application/scheduledGame/usecases/RunGameCheckpointUseCase";
 import { RunTrainingPipelineUseCase } from "../../application/training/usecases/RunTrainingPipelineUseCase";
 import { FetchPastGamesService } from "../../application/training/services/FetchPastGamesService";
@@ -54,7 +51,9 @@ import { TrainModelService } from "../../application/training/services/TrainMode
 import { UpdateGameStatusService } from "../../application/scheduledGame/services/UpdateGameStatusService";
 import { PrismaBallParkHourlyWeatherForecastRepository } from "../persistence/mysql/repository/PrismaBallParkHourlyWeatherForecastRepository";
 import { BallParkNameMapperImpl } from "../providers/shared/BallParkNameMapperImpl";
-import { ScheduleInitialGameCheckpointUseCase } from "@application/scheduledGame/usecases/ScheduleInitialGameCheckpointUseCase";
+import { ScheduleInitialGameCheckpointUseCase } from "../../application/scheduledGame/usecases/ScheduleInitialGameCheckpointUseCase";
+import { RefreshScheduledGameAndDailyWeatherForecastUsecase } from "../../application/refresher/usecases/RefreshScheduledGameAndDailyWeatherForecastUsecase";
+import { GetDashboardQuery } from "../../application/dashboard/queries/GetDashboardQuery";
 
 const defaultCloudSchedulerConfig: CloudSchedulerConfig = {
   projectId: "baseball-park-rain-check",
@@ -108,18 +107,18 @@ export type InfraCradle = {
   checkpointScheduler: CloudSchedulerCheckpointAdapter;
 
   // application services / usecases
-  refreshHourlyWeatherForecastsService: RefreshHourlyWeatherForecastsService;
-  refreshDailyWeatherForecastsUsecase: RefreshDailyWeatherForecastsUsecase;
-  refreshScheduledGameUsecase: RefreshScheduledGameUsecase;
   scheduleInitialGameCheckpointUseCase: ScheduleInitialGameCheckpointUseCase;
   runGameCheckpointUseCase: RunGameCheckpointUseCase;
   predictCancellationUseCase: PredictCancellationUseCase;
   runTrainingPipelineUseCase: RunTrainingPipelineUseCase;
+  refreshScheduledGameAndDailyWeatherForecastUsecase: RefreshScheduledGameAndDailyWeatherForecastUsecase;
 
   fetchPastGamesService: FetchPastGamesService;
   fetchObservedHourlyWeatherService: FetchObservedHourlyWeatherService;
   trainModelService: TrainModelService;
   updateGameStatusService: UpdateGameStatusService;
+
+  getDashboardQuery: GetDashboardQuery;
 };
 
 export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
@@ -260,43 +259,19 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
 
     // application services / usecases
     // register に追記（既存 register の末尾あたりに追加）
-    refreshHourlyWeatherForecastsService: asFunction(
+    refreshScheduledGameAndDailyWeatherForecastUsecase: asFunction(
       ({
-        hourlyWeatherForecastProvider,
-        ballParkHourlyWeatherForecastRepository,
-        transactionExecutor,
-      }: InfraCradle) =>
-        new RefreshHourlyWeatherForecastsService(
-          hourlyWeatherForecastProvider,
-          ballParkHourlyWeatherForecastRepository,
-          transactionExecutor
-        ),
-      { lifetime: Lifetime.SINGLETON }
-    ),
-
-    refreshDailyWeatherForecastsUsecase: asFunction(
-      ({
+        scheduledGameFetcher,
         dailyWeatherForecastProvider,
+        scheduledGameRepository,
         ballParkDailyWeatherForecastRepository,
         transactionExecutor,
       }: InfraCradle) =>
-        new RefreshDailyWeatherForecastsUsecase(
-          dailyWeatherForecastProvider,
-          ballParkDailyWeatherForecastRepository,
-          transactionExecutor
-        ),
-      { lifetime: Lifetime.SINGLETON }
-    ),
-
-    refreshScheduledGameUsecase: asFunction(
-      ({
-        scheduledGameFetcher,
-        scheduledGameRepository,
-        transactionExecutor,
-      }: InfraCradle) =>
-        new RefreshScheduledGameUsecase(
+        new RefreshScheduledGameAndDailyWeatherForecastUsecase(
           scheduledGameFetcher,
+          dailyWeatherForecastProvider,
           scheduledGameRepository,
+          ballParkDailyWeatherForecastRepository,
           transactionExecutor
         ),
       { lifetime: Lifetime.SINGLETON }
@@ -334,15 +309,19 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
     predictCancellationUseCase: asFunction(
       ({
         scheduledGameRepository,
-        refreshHourlyWeatherForecastsService,
         cancellationModelRepository,
         cancellationPredictor,
+        hourlyWeatherForecastProvider,
+        ballParkHourlyWeatherForecastRepository,
+        transactionExecutor,
       }: InfraCradle) =>
         new PredictCancellationUseCase(
           scheduledGameRepository,
-          refreshHourlyWeatherForecastsService,
           cancellationModelRepository,
-          cancellationPredictor
+          cancellationPredictor,
+          hourlyWeatherForecastProvider,
+          ballParkHourlyWeatherForecastRepository,
+          transactionExecutor
         ),
       { lifetime: Lifetime.SINGLETON }
     ),
@@ -386,6 +365,10 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
         ),
       { lifetime: Lifetime.SINGLETON }
     ),
+
+    getDashboardQuery: asClass(GetDashboardQuery, {
+      lifetime: Lifetime.SINGLETON,
+    }),
   });
 
   return container;
