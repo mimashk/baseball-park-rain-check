@@ -12,11 +12,7 @@ import { mapPastGameDtoToCreateProps } from "../mapper/mapPastGameDtoToCreatePro
 export class FetchPastGamesService {
   constructor(private readonly fetcher: PastGameRecordFetcher) {}
 
-  async execute(
-    ballParkId: BallParkId,
-    from: Date,
-    to: Date
-  ): Promise<PastGameRecord[]> {
+  async execute(from: Date, to: Date): Promise<PastGameRecord[]> {
     const { from: normalizedFrom, to: normalizedTo } = ensureValidDateRange(
       "from",
       "to",
@@ -34,7 +30,8 @@ export class FetchPastGamesService {
       });
       const dedupedPastGames = this.dedupeByKey(
         inRangePastGames,
-        (g) => `${g.date.toISOString()}::${g.homeTeam}::${g.awayTeam}`
+        (g) =>
+          `${g.date.toISOString()}::${g.homeTeam}::${g.awayTeam}::${g.ballPark}`
       );
       const sortedPastGames = dedupedPastGames.sort(
         (a, b) => a.date.getTime() - b.date.getTime()
@@ -52,10 +49,7 @@ export class FetchPastGamesService {
             });
           }
         })
-        .filter(
-          (g): g is PastGameRecord =>
-            g !== null && g.ballPark.id() === ballParkId
-        );
+        .filter((g): g is PastGameRecord => g !== null);
       return pastGames;
     } catch (err: unknown) {
       if (err instanceof ValidationError || err instanceof DomainError)

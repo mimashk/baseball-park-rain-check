@@ -14,14 +14,50 @@ export type PastGameInfo = {
   isCancelled: boolean;
 };
 
-export class HanshinPastGameScraper {
-  async fetchYearlyGames(params: { year: number }): Promise<PastGameInfo[]> {
-    const html = await this.fetchHtml(params.year);
-    await this.sleep(3000);
+export const TEAM_CODE_LIST = [
+  { league: "0", key: "T", label: "阪神" },
+  { league: "0", key: "G", label: "読売" },
+  { league: "0", key: "C", label: "広島" },
+  { league: "0", key: "DB", label: "横浜" },
+  { league: "0", key: "S", label: "ヤクルト" },
+  { league: "0", key: "D", label: "中日" },
+  { league: "1", key: "F", label: "ファイターズ" },
+  {
+    league: "1",
+    key: "B",
+    label: "オリックス",
+    legacyCode: "Bs",
+    legacyToYear: 2018,
+  },
+  { league: "1", key: "M", label: "ロッテ" },
+  { league: "1", key: "H", label: "ソフトバンク" },
+  { league: "1", key: "E", label: "楽天" },
+  { league: "1", key: "L", label: "西武" },
+];
+
+export type TeamCode = (typeof TEAM_CODE_LIST)[number];
+
+export class PastGameScraper {
+  async fetchYearlyGames(params: {
+    year: number;
+    teamCode: string;
+    teamLabel: string;
+    league: string;
+  }): Promise<PastGameInfo[]> {
+    const html = await this.fetchHtml(
+      params.year,
+      params.league,
+      params.teamCode
+    );
+    await this.sleep(5000);
     return this.parseYearlyGames(html, params.year);
   }
-  private async fetchHtml(year: number): Promise<string> {
-    const url = `https://nf3.sakura.ne.jp/php/stat_disp/stat_disp.php?y=${year}&leg=0&mon=0&tm=T&vst=all`;
+  private async fetchHtml(
+    year: number,
+    league: string,
+    teamCode: string
+  ): Promise<string> {
+    const url = `https://nf3.sakura.ne.jp/php/stat_disp/stat_disp.php?y=${year}&leg=${league}&mon=0&tm=${teamCode}&vst=all`;
 
     let res: Response;
     try {

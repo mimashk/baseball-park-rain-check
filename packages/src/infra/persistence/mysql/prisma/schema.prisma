@@ -101,6 +101,7 @@ model BallParkObservedHourlyWeather {
 model CancellationModel {
   id           String   @id @default(cuid())
   version      String
+  ballParkId   Int
   featureOrder Json     // string[]
   coefficients Json     // number[]
   intercept    Float
@@ -109,5 +110,5 @@ model CancellationModel {
   updatedAt    DateTime @updatedAt
 
   @@map("cancellation_models")
-  @@unique([version])
+  @@unique([version, ballParkId])
 }

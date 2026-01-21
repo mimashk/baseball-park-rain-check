@@ -1,4 +1,5 @@
 import { CancellationModel } from "../../../domain/model/valueObjects/CancellationModel";
+import { BallParkId } from "../../../domain/scheduledGame/valueObjects/BallPark";
 import { TrainingWeatherFeatureAggregator } from "../../../domain/training/services/TrainingWeatherFeatureAggregator";
 import { BallParkObservedHourlyWeather } from "../../../domain/training/valueObjects/BallParkObservedHourlyWeather";
 import { PastGameRecord } from "../../../domain/training/valueObjects/PastGameRecord";
@@ -21,7 +22,8 @@ export class TrainModelService {
     pastGames: PastGameRecord[],
     observedHourlyWeathers: BallParkObservedHourlyWeather[],
     timeWindowBeforeHours: number,
-    timeWindowAfterHours: number
+    timeWindowAfterHours: number,
+    ballParkId: BallParkId
   ): Promise<TrainResult> {
     try {
       const window = TimeWindowSpec.create({
@@ -66,7 +68,8 @@ export class TrainModelService {
       }
 
       const modelDto = await this.trainer.train(
-        examples.map((e) => mapTrainingExampleToRow(e))
+        examples.map((e) => mapTrainingExampleToRow(e)),
+        ballParkId
       );
       const props = mapCancellationModelDtoToProps(modelDto);
       const model = CancellationModel.create(props);

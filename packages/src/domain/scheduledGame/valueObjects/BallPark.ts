@@ -49,6 +49,12 @@ type BallParkCatalogItem =
 
 type BallParkRoofType = "OPEN_AIR" | "DOME" | "UNKNOWN";
 
+export function openAirParks(): BallPark[] {
+  return Object.values(BallParkCatalog)
+    .filter((b) => b.roof === "OPEN_AIR")
+    .map((b) => BallPark.fromId(b.id));
+}
+
 export type KnownBallParkName =
   (typeof BallParkCatalog)[keyof typeof BallParkCatalog]["labelJa"];
 

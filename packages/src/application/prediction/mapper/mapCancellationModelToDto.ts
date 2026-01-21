@@ -6,6 +6,7 @@ export function mapCancellationModelToDto(
 ): CancellationModelDto {
   return {
     date: model.version.toDate(),
+    ballParkId: model.ballParkId,
     featureOrder: model.featureOrder,
     coefficients: model.coefficients,
     intercept: model.intercept,

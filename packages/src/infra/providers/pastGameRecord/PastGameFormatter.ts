@@ -2,10 +2,10 @@ import { TeamNameMapper } from "../../../application/shared/interfaces/TeamNameM
 import { PastGameRecordDto } from "../../../application/training/dtos/PastGameRecordDto";
 import { TeamId } from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
 import { InfrastructureError } from "../../../shared/errors/InfrastructureError";
-import { PastGameInfo } from "./HanshinPastGameScraper";
+import { PastGameInfo } from "./PastGameScraper";
 import { BallParkNameMapper } from "../../../application/shared/interfaces/BallParkNameMapper";
 
-export class HanshinPastGameFormatter {
+export class PastGameFormatter {
   constructor(
     private readonly teamNameMapper: TeamNameMapper,
     private readonly ballParkNameMapper: BallParkNameMapper

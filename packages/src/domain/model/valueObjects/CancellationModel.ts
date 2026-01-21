@@ -1,5 +1,6 @@
 import { DomainError } from "../../../shared/errors/DomainError";
 import { ValidationError } from "../../../shared/errors/ValidationError";
+import { BallParkId } from "../../scheduledGame/valueObjects/BallPark";
 import {
   ensureFiniteArray,
   ensureFiniteNumber,
@@ -8,6 +9,7 @@ import { ModelVersion } from "./ModelVersion";
 
 export interface CancellationModelProps {
   date: Date;
+  ballParkId: BallParkId;
   featureOrder: string[];
   coefficients: number[];
   intercept: number;
@@ -17,6 +19,7 @@ export interface CancellationModelProps {
 export class CancellationModel {
   private constructor(
     readonly version: ModelVersion,
+    readonly ballParkId: BallParkId,
     readonly featureOrder: string[],
     readonly coefficients: number[], // 同じ順序
     readonly intercept: number,
@@ -34,6 +37,7 @@ export class CancellationModel {
     this.checkSameLength("mean", props.mean, len);
     this.checkSameLength("std", props.std, len);
 
+    ensureFiniteNumber("ballParkId", props.ballParkId);
     ensureFiniteArray("coefficients", props.coefficients);
     ensureFiniteArray("mean", props.mean);
     ensureFiniteArray("std", props.std);
@@ -41,6 +45,7 @@ export class CancellationModel {
     this.ensureNoDuplicates(props.featureOrder);
     return new CancellationModel(
       ModelVersion.fromDate(props.date),
+      props.ballParkId,
       props.featureOrder,
       props.coefficients,
       props.intercept,

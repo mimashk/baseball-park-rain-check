@@ -1,10 +1,13 @@
+import { BallParkId } from "../../../domain/scheduledGame/valueObjects/BallPark";
+
 export interface RunTrainingPipelineResponse {
   message: string;
-  model: {
+  results: {
     version: string;
+    ballParkId: BallParkId;
     featureOrder: string[];
     coefficients: number[];
     intercept: number;
     trainedCount: number;
-  };
+  }[];
 }

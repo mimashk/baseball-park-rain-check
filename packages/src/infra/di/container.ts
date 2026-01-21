@@ -28,9 +28,9 @@ import { HanshinScheduledGameScraper } from "../providers/scheduledGame/HanshinS
 import { HanshinScheduledGameFormatter } from "../providers/scheduledGame/HanshinScheduledGameFormatter";
 import { HanshinScheduledGameFetcher } from "../providers/scheduledGame/HanshinScheduledGameFetcher";
 
-import { HanshinPastGameScraper } from "../providers/pastGameRecord/HanshinPastGameScraper";
-import { HanshinPastGameFormatter } from "../providers/pastGameRecord/HanshinPastGameFormatter";
-import { HanshinPastGameFetcher } from "../providers/pastGameRecord/HanshinPastGameFetcher";
+import { PastGameScraper } from "../providers/pastGameRecord/PastGameScraper";
+import { PastGameFormatter } from "../providers/pastGameRecord/PastGameFormatter";
+import { PastGameRecordFetcherImpl } from "../providers/pastGameRecord/PastGameFetcher";
 
 import { OpenMeteoClient } from "../providers/openmeteo/OpenMeteoClient";
 import { OpenMeteoWeatherProvider } from "../providers/openmeteo/OpenMeteoWeatherProvider";
@@ -83,9 +83,9 @@ export type InfraCradle = {
   scheduledGameFormatter: HanshinScheduledGameFormatter;
   scheduledGameFetcher: HanshinScheduledGameFetcher;
 
-  pastGameScraper: HanshinPastGameScraper;
-  pastGameFormatter: HanshinPastGameFormatter;
-  pastGameFetcher: HanshinPastGameFetcher;
+  pastGameScraper: PastGameScraper;
+  pastGameFormatter: PastGameFormatter;
+  pastGameFetcher: PastGameRecordFetcherImpl;
 
   openMeteoClient: OpenMeteoClient;
   weatherProvider: OpenMeteoWeatherProvider;
@@ -182,17 +182,17 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
       { lifetime: Lifetime.SINGLETON }
     ),
 
-    pastGameScraper: asClass(HanshinPastGameScraper, {
+    pastGameScraper: asClass(PastGameScraper, {
       lifetime: Lifetime.SINGLETON,
     }),
     pastGameFormatter: asFunction(
       ({ teamNameMapper, ballParkNameMapper }: InfraCradle) =>
-        new HanshinPastGameFormatter(teamNameMapper, ballParkNameMapper),
+        new PastGameFormatter(teamNameMapper, ballParkNameMapper),
       { lifetime: Lifetime.SINGLETON }
     ),
     pastGameFetcher: asFunction(
       ({ pastGameScraper, pastGameFormatter }: InfraCradle) =>
-        new HanshinPastGameFetcher(pastGameScraper, pastGameFormatter),
+        new PastGameRecordFetcherImpl(pastGameScraper, pastGameFormatter),
       { lifetime: Lifetime.SINGLETON }
     ),
 

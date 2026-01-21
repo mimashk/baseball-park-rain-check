@@ -6,11 +6,15 @@ import { CancellationModelDto } from "../../../application/shared/dtos/Cancellat
 import { CancellationFeaturePreprocessor } from "./CancellationFeaturePreprocessor";
 import { featureOrder } from "./FeatureOrder";
 import { InfrastructureError } from "../../../shared/errors/InfrastructureError";
+import { BallParkId } from "../../../domain/scheduledGame/valueObjects/BallPark";
 
 export class CancellationModelTrainerImpl implements CancellationModelTrainer {
   private readonly featureOrder = featureOrder;
 
-  async train(rows: TrainingRow[]): Promise<CancellationModelDto> {
+  async train(
+    rows: TrainingRow[],
+    ballParkId: BallParkId
+  ): Promise<CancellationModelDto> {
     const finiteRows = CancellationFeaturePreprocessor.filterFiniteRows(rows);
     const features = finiteRows.map((row) =>
       CancellationFeaturePreprocessor.toFeatureVector(row.x)
@@ -36,6 +40,7 @@ export class CancellationModelTrainerImpl implements CancellationModelTrainer {
 
       return {
         date: new Date(),
+        ballParkId,
         featureOrder: [...this.featureOrder],
         coefficients,
         intercept,

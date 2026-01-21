@@ -11,6 +11,7 @@ import { TransactionContext } from "../../../../domain/shared/interfaces/Transac
 import { DbError } from "../../../../shared/errors/DbError";
 import { AppError } from "../../../../shared/errors/AppError";
 import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
+import { BallParkId } from "../../../../domain/scheduledGame/valueObjects/BallPark";
 
 type CancellationModelPersistence = Prisma.CancellationModelCreateInput &
   Prisma.CancellationModelUpdateInput;
@@ -35,7 +36,12 @@ export class PrismaCancellationModelRepository
     const persistence = this.toPersistence(model);
     try {
       await this.prisma.cancellationModel.upsert({
-        where: { version: persistence.version },
+        where: {
+          version_ballParkId: {
+            version: persistence.version,
+            ballParkId: persistence.ballParkId,
+          },
+        },
         create: persistence,
         update: persistence,
       });
@@ -47,32 +53,15 @@ export class PrismaCancellationModelRepository
     }
   }
 
-  async findLatest(): Promise<CancellationModel | null> {
+  async findLatest(ballParkId: BallParkId): Promise<CancellationModel | null> {
     let row: CancellationModelModel | null;
     try {
       row = await this.prisma.cancellationModel.findFirst({
         orderBy: { createdAt: "desc" },
+        where: { ballParkId },
       });
     } catch (err) {
       throw new DbError("キャンセルモデルの取得に失敗しました", { cause: err });
-    }
-    if (!row) return null;
-    return this.mapRow(row);
-  }
-
-  async findByVersion(
-    version: ModelVersion
-  ): Promise<CancellationModel | null> {
-    let row: CancellationModelModel | null;
-    try {
-      row = await this.prisma.cancellationModel.findUnique({
-        where: { version: version.toString() },
-      });
-    } catch (err) {
-      throw new DbError("キャンセルモデルの取得に失敗しました", {
-        cause: err,
-        details: { version: version.toString() },
-      });
     }
     if (!row) return null;
     return this.mapRow(row);
@@ -83,6 +72,7 @@ export class PrismaCancellationModelRepository
   ): CancellationModelPersistence {
     return {
       version: model.version.toString(),
+      ballParkId: model.ballParkId,
       featureOrder: model.featureOrder as Prisma.InputJsonValue,
       coefficients: model.coefficients as Prisma.InputJsonValue,
       intercept: model.intercept,
@@ -109,6 +99,7 @@ export class PrismaCancellationModelRepository
     const date = version.toDate();
     return CancellationModel.create({
       date,
+      ballParkId: row.ballParkId as unknown as BallParkId,
       featureOrder: row.featureOrder as string[],
       coefficients: row.coefficients as number[],
       intercept: row.intercept,

@@ -56,7 +56,7 @@ export class PredictCancellationUseCase {
 
       if (!game) throw new NotFoundError("今日の試合が見つかりません");
 
-      const model = await this.modelRepository.findLatest();
+      const model = await this.modelRepository.findLatest(game.ballPark.id());
       if (!model) throw new NotFoundError("モデルが見つかりません", {});
 
       const requiredDays = Math.ceil(req.timeWindowAfterHours / 24);
