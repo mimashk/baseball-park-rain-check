@@ -1,9 +1,14 @@
 import { Team } from "@/types/top";
+import { TEAM_LOGO } from "@/lib/ui/teamLogo";
 
 type BlockProps = { team: Team; align: "left" | "right" };
 type RowProps = { team: Team };
 
 export function TeamBlock({ team, align }: BlockProps) {
+  const logoUrl = TEAM_LOGO[team.teamId];
+  if (!logoUrl) {
+    return null;
+  }
   return (
     <div
       className={`flex items-center gap-2 ${
@@ -11,33 +16,38 @@ export function TeamBlock({ team, align }: BlockProps) {
       }`}
     >
       <img
-        src={team.logoUrl}
+        src={logoUrl}
         alt={team.name}
-        className="h-10 w-10 rounded-full border border-[color:var(--border)] bg-white object-contain"
+        className="h-10 w-10 md:h-18 md:w-18 lg:h-24 lg:w-24 bg-white object-contain"
       />
       <div
         className={`flex flex-col ${
           align === "right" ? "items-end" : "items-start"
         }`}
       >
-        <span className="text-sm text-muted">
-          {align === "left" ? "Home" : "Away"}
+        <span className="text-sm sm:text-base md:text-2xl font-semibold text-strong leading-snug break-words">
+          {team.name}
         </span>
-        <span className="text-base font-semibold text-strong">{team.name}</span>
       </div>
     </div>
   );
 }
 
 export function TeamRow({ team }: RowProps) {
+  const logoUrl = TEAM_LOGO[team.teamId];
+  if (!logoUrl) {
+    return null;
+  }
   return (
     <div className="flex items-center gap-2">
       <img
-        src={team.logoUrl}
+        src={logoUrl}
         alt={team.name}
         className="h-8 w-8 rounded-full border border-[color:var(--border)] bg-white object-contain"
       />
-      <span className="text-sm font-semibold text-strong">{team.name}</span>
+      <span className="text-sm sm:text-base font-semibold text-strong leading-snug break-words">
+        {team.name}
+      </span>
     </div>
   );
 }

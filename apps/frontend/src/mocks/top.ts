@@ -1,6 +1,18 @@
-import { TopResponse } from "@/types/top";
+import { TodayGame, TopResponse } from "@/types/top";
 
-type TeamId = "HT" | "YG";
+type TeamId =
+  | "HT"
+  | "YG"
+  | "YS"
+  | "C"
+  | "D"
+  | "DB"
+  | "F"
+  | "M"
+  | "B"
+  | "L"
+  | "H"
+  | "E";
 
 const baseWeather = {
   text: "弱い雨",
@@ -10,17 +22,22 @@ const baseWeather = {
   precipMm: 1.2,
 };
 
-function buildHourly(baseDateUtc: string) {
-  return [0, 1, 2, 3, 4, 5].map((h) => {
-    const hour = 9 + h;
-    const hh = String(hour).padStart(2, "0");
+function buildHourly(startAtUtc: string) {
+  const base = new Date(startAtUtc);
+  return Array.from({ length: 6 }, (_, i) => {
+    const t = new Date(base);
+    t.setHours(t.getHours() + (i - 3));
+
+    const rawPrecipMm = 0.5 + (i - 3) * 0.2;
+    const rawProb = 40 + (i - 3) * 5;
+
     return {
-      timeUtc: `${baseDateUtc}T${hh}:00:00Z`,
+      timeUtc: t.toISOString(),
       weather: {
         ...baseWeather,
-        temperatureC: 7 + h,
-        precipProbPct: 40 + h * 5,
-        precipMm: 0.5 + h * 0.2,
+        temperatureC: 7 + (i - 3),
+        precipProbPct: Math.max(0, Math.round(rawProb)),
+        precipMm: Math.max(0, Math.round(rawPrecipMm * 10) / 10),
       },
     };
   });
@@ -49,8 +66,8 @@ function buildWeekly(
               gameId: `mock-${dJst}-${home}-${away}`,
               startAtUtc: `${dJst}T10:00:00Z`,
               ballpark,
-              home: { teamId: home, name: home === "HT" ? "阪神" : "巨人" },
-              away: { teamId: away, name: away === "HT" ? "阪神" : "巨人" },
+              home: { teamId: home, name: "阪神" },
+              away: { teamId: away, name: "巨人" },
             }
           : null,
     };
@@ -59,26 +76,27 @@ function buildWeekly(
 
 export function buildMockTop(teamId: TeamId, dateJst?: string): TopResponse {
   const date = dateJst ?? "2026-01-19";
-  const isHT = teamId === "HT";
 
-  const home: TeamId = isHT ? "HT" : "YG";
-  const away: TeamId = isHT ? "YG" : "HT";
-  const ballpark = isHT ? "阪神甲子園球場" : "東京ドーム";
+  const home: TeamId = "HT";
+  const away: TeamId = "YG";
+  const ballpark = "阪神甲子園球場";
+
+  const todayGame: TodayGame = {
+    gameId: `mock-today-${home}-${away}`,
+    startAtUtc: `${date}T10:00:00Z`,
+    ballpark,
+    status: "SCHEDULED",
+    home: { teamId: home, name: "阪神" },
+    away: { teamId: away, name: "巨人" },
+    weatherAtGameTime: baseWeather,
+    cancelProbPct: 35,
+  };
 
   return {
     batchCompletedAtUtc: `${date}T00:10:00Z`,
     dateJst: date,
-    todayGame: {
-      gameId: `mock-today-${home}-${away}`,
-      startAtUtc: `${date}T10:00:00Z`,
-      ballpark,
-      status: "SCHEDULED",
-      home: { teamId: home, name: home === "HT" ? "阪神" : "巨人" },
-      away: { teamId: away, name: away === "HT" ? "阪神" : "巨人" },
-      weatherAtGameTime: baseWeather,
-      cancelProbPct: 35,
-    },
-    hourlyWindow: buildHourly(date),
+    todayGame,
+    hourlyWindow: buildHourly(todayGame.startAtUtc),
     weekly: buildWeekly(date, home, away, ballpark),
   };
 }

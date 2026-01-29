@@ -71,7 +71,7 @@ export class GetDashboardQuery {
       );
       const hourlyMap = new Map(hourly.map((h) => [toHourKeyUtc(h.date), h]));
 
-      const hourlyWindow = Array.from({ length: 7 }, (_, i) => {
+      const hourlyWindow = Array.from({ length: 6 }, (_, i) => {
         const t = addHours(baseUtc, i - 3);
         const hit = hourlyMap.get(toHourKeyUtc(t));
         return {
@@ -81,8 +81,14 @@ export class GetDashboardQuery {
                 text: hit.weatherPattern.labelJa(),
                 wmoCode: hit.weatherPattern.code(),
                 temperatureC: hit.temperature.toNumber(),
-                precipProbPct: hit.precipitationProbability.toPercent(),
-                precipMm: hit.rainFall.toNumber(),
+                precipProbPct: Math.max(
+                  0,
+                  Math.round(hit.precipitationProbability.toPercent())
+                ),
+                precipMm: Math.max(
+                  0,
+                  Math.round(hit.rainFall.toNumber() * 10) / 10
+                ),
               }
             : null,
         };

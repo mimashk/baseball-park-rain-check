@@ -10,10 +10,9 @@ export function HourlyForecast({ hourly }: Props) {
   return (
     <div className="p-5 flex flex-col gap-3">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-strong">時間別予報（±3h）</h2>
-        <p className="text-sm text-muted">
-          試合開始を中心に -3h〜+3h / 欠損は &quot;--&quot;
-        </p>
+        <h2 className="text-lg font-semibold text-strong">
+          試合開始時間周辺の天気予報
+        </h2>
       </div>
       <div className="flex gap-3 overflow-x-auto pb-2">
         {hourly.map((slot, idx) => (
