@@ -2,7 +2,8 @@ import { DomainError } from "../../../shared/errors/DomainError";
 import { ensureTextPresent } from "../../shared/utils/ensurePresent";
 
 export const GameCategoryType = {
-  REGULAR_SEASON: "セ・リーグ公式戦",
+  CENTRAL_LEAGUE_REGULAR_SEASON: "セ・リーグ公式戦",
+  PACIFIC_LEAGUE_REGULAR_SEASON: "パ・リーグ公式戦",
   EXHIBITION: "オープン戦",
   INTERLEAGUE: "セ・パ交流戦",
   CLIMAX_SERIES: "クライマックスシリーズ",

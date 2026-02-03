@@ -58,13 +58,6 @@ export class RefreshScheduledGameAndDailyWeatherForecastUsecase {
 
       const scheduledGames = sortedScheduledGames.map((rawScheduledGame) => {
         const domainProps = mapScheduledGameDtoToCreateProps(rawScheduledGame);
-        // [TODO]甲子園だけにするかどうかは考えよう
-        // if (
-        //   domainProps.ballPark !==
-        //   BallParkCatalog.HANSHIN_KOSHIEN_STADIUM.labelJa
-        // ) {
-        //   return null;
-        // }
         return ScheduledGame.create(domainProps);
       });
       const filteredScheduledGames = scheduledGames.filter((g) => g !== null);

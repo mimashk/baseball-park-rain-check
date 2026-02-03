@@ -1,6 +1,6 @@
 import { GameStatusMapper } from "../../../application/scheduledGame/interfaces/GameStatusMapper";
 import { GameStatusType } from "../../../domain/scheduledGame/valueObjects/GameStatus";
-import { GameStatusDictionary } from "./GameStatusDictionary";
+import { GameStatusDictionary } from "../sportsNavi/GameStatusDictionary";
 
 export class GameStatusMapperImpl implements GameStatusMapper {
   constructor(

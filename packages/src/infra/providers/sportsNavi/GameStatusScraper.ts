@@ -64,29 +64,35 @@ export class GameStatusScraper {
       const $ = cheerio.load(html);
       const results: GameStatusInfo[] = [];
 
-      $(".bb-score__item").each((_, item) => {
-        const container = $(item);
+      $(".bb-score").each((_, section) => {
+        $(section)
+          .find(".bb-score__item")
+          .each((_, item) => {
+            const container = $(item);
 
-        const homeTeam = this.emptyToNull(
-          this.normalizeText(
-            container.find("p.bb-score__homeLogo").text().trim()
-          )
-        );
-        if (homeTeam === null) return;
+            const homeTeam = this.emptyToNull(
+              this.normalizeText(
+                container.find("p.bb-score__homeLogo").text().trim()
+              )
+            );
+            if (homeTeam === null) return;
 
-        const awayTeam = this.emptyToNull(
-          this.normalizeText(
-            container.find("p.bb-score__awayLogo").text().trim()
-          )
-        );
-        if (awayTeam === null) return;
+            const awayTeam = this.emptyToNull(
+              this.normalizeText(
+                container.find("p.bb-score__awayLogo").text().trim()
+              )
+            );
+            if (awayTeam === null) return;
 
-        const status = this.emptyToNull(
-          this.normalizeText(container.find("p.bb-score__link").text().trim())
-        );
-        if (status === null) return;
+            const status = this.emptyToNull(
+              this.normalizeText(
+                container.find("p.bb-score__link").text().trim()
+              )
+            );
+            if (status === null) return;
 
-        results.push({ homeTeam, awayTeam, status });
+            results.push({ homeTeam, awayTeam, status });
+          });
       });
 
       if (!results.length) {

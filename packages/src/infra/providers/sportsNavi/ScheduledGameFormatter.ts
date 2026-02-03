@@ -1,12 +1,16 @@
 import { BallParkNameMapper } from "../../../application/shared/interfaces/BallParkNameMapper";
 import { ScheduledGameDto } from "../../../application/refresher/dtos/ScheduledGameDto";
 import { TeamNameMapper } from "../../../application/shared/interfaces/TeamNameMapper";
-import { ScheduledGameInfo } from "./HanshinScheduledGameScraper";
+import { GameCategoryMapper } from "../../../application/refresher/interfaces/GameCategoryMapper";
+import { GameCategoryType } from "@domain/scheduledGame/valueObjects/GameCategory";
+import { InfrastructureError } from "../../../shared/errors/InfrastructureError";
+import { ScheduledGameInfo } from "./ScheduledGameScraper";
 
-export class HanshinScheduledGameFormatter {
+export class ScheduledGameFormatter {
   constructor(
     private readonly teamNameMapper: TeamNameMapper,
-    private readonly ballParkNameMapper: BallParkNameMapper
+    private readonly ballParkNameMapper: BallParkNameMapper,
+    private readonly gameCategoryMapper: GameCategoryMapper
   ) {}
   toDto(gameInfo: ScheduledGameInfo): ScheduledGameDto | null {
     const homeTeam = this.teamNameMapper.toDomainTeam(gameInfo.homeTeam);
@@ -29,13 +33,8 @@ export class HanshinScheduledGameFormatter {
     const ballPark = this.ballParkNameMapper.toDomainBallPark(
       gameInfo.ballPark
     );
-    return {
-      date,
-      category: gameInfo.category,
-      homeTeam,
-      awayTeam,
-      ballPark,
-    };
+    const category = this.requireCategory(gameInfo.category);
+    return { date, category, homeTeam, awayTeam, ballPark };
   }
 
   private buildDate(
@@ -51,5 +50,16 @@ export class HanshinScheduledGameFormatter {
       parseInt(startTime.split(":")[0]),
       parseInt(startTime.split(":")[1])
     );
+  }
+
+  private requireCategory(external: string): GameCategoryType {
+    const category = this.gameCategoryMapper.toDomainCategory(external);
+    if (!category) {
+      throw new InfrastructureError(
+        "mapping",
+        `未知のゲームカテゴリ: ${external}`
+      );
+    }
+    return category;
   }
 }

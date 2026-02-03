@@ -18,15 +18,15 @@ import { PrismaBallParkObservedHourlyWeatherRepository } from "../persistence/my
 import { PrismaPastGameRecordRepository } from "../persistence/mysql/repository/PrismaPastGameRecordRepository";
 import { PrismaCancellationModelRepository } from "../persistence/mysql/repository/PrismaCancellationModelRepository";
 
-import { TeamNameMapperImpl } from "../providers/shared/TeamNameMapperImpl";
-import { GameStatusMapperImpl } from "../providers/gameStatus/GameStatusMapperImpl";
-import { GameStatusScraper } from "../providers/gameStatus/GameStatusScraper";
-import { GameStatusFormatter } from "../providers/gameStatus/GameStatusFormatter";
-import { HanshinGameStatusFetcher } from "../providers/gameStatus/HanshinGameStatusFetcher";
+import { TeamNameMapperImpl } from "../providers/mapper/TeamNameMapperImpl";
+import { GameStatusMapperImpl } from "../providers/mapper/GameStatusMapperImpl";
+import { GameStatusScraper } from "../providers/sportsNavi/GameStatusScraper";
+import { GameStatusFormatter } from "../providers/sportsNavi/GameStatusFormatter";
+import { GameStatusFetcherImpl } from "../providers/sportsNavi/GameStatusFetcherImpl";
 
-import { HanshinScheduledGameScraper } from "../providers/scheduledGame/HanshinScheduledGameScraper";
-import { HanshinScheduledGameFormatter } from "../providers/scheduledGame/HanshinScheduledGameFormatter";
-import { HanshinScheduledGameFetcher } from "../providers/scheduledGame/HanshinScheduledGameFetcher";
+import { ScheduledGameScraper } from "../providers/sportsNavi/ScheduledGameScraper";
+import { ScheduledGameFormatter } from "../providers/sportsNavi/ScheduledGameFormatter";
+import { ScheduledGameFetcherImpl } from "../providers/sportsNavi/ScheduledGameFetcherImpl";
 
 import { PastGameScraper } from "../providers/pastGameRecord/PastGameScraper";
 import { PastGameFormatter } from "../providers/pastGameRecord/PastGameFormatter";
@@ -50,10 +50,11 @@ import { FetchObservedHourlyWeatherService } from "../../application/training/se
 import { TrainModelService } from "../../application/training/services/TrainModelService";
 import { UpdateGameStatusService } from "../../application/scheduledGame/services/UpdateGameStatusService";
 import { PrismaBallParkHourlyWeatherForecastRepository } from "../persistence/mysql/repository/PrismaBallParkHourlyWeatherForecastRepository";
-import { BallParkNameMapperImpl } from "../providers/shared/BallParkNameMapperImpl";
+import { BallParkNameMapperImpl } from "../providers/mapper/BallParkNameMapperImpl";
 import { ScheduleInitialGameCheckpointUseCase } from "../../application/scheduledGame/usecases/ScheduleInitialGameCheckpointUseCase";
 import { RefreshScheduledGameAndDailyWeatherForecastUsecase } from "../../application/refresher/usecases/RefreshScheduledGameAndDailyWeatherForecastUsecase";
 import { GetDashboardQuery } from "../../application/dashboard/queries/GetDashboardQuery";
+import { GameCategoryMapperImpl } from "../providers/mapper/GameCategoryMapperImpl";
 
 const defaultCloudSchedulerConfig: CloudSchedulerConfig = {
   projectId: "baseball-park-rain-check",
@@ -74,14 +75,15 @@ export type InfraCradle = {
   teamNameMapper: TeamNameMapperImpl;
   ballParkNameMapper: BallParkNameMapperImpl;
   gameStatusMapper: GameStatusMapperImpl;
+  gameCategoryMapper: GameCategoryMapperImpl;
 
   gameStatusScraper: GameStatusScraper;
   gameStatusFormatter: GameStatusFormatter;
-  gameStatusFetcher: HanshinGameStatusFetcher;
+  gameStatusFetcher: GameStatusFetcherImpl;
 
-  scheduledGameScraper: HanshinScheduledGameScraper;
-  scheduledGameFormatter: HanshinScheduledGameFormatter;
-  scheduledGameFetcher: HanshinScheduledGameFetcher;
+  scheduledGameScraper: ScheduledGameScraper;
+  scheduledGameFormatter: ScheduledGameFormatter;
+  scheduledGameFetcher: ScheduledGameFetcherImpl;
 
   pastGameScraper: PastGameScraper;
   pastGameFormatter: PastGameFormatter;
@@ -161,21 +163,29 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
     ),
     gameStatusFetcher: asFunction(
       ({ gameStatusScraper, gameStatusFormatter }: InfraCradle) =>
-        new HanshinGameStatusFetcher(gameStatusScraper, gameStatusFormatter),
+        new GameStatusFetcherImpl(gameStatusScraper, gameStatusFormatter),
       { lifetime: Lifetime.SINGLETON }
     ),
 
-    scheduledGameScraper: asClass(HanshinScheduledGameScraper, {
+    scheduledGameScraper: asClass(ScheduledGameScraper, {
       lifetime: Lifetime.SINGLETON,
     }),
     scheduledGameFormatter: asFunction(
-      ({ teamNameMapper, ballParkNameMapper }: InfraCradle) =>
-        new HanshinScheduledGameFormatter(teamNameMapper, ballParkNameMapper),
+      ({
+        teamNameMapper,
+        ballParkNameMapper,
+        gameCategoryMapper,
+      }: InfraCradle) =>
+        new ScheduledGameFormatter(
+          teamNameMapper,
+          ballParkNameMapper,
+          gameCategoryMapper
+        ),
       { lifetime: Lifetime.SINGLETON }
     ),
     scheduledGameFetcher: asFunction(
       ({ scheduledGameScraper, scheduledGameFormatter }: InfraCradle) =>
-        new HanshinScheduledGameFetcher(
+        new ScheduledGameFetcherImpl(
           scheduledGameScraper,
           scheduledGameFormatter
         ),
