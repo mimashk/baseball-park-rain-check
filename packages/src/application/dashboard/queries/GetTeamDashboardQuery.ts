@@ -4,8 +4,8 @@ import { BallParkDailyWeatherForecastRepository } from "../../../domain/weatherF
 import { GameStatusType } from "../../../domain/scheduledGame/valueObjects/GameStatus";
 import { ValidationError } from "../../../shared/errors/ValidationError";
 import { DomainError } from "../../../shared/errors/DomainError";
-import { GetDashboardOutput } from "../dtos/GetDashboardOutput";
-import { GetDashboardInput } from "../dtos/GetDashboardInput";
+import { GetTeamDashboardOutput } from "../dtos/GetTeamDashboardOutput";
+import { GetTeamDashboardInput } from "../dtos/GetTeamDashboardInput";
 import {
   addDaysJst,
   addHours,
@@ -17,16 +17,19 @@ import {
 import { BaseballTeam } from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
 import { DashboardGameDto } from "../dtos/DashboardGameDto";
 import { BatchStatusRepository } from "../interfaces/BatchStatusRepository";
+import { CancellationPredictionRepository } from "@application/prediction/interfaces/CancellationPredictionRepository";
+import { NotFoundError } from "../../../shared/errors/NotFoundError";
 
-export class GetDashboardQuery {
+export class GetTeamDashboardQuery {
   constructor(
     private readonly scheduledGameRepository: ScheduledGameRepository,
     private readonly hourlyRepository: BallParkHourlyWeatherForecastRepository,
     private readonly dailyRepository: BallParkDailyWeatherForecastRepository,
-    private readonly batchStatusRepository: BatchStatusRepository
+    private readonly batchStatusRepository: BatchStatusRepository,
+    private readonly cancellationPredictionRepository: CancellationPredictionRepository
   ) {}
 
-  async execute(req: GetDashboardInput): Promise<GetDashboardOutput> {
+  async execute(req: GetTeamDashboardInput): Promise<GetTeamDashboardOutput> {
     try {
       const dateJst = req.dateJst ?? toJstDateString(new Date());
       const teamId = BaseballTeam.from(req.teamId).id();
@@ -96,6 +99,12 @@ export class GetDashboardQuery {
 
       const weatherAtGameTime = hourlyMap.get(toHourKeyUtc(baseUtc)) ?? null;
 
+      const predictionMap =
+        await this.cancellationPredictionRepository.findLatestByGameIds([
+          todayGame.id.toString(),
+        ]);
+      const prediction = predictionMap.get(todayGame.id.toString());
+
       const home = {
         teamId: todayGame.homeTeam.id(),
         name: BaseballTeam.from(todayGame.homeTeam.id()).labelJa(),
@@ -122,7 +131,7 @@ export class GetDashboardQuery {
               precipMm: weatherAtGameTime.rainFall.toNumber(),
             }
           : null,
-        cancelProbPct: null,
+        cancelProbPct: prediction?.probability ?? null,
       };
 
       const weekly = await this.buildWeekly(dateJst, teamId);

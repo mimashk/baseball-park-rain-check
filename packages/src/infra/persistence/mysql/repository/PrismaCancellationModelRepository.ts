@@ -25,17 +25,25 @@ export class PrismaCancellationModelRepository
   implements CancellationModelRepository
 {
   constructor(
-    private readonly prisma: PrismaClient = PrismaClientWrapper.getInstance()
+    private readonly prisma: PrismaClient = PrismaClientWrapper.getInstance(),
+    private readonly trx?: Prisma.TransactionClient
   ) {}
 
-  withTransaction(tx: TransactionContext): CancellationModelRepository {
-    return new PrismaCancellationModelRepository(tx as unknown as PrismaClient);
+  withTransaction(trx: TransactionContext): CancellationModelRepository {
+    return new PrismaCancellationModelRepository(
+      this.prisma,
+      trx as unknown as Prisma.TransactionClient
+    );
+  }
+
+  private db() {
+    return this.trx ?? this.prisma;
   }
 
   async save(model: CancellationModel): Promise<void> {
     const persistence = this.toPersistence(model);
     try {
-      await this.prisma.cancellationModel.upsert({
+      await this.db().cancellationModel.upsert({
         where: {
           version_ballParkId: {
             version: persistence.version,
@@ -56,7 +64,7 @@ export class PrismaCancellationModelRepository
   async findLatest(ballParkId: BallParkId): Promise<CancellationModel | null> {
     let row: CancellationModelModel | null;
     try {
-      row = await this.prisma.cancellationModel.findFirst({
+      row = await this.db().cancellationModel.findFirst({
         orderBy: { createdAt: "desc" },
         where: { ballParkId },
       });

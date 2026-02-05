@@ -53,8 +53,10 @@ import { PrismaBallParkHourlyWeatherForecastRepository } from "../persistence/my
 import { BallParkNameMapperImpl } from "../providers/mapper/BallParkNameMapperImpl";
 import { ScheduleInitialGameCheckpointUseCase } from "../../application/scheduledGame/usecases/ScheduleInitialGameCheckpointUseCase";
 import { RefreshScheduledGameAndDailyWeatherForecastUsecase } from "../../application/refresher/usecases/RefreshScheduledGameAndDailyWeatherForecastUsecase";
-import { GetDashboardQuery } from "../../application/dashboard/queries/GetDashboardQuery";
+import { GetTeamDashboardQuery } from "../../application/dashboard/queries/GetTeamDashboardQuery";
 import { GameCategoryMapperImpl } from "../providers/mapper/GameCategoryMapperImpl";
+import { PrismaCancellationPredictionRepository } from "../persistence/mysql/repository/PrismaCancellationPredictionRepository";
+import { GetTopDashboardQuery } from "../../application/dashboard/queries/GetTopDashboardQuery";
 
 const defaultCloudSchedulerConfig: CloudSchedulerConfig = {
   projectId: "baseball-park-rain-check",
@@ -102,6 +104,7 @@ export type InfraCradle = {
   ballParkObservedHourlyWeatherRepository: PrismaBallParkObservedHourlyWeatherRepository;
   pastGameRecordRepository: PrismaPastGameRecordRepository;
   cancellationModelRepository: PrismaCancellationModelRepository;
+  cancellationPredictionRepository: PrismaCancellationPredictionRepository;
 
   cancellationModelTrainer: CancellationModelTrainerImpl;
   cancellationPredictor: CancellationPredictorImpl;
@@ -120,7 +123,8 @@ export type InfraCradle = {
   trainModelService: TrainModelService;
   updateGameStatusService: UpdateGameStatusService;
 
-  getDashboardQuery: GetDashboardQuery;
+  getTeamDashboardQuery: GetTeamDashboardQuery;
+  getTopDashboardQuery: GetTopDashboardQuery;
 };
 
 export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
@@ -151,6 +155,11 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
     }),
     gameStatusMapper: asClass(GameStatusMapperImpl, {
       lifetime: Lifetime.SINGLETON,
+      injectionMode: InjectionMode.CLASSIC,
+    }),
+    gameCategoryMapper: asClass(GameCategoryMapperImpl, {
+      lifetime: Lifetime.SINGLETON,
+      injectionMode: InjectionMode.CLASSIC,
     }),
 
     gameStatusScraper: asClass(GameStatusScraper, {
@@ -253,6 +262,11 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
         new PrismaCancellationModelRepository(prisma),
       { lifetime: Lifetime.SINGLETON }
     ),
+    cancellationPredictionRepository: asFunction(
+      ({ prisma }: InfraCradle) =>
+        new PrismaCancellationPredictionRepository(prisma),
+      { lifetime: Lifetime.SINGLETON }
+    ),
 
     cancellationModelTrainer: asClass(CancellationModelTrainerImpl, {
       lifetime: Lifetime.SINGLETON,
@@ -323,6 +337,7 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
         cancellationPredictor,
         hourlyWeatherForecastProvider,
         ballParkHourlyWeatherForecastRepository,
+        cancellationPredictionRepository,
         transactionExecutor,
       }: InfraCradle) =>
         new PredictCancellationUseCase(
@@ -331,6 +346,7 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
           cancellationPredictor,
           hourlyWeatherForecastProvider,
           ballParkHourlyWeatherForecastRepository,
+          cancellationPredictionRepository,
           transactionExecutor
         ),
       { lifetime: Lifetime.SINGLETON }
@@ -376,7 +392,10 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
       { lifetime: Lifetime.SINGLETON }
     ),
 
-    getDashboardQuery: asClass(GetDashboardQuery, {
+    getTeamDashboardQuery: asClass(GetTeamDashboardQuery, {
+      lifetime: Lifetime.SINGLETON,
+    }),
+    getTopDashboardQuery: asClass(GetTopDashboardQuery, {
       lifetime: Lifetime.SINGLETON,
     }),
   });

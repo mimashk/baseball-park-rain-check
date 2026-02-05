@@ -1,4 +1,5 @@
-import { Hourly, TodayGame } from "../../types/top";
+import { Hourly } from "@/types/HourlyWeather";
+import { TodayGame } from "@/types/TodayGame";
 import { cancelColor } from "../../lib/utils/cancelProb";
 import { fmtDate, fmtTime } from "../../lib/formatters/jst";
 import { InfoRow } from "../ui/InfoRow";

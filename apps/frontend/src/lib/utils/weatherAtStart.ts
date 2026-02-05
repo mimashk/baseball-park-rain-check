@@ -1,4 +1,5 @@
-import { Hourly, Weather } from "@/types/top";
+import { Hourly } from "@/types/HourlyWeather";
+import { Weather } from "@/types/Weather";
 
 export function getWeatherAtStart(
   startAtUtc: string | null | undefined,

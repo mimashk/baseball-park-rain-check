@@ -23,7 +23,9 @@ export class GameStatusScraper {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
-    const url = `https://baseball.yahoo.co.jp/npb/schedule/?date=${year}-${month}-${day}`;
+    const mm = String(month).padStart(2, "0");
+    const dd = String(day).padStart(2, "0");
+    const url = `https://baseball.yahoo.co.jp/npb/schedule/?date=${year}-${mm}-${dd}`;
 
     let res: Response;
     try {

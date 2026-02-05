@@ -1,4 +1,4 @@
-import { TodayGame } from "@/types/top";
+import { TodayGame } from "@/types/TodayGame";
 
 type StatusInfo = {
   label: string;

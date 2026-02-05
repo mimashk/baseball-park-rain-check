@@ -1,4 +1,4 @@
-import { Weekly } from "@/types/top";
+import { Weekly } from "@/types/WeeklyWeather";
 import { fmtDate, fmtTime } from "@/lib/formatters/jst";
 import { WeatherIcon } from "@/components/weather/WeatherIcon";
 import { TeamRow } from "@/components/ui/TeamAvatar";

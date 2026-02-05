@@ -1,18 +1,6 @@
-import { TodayGame, TopResponse } from "@/types/top";
-
-type TeamId =
-  | "HT"
-  | "YG"
-  | "YS"
-  | "C"
-  | "D"
-  | "DB"
-  | "F"
-  | "M"
-  | "B"
-  | "L"
-  | "H"
-  | "E";
+import { TeamDashboardResponse } from "@/types/TeamDashboardResponse";
+import { TodayGame } from "@/types/TodayGame";
+import { TeamId } from "@/types/TeamId";
 
 const baseWeather = {
   text: "弱い雨",
@@ -74,7 +62,10 @@ function buildWeekly(
   });
 }
 
-export function buildMockTop(teamId: TeamId, dateJst?: string): TopResponse {
+export function buildMockTeam(
+  teamId: string,
+  dateJst?: string
+): TeamDashboardResponse {
   const date = dateJst ?? "2026-01-19";
 
   const home: TeamId = "HT";
@@ -96,7 +87,7 @@ export function buildMockTop(teamId: TeamId, dateJst?: string): TopResponse {
     batchCompletedAtUtc: `${date}T00:10:00Z`,
     dateJst: date,
     todayGame,
-    hourlyWindow: buildHourly(todayGame.startAtUtc),
-    weekly: buildWeekly(date, home, away, ballpark),
+    hourlyWeathers: buildHourly(todayGame.startAtUtc),
+    weeklyWeathers: buildWeekly(date, home, away, ballpark),
   };
 }

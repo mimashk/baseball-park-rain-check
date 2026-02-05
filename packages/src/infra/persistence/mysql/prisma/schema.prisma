@@ -112,3 +112,17 @@ model CancellationModel {
   @@map("cancellation_models")
   @@unique([version, ballParkId])
 }
+
+model CancellationPrediction {
+  id           Int   @id @default(autoincrement())
+  gameId       String   @db.Char(36)
+  probability  Float
+  modelVersion String   @db.VarChar(64)
+  predictedAt  DateTime
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("cancellation_predictions")
+  @@unique([gameId])
+  @@index([predictedAt])
+}

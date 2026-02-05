@@ -1,26 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createInfraContainer } from "@infra/di/container";
-import { buildMockTop } from "@/mocks/top";
-
-export const runtime = "nodejs";
+import { buildMockTopDashboard } from "@/mocks/TopMock";
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const date = url.searchParams.get("date") ?? undefined;
-
-  const teamId = (process.env.FAN_TEAM_ID ?? "HT") as "HT" | "YG";
-
-  if (process.env.MOCK_TOP === "true") {
-    return NextResponse.json(buildMockTop(teamId, date));
+  if (process.env.USE_MOCK === "true") {
+    return NextResponse.json(buildMockTopDashboard());
   }
 
   const container = createInfraContainer();
-  const query = container.resolve("getDashboardQuery");
+  const query = container.resolve("getTopDashboardQuery");
 
-  const data = await query.execute({
-    dateJst: date,
-    teamId,
-  });
-
+  const data = await query.execute({ dateJst: date });
   return NextResponse.json(data);
 }

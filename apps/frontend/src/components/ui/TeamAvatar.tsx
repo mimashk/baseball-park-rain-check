@@ -1,4 +1,4 @@
-import { Team } from "@/types/top";
+import { Team } from "@/types/TopDashboardResponse";
 import { TEAM_LOGO } from "@/lib/ui/teamLogo";
 
 type BlockProps = { team: Team; align: "left" | "right" };

@@ -1,5 +1,17 @@
 export interface PredictCancellationResponse {
   message: string;
-  probability: number; // 0..1
-  modelVersion: string;
+  results: Array<
+    | {
+        success: true;
+        gameId: string;
+        probability: number;
+        modelVersion: string;
+      }
+    | {
+        success: false;
+        gameId: string;
+        modelVersion: string | null;
+        error: string;
+      }
+  >;
 }

@@ -1,4 +1,4 @@
-import { ScheduledGame as ScheduledGameModel } from "@prisma/client";
+import { Prisma, ScheduledGame as ScheduledGameModel } from "@prisma/client";
 import { ScheduledGame } from "../../../../domain/scheduledGame/entities/ScheduledGame";
 import { ScheduledGameRepository } from "../../../../domain/scheduledGame/repositoryInterface/ScheduledGameRepository";
 import { TeamId } from "../../../../domain/scheduledGame/valueObjects/BaseballTeam";
@@ -18,11 +18,19 @@ type ScheduledGamePersistence = Omit<
 
 export class PrismaScheduledGameRepository implements ScheduledGameRepository {
   constructor(
-    private readonly prisma: PrismaClient = PrismaClientWrapper.getInstance()
+    private readonly prisma: PrismaClient = PrismaClientWrapper.getInstance(),
+    private readonly trx?: Prisma.TransactionClient
   ) {}
 
-  withTransaction(tx: TransactionContext): ScheduledGameRepository {
-    return new PrismaScheduledGameRepository(tx as unknown as PrismaClient);
+  withTransaction(trx: TransactionContext): ScheduledGameRepository {
+    return new PrismaScheduledGameRepository(
+      this.prisma,
+      trx as unknown as Prisma.TransactionClient
+    );
+  }
+
+  private db() {
+    return this.trx ?? this.prisma;
   }
 
   async upsertMany(games: ScheduledGame[]): Promise<void> {
@@ -30,7 +38,7 @@ export class PrismaScheduledGameRepository implements ScheduledGameRepository {
     try {
       await Promise.all(
         data.map((row) =>
-          this.prisma.scheduledGame.upsert({
+          this.db().scheduledGame.upsert({
             where: { id: row.id },
             create: row,
             update: row,
@@ -47,7 +55,7 @@ export class PrismaScheduledGameRepository implements ScheduledGameRepository {
 
   async updateStatus(gameId: GameId, status: GameStatusType): Promise<void> {
     try {
-      await this.prisma.scheduledGame.update({
+      await this.db().scheduledGame.update({
         where: { id: gameId.toString() },
         data: { status },
       });
@@ -62,7 +70,7 @@ export class PrismaScheduledGameRepository implements ScheduledGameRepository {
   async findByDate(from: Date, to: Date): Promise<ScheduledGame[]> {
     let rows: ScheduledGameModel[];
     try {
-      rows = await this.prisma.scheduledGame.findMany({
+      rows = await this.db().scheduledGame.findMany({
         where: { date: { gte: from, lte: to } },
         orderBy: { date: "asc" },
       });
@@ -78,7 +86,7 @@ export class PrismaScheduledGameRepository implements ScheduledGameRepository {
   async findById(id: GameId): Promise<ScheduledGame | null> {
     let row: ScheduledGameModel | null;
     try {
-      row = await this.prisma.scheduledGame.findUnique({
+      row = await this.db().scheduledGame.findUnique({
         where: { id: id.toString() },
       });
     } catch (err) {
@@ -98,7 +106,7 @@ export class PrismaScheduledGameRepository implements ScheduledGameRepository {
     end.setDate(end.getDate() + 1);
     let rows: ScheduledGameModel[];
     try {
-      rows = await this.prisma.scheduledGame.findMany({
+      rows = await this.db().scheduledGame.findMany({
         where: { date: { gte: start, lte: end } },
       });
     } catch (err) {

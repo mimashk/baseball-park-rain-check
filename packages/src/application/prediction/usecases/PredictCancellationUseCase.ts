@@ -19,6 +19,21 @@ import { TransactionExecutor } from "../../shared/interfaces/TransactionExecutor
 import { BallParkWeatherPoint } from "../../../domain/weatherForecast/valueObjects/BallParkWeatherPoint";
 import { mapHourlyWeatherForecastDtoToProps } from "../mapper/mapHourlyWeatherForecastDtoToProps";
 import { BallParkHourlyWeatherForecast } from "../../../domain/weatherForecast/valueObjects/BallParkHourlyWeatherForecast";
+import { CancellationPredictionRepository } from "../interfaces/CancellationPredictionRepository";
+
+type PredictResult =
+  | {
+      success: true;
+      gameId: string;
+      probability: number;
+      modelVersion: string;
+    }
+  | {
+      success: false;
+      gameId: string;
+      modelVersion: string | null;
+      error: string;
+    };
 
 export class PredictCancellationUseCase {
   constructor(
@@ -27,6 +42,7 @@ export class PredictCancellationUseCase {
     private readonly predictor: CancellationPredictor,
     private readonly weatherForecastProvider: HourlyWeatherForecastProvider,
     private readonly ballParkHourlyWeatherForecastRepository: BallParkHourlyWeatherForecastRepository,
+    private readonly predictionRepository: CancellationPredictionRepository,
     private readonly txExecutor: TransactionExecutor
   ) {}
 
@@ -51,88 +67,120 @@ export class PredictCancellationUseCase {
       }
       if (games.length === 0)
         throw new NotFoundError("今日の試合が見つかりません");
-      // [TODO]一旦1試合のみなので先頭を取得
-      const game = games[0];
 
-      if (!game) throw new NotFoundError("今日の試合が見つかりません");
+      const results: PredictResult[] = [];
 
-      const model = await this.modelRepository.findLatest(game.ballPark.id());
-      if (!model) throw new NotFoundError("モデルが見つかりません", {});
+      for (const game of games) {
+        try {
+          const model = await this.modelRepository.findLatest(
+            game.ballPark.id()
+          );
+          if (!model) throw new NotFoundError("モデルが見つかりません", {});
 
-      const requiredDays = Math.ceil(req.timeWindowAfterHours / 24);
-      if (req.forecastDays < requiredDays) {
-        throw new ValidationError("予測に必要な予報日数が足りません", {
-          requiredDays,
-          forecastDays: req.forecastDays,
-        });
-      }
+          const requiredDays = Math.ceil(req.timeWindowAfterHours / 24);
+          if (req.forecastDays < requiredDays) {
+            throw new ValidationError("予測に必要な予報日数が足りません", {
+              requiredDays,
+              forecastDays: req.forecastDays,
+            });
+          }
 
-      const window = TimeWindowSpec.create({
-        beforeHours: req.timeWindowBeforeHours,
-        afterHours: req.timeWindowAfterHours,
-      });
-      const { from, to } = window.toRange(game.date);
+          const window = TimeWindowSpec.create({
+            beforeHours: req.timeWindowBeforeHours,
+            afterHours: req.timeWindowAfterHours,
+          });
+          const { from, to } = window.toRange(game.date);
 
-      // 気象データを取得して永続化
-      let hourlyWeatherForecasts: BallParkHourlyWeatherForecast[] = [];
-      try {
-        hourlyWeatherForecasts = (
-          await this.weatherForecastProvider.fetchHourlyForecasts(
-            BallParkWeatherPoint.create(game.ballPark.id()).latitude(),
-            BallParkWeatherPoint.create(game.ballPark.id()).longitude(),
-            req.forecastDays
-          )
-        )
-          .map((hourlyWeatherForecastDto) =>
-            mapHourlyWeatherForecastDtoToProps(
-              hourlyWeatherForecastDto,
-              game.ballPark.id()
+          // 気象データを取得
+          const hourlyWeatherForecasts = (
+            await this.weatherForecastProvider.fetchHourlyForecasts(
+              BallParkWeatherPoint.create(game.ballPark.id()).latitude(),
+              BallParkWeatherPoint.create(game.ballPark.id()).longitude(),
+              req.forecastDays
             )
           )
-          .map(BallParkHourlyWeatherForecast.create);
-        await this.txExecutor.run(async (trx) => {
-          await this.ballParkHourlyWeatherForecastRepository
-            .withTransaction(trx)
-            .updateMany(hourlyWeatherForecasts);
-        });
-      } catch (err: unknown) {
-        if (err instanceof DomainError || err instanceof ValidationError) {
-          throw err;
+            .map((hourlyWeatherForecastDto) =>
+              mapHourlyWeatherForecastDtoToProps(
+                hourlyWeatherForecastDto,
+                game.ballPark.id()
+              )
+            )
+            .map(BallParkHourlyWeatherForecast.create);
+
+          // 気象データを永続化（TX1）
+          await this.txExecutor.run(async (trx) => {
+            await this.ballParkHourlyWeatherForecastRepository
+              .withTransaction(trx)
+              .updateMany(hourlyWeatherForecasts);
+          });
+
+          if (hourlyWeatherForecasts.length === 0)
+            throw new ValidationError("予測に使える気象データがありません", {
+              from,
+              to,
+            });
+
+          const filteredHourlyWeatherForecasts = hourlyWeatherForecasts.filter(
+            (f) => from <= f.date && f.date <= to
+          );
+
+          if (filteredHourlyWeatherForecasts.length === 0)
+            throw new ValidationError("予測に使える気象データがありません", {
+              from,
+              to,
+            });
+
+          const aggregatedFeatures =
+            PredictionWeatherFeatureAggregator.aggregate(
+              filteredHourlyWeatherForecasts
+            );
+
+          const probability = this.predictor.predict({
+            model: mapCancellationModelToDto(model),
+            features:
+              mapAggregatedPredictionWeatherFeaturesToRow(aggregatedFeatures),
+          });
+
+          const normalized =
+            CancellationProbability.from(probability).toNumber();
+
+          // 予測結果を永続化（TX2）
+          await this.txExecutor.run(async (trx) => {
+            await this.predictionRepository.withTransaction(trx).upsert({
+              gameId: game.id.toString(),
+              probability: normalized,
+              modelVersion: model.version.toString(),
+              predictedAtUtc: new Date().toISOString(),
+            });
+          });
+
+          results.push({
+            success: true,
+            gameId: game.id.toString(),
+            probability: normalized,
+            modelVersion: model.version.toString(),
+          });
+        } catch (err) {
+          if (err instanceof DomainError || err instanceof ValidationError) {
+            results.push({
+              success: false,
+              gameId: game.id.toString(),
+              modelVersion: null,
+              error: err.message,
+            });
+            continue;
+          }
+          results.push({
+            success: false,
+            gameId: game.id.toString(),
+            modelVersion: null,
+            error: "予測に失敗しました",
+          });
         }
-        throw new DomainError("気象データの取得に失敗しました", {
-          cause: err,
-          ballParkId: game.ballPark.id(),
-        });
       }
-
-      if (hourlyWeatherForecasts.length === 0)
-        throw new ValidationError("予測に使える気象データがありません", {
-          from,
-          to,
-        });
-      const filteredHourlyWeatherForecasts = hourlyWeatherForecasts.filter(
-        (f) => from <= f.date && f.date <= to
-      );
-      if (filteredHourlyWeatherForecasts.length === 0)
-        throw new ValidationError("予測に使える気象データがありません", {
-          from,
-          to,
-        });
-
-      const aggregatedFeatures = PredictionWeatherFeatureAggregator.aggregate(
-        filteredHourlyWeatherForecasts
-      );
-
-      const probability = this.predictor.predict({
-        model: mapCancellationModelToDto(model),
-        features:
-          mapAggregatedPredictionWeatherFeaturesToRow(aggregatedFeatures),
-      });
-      console.log("雨天中止確率は", probability, "です");
       return {
         message: "予測に成功しました",
-        probability: CancellationProbability.from(probability).toNumber(),
-        modelVersion: model.version.toString(),
+        results,
       };
     } catch (err) {
       if (

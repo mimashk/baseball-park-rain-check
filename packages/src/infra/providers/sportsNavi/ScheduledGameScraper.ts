@@ -24,6 +24,7 @@ export class ScheduledGameScraper {
       return [];
     }
     const html = await this.fetchHtml(params.year, params.month, params.day);
+    if (html === null) return []; // 404 スルー
     return this.parseScheduledGames(
       html,
       params.year,
@@ -36,8 +37,10 @@ export class ScheduledGameScraper {
     year: number,
     month: number,
     day: number
-  ): Promise<string> {
-    const url = `https://baseball.yahoo.co.jp/npb/schedule/?date=${year}-${month}-${day}`;
+  ): Promise<string | null> {
+    const mm = String(month).padStart(2, "0");
+    const dd = String(day).padStart(2, "0");
+    const url = `https://baseball.yahoo.co.jp/npb/schedule/?date=${year}-${mm}-${dd}`;
 
     let res: Response;
     try {
@@ -54,6 +57,10 @@ export class ScheduledGameScraper {
         cause: err,
         details: { url },
       });
+    }
+
+    if (res.status === 404) {
+      return null; // 試合がない日はスルー
     }
 
     if (!res.ok) {
@@ -81,6 +88,23 @@ export class ScheduledGameScraper {
   ): ScheduledGameInfo[] {
     try {
       const $ = cheerio.load(html);
+
+      // 試合なし判定（HTMLは正常だがデータがない日）
+      if (this.hasNoGameMessage($)) {
+        return [];
+      }
+
+      // ページのタイトルから月日を拾う（年は引数のまま）
+      const extracted = this.extractMonthDayFromTitle($);
+      const actualMonth = extracted?.month;
+      const actualDay = extracted?.day;
+      if (actualMonth === undefined || actualDay === undefined) {
+        throw new InfrastructureError(
+          "mapping",
+          "試合の日付情報が抽出できませんでした（HTML構造が変わった可能性）"
+        );
+      }
+
       const results: ScheduledGameInfo[] = [];
 
       $(".bb-score").each((_, section) => {
@@ -126,8 +150,8 @@ export class ScheduledGameScraper {
 
             results.push({
               year,
-              month,
-              day,
+              month: actualMonth,
+              day: actualDay,
               startTime,
               ballPark,
               category,
@@ -143,6 +167,7 @@ export class ScheduledGameScraper {
           "試合情報が抽出できませんでした（HTML構造が変わった可能性）"
         );
       }
+      console.log(results);
 
       return results;
     } catch (err) {
@@ -169,22 +194,19 @@ export class ScheduledGameScraper {
     return text.length ? text : null;
   }
 
-  private rangeDays(from: Date, to: Date) {
-    const res: { year: number; month: number; day: number }[] = [];
-    const cursor = new Date(
-      from.getFullYear(),
-      from.getMonth(),
-      from.getDate()
-    );
-    const end = new Date(to.getFullYear(), to.getMonth(), to.getDate());
-    while (cursor <= end) {
-      res.push({
-        year: cursor.getFullYear(),
-        month: cursor.getMonth() + 1,
-        day: cursor.getDate(),
-      });
-      cursor.setDate(cursor.getDate() + 1);
-    }
-    return res;
+  private extractMonthDayFromTitle($: cheerio.CheerioAPI): {
+    month: number;
+    day: number;
+  } | null {
+    const text = $(".bb-head01__title").first().text().trim();
+    // 例: "2月23日（月）"
+    const m = text.match(/(\d{1,2})月\s*(\d{1,2})日/);
+    if (!m) return null;
+    return { month: Number(m[1]), day: Number(m[2]) };
+  }
+
+  private hasNoGameMessage($: cheerio.CheerioAPI): boolean {
+    const text = $("p.bb-noData").first().text().trim();
+    return text.includes("試合はありません");
   }
 }

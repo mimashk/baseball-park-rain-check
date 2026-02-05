@@ -5,7 +5,7 @@ import { BallParkHourlyWeatherForecast } from "../../../../domain/weatherForecas
 import { AppError } from "../../../../shared/errors/AppError";
 import { DbError } from "../../../../shared/errors/DbError";
 import { InfrastructureError } from "../../../../shared/errors/InfrastructureError";
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 import { BallParkHourlyWeatherForecast as BallParkHourlyWeatherForecastModel } from "@prisma/client";
 import { PrismaClientWrapper } from "../PrismaClientWrapper";
 
@@ -18,22 +18,29 @@ export class PrismaBallParkHourlyWeatherForecastRepository
   implements BallParkHourlyWeatherForecastRepository
 {
   constructor(
-    private readonly prisma: PrismaClient = PrismaClientWrapper.getInstance()
+    private readonly prisma: PrismaClient = PrismaClientWrapper.getInstance(),
+    private readonly trx?: Prisma.TransactionClient
   ) {}
 
   withTransaction(
-    tx: TransactionContext
+    trx: TransactionContext
   ): BallParkHourlyWeatherForecastRepository {
     return new PrismaBallParkHourlyWeatherForecastRepository(
-      tx as unknown as PrismaClient
+      this.prisma,
+      trx as unknown as Prisma.TransactionClient
     );
   }
+
+  private db() {
+    return this.trx ?? this.prisma;
+  }
+
   async updateMany(forecasts: BallParkHourlyWeatherForecast[]): Promise<void> {
     const rows = forecasts.map(this.toPersistence);
     try {
       await Promise.all(
         rows.map((row) =>
-          this.prisma.ballParkHourlyWeatherForecast.upsert({
+          this.db().ballParkHourlyWeatherForecast.upsert({
             where: {
               ballParkId_date: { ballParkId: row.ballParkId, date: row.date },
             },
@@ -53,7 +60,7 @@ export class PrismaBallParkHourlyWeatherForecastRepository
   async findAll(): Promise<BallParkHourlyWeatherForecast[]> {
     let rows: BallParkHourlyWeatherForecastModel[];
     try {
-      rows = await this.prisma.ballParkHourlyWeatherForecast.findMany({
+      rows = await this.db().ballParkHourlyWeatherForecast.findMany({
         orderBy: { date: "asc" },
       });
     } catch (err) {
@@ -69,7 +76,7 @@ export class PrismaBallParkHourlyWeatherForecastRepository
   ): Promise<BallParkHourlyWeatherForecast[]> {
     let rows: BallParkHourlyWeatherForecastModel[];
     try {
-      rows = await this.prisma.ballParkHourlyWeatherForecast.findMany({
+      rows = await this.db().ballParkHourlyWeatherForecast.findMany({
         where: { date: { gte: from, lte: to }, ballParkId },
         orderBy: { date: "asc" },
       });

@@ -44,6 +44,16 @@ export class RefreshScheduledGameAndDailyWeatherForecastUsecase {
           normalizedFrom,
           normalizedTo
         );
+      // 0件ならメッセージだけ返して終了
+      if (rawScheduledGames.length === 0) {
+        console.log(
+          `${normalizedFrom.toISOString()}から${normalizedTo.toISOString()}間は試合がありませんでした`
+        );
+        return {
+          gameIds: [],
+          message: `${normalizedFrom.toISOString()}から${normalizedTo.toISOString()}間は試合がありませんでした`,
+        };
+      }
       const inRangScheduledGames = rawScheduledGames.filter((g) => {
         const t = g.date.getTime();
         return t >= normalizedFrom.getTime() && t <= normalizedTo.getTime();
