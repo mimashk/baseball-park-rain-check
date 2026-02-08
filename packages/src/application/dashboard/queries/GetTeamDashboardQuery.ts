@@ -18,7 +18,6 @@ import { BaseballTeam } from "../../../domain/scheduledGame/valueObjects/Basebal
 import { DashboardGameDto } from "../dtos/DashboardGameDto";
 import { BatchStatusRepository } from "../interfaces/BatchStatusRepository";
 import { CancellationPredictionRepository } from "@application/prediction/interfaces/CancellationPredictionRepository";
-import { NotFoundError } from "../../../shared/errors/NotFoundError";
 
 export class GetTeamDashboardQuery {
   constructor(
@@ -53,13 +52,16 @@ export class GetTeamDashboardQuery {
         (await this.batchStatusRepository.findLatestCompletedAtUtc()) ??
         new Date();
 
+      // 今日のゲームがない場合は下記は週間予報を取得
+      const weekly = await this.buildWeekly(dateJst, teamId);
+
       if (!todayGame) {
         return {
           batchCompletedAtUtc: batchCompletedAt.toISOString(),
           dateJst,
           todayGame: null,
-          hourlyWindow: [],
-          weekly: [],
+          hourlyWeathers: [],
+          weekly,
         };
       }
 
@@ -67,14 +69,20 @@ export class GetTeamDashboardQuery {
       const fromUtc = addHours(baseUtc, -3);
       const toUtc = addHours(baseUtc, 3);
 
-      const hourly = await this.hourlyRepository.findByDateAndBallPark(
-        fromUtc,
-        toUtc,
-        todayGame.ballPark.id()
-      );
+      const isKnown = todayGame.ballPark.id() !== 0;
+      const isOpenAir = todayGame.ballPark.isOpenAir();
+
+      const hourly = isKnown
+        ? await this.hourlyRepository.findByDateAndBallPark(
+            fromUtc,
+            toUtc,
+            todayGame.ballPark.id()
+          )
+        : [];
+
       const hourlyMap = new Map(hourly.map((h) => [toHourKeyUtc(h.date), h]));
 
-      const hourlyWindow = Array.from({ length: 6 }, (_, i) => {
+      const hourlyWeathers = Array.from({ length: 6 }, (_, i) => {
         const t = addHours(baseUtc, i - 3);
         const hit = hourlyMap.get(toHourKeyUtc(t));
         return {
@@ -98,12 +106,25 @@ export class GetTeamDashboardQuery {
       });
 
       const weatherAtGameTime = hourlyMap.get(toHourKeyUtc(baseUtc)) ?? null;
+      const weatherAtGameTimeReason: "UNKNOWN_BALLPARK" | "PENDING" | null =
+        !isKnown ? "UNKNOWN_BALLPARK" : weatherAtGameTime ? null : "PENDING";
 
       const predictionMap =
-        await this.cancellationPredictionRepository.findLatestByGameIds([
-          todayGame.id.toString(),
-        ]);
+        isKnown && isOpenAir
+          ? await this.cancellationPredictionRepository.findLatestByGameIds([
+              todayGame.id.toString(),
+            ])
+          : new Map();
       const prediction = predictionMap.get(todayGame.id.toString());
+
+      const cancelProbReason: "UNKNOWN_BALLPARK" | "PENDING" | "INDOOR" | null =
+        !isKnown
+          ? "UNKNOWN_BALLPARK"
+          : !isOpenAir
+          ? "INDOOR"
+          : prediction
+          ? null
+          : "PENDING";
 
       const home = {
         teamId: todayGame.homeTeam.id(),
@@ -131,16 +152,16 @@ export class GetTeamDashboardQuery {
               precipMm: weatherAtGameTime.rainFall.toNumber(),
             }
           : null,
+        weatherAtGameTimeReason,
         cancelProbPct: prediction?.probability ?? null,
+        cancelProbReason,
       };
-
-      const weekly = await this.buildWeekly(dateJst, teamId);
 
       return {
         batchCompletedAtUtc: batchCompletedAt.toISOString(),
         dateJst,
         todayGame: todayGameDto,
-        hourlyWindow,
+        hourlyWeathers,
         weekly,
       };
     } catch (err) {
@@ -170,11 +191,16 @@ export class GetTeamDashboardQuery {
       jstDayRangeUtc(dates[0]).startUtc,
       jstDayRangeUtc(dates[6]).endUtc
     );
+    const weeklyTargetGames = weeklyGames.filter((g) => {
+      const isHome = g.homeTeam.id() === teamId;
+      const isAway = g.awayTeam.id() === teamId;
+      return isHome || isAway;
+    });
 
     return Promise.all(
       dates.map(async (d) => {
         const { startUtc, endUtc } = jstDayRangeUtc(d);
-        const game = weeklyGames.find((g) => {
+        const game = weeklyTargetGames.find((g) => {
           const t = g.date.getTime();
           return startUtc.getTime() <= t && t <= endUtc.getTime();
         });

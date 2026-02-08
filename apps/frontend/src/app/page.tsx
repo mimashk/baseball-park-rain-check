@@ -1,8 +1,8 @@
 import { getTopDashboard } from "@/lib/api/getTopDashboard";
 import { fmtUpdate } from "@/lib/formatters/jst";
-import { SectionCard } from "@/components/ui/SectionCard";
-import { TodayGameCards } from "@/components/top/TodayGameCards";
 import { gameSortKey } from "@/lib/ui/teamOrder";
+import { TodayGameSummaryGrid } from "@/components/top/TodayGameSummaryGrid";
+import { TeamHeaderNav } from "@/components/top/TeamHeaderNav";
 
 export default async function Home() {
   const data = await getTopDashboard();
@@ -16,18 +16,24 @@ export default async function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-4 py-10">
       <header className="flex items-center justify-between">
-        <div>
-          <p className="text-sm text-muted">本日の全試合</p>
-          <h1 className="text-2xl font-bold text-strong">雨天中止予測</h1>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <img
+            src="/logo.png"
+            alt="ロゴ"
+            className="h-6 w-6 object-contain sm:h-20 sm:w-20"
+          />
+          <h1 className="font-bold text-strong leading-tight text-xl sm:text-3xl">
+            <span className="block text-sm sm:text-xl">プロ野球</span>
+            <span className="block">雨天中止予報</span>
+          </h1>
         </div>
         <p className="text-sm text-muted">
-          更新: {fmtUpdate(data.batchCompletedAtUtc)} (JST)
+          最終更新: {fmtUpdate(data.batchCompletedAtUtc)}
         </p>
       </header>
+      <TeamHeaderNav />
 
-      <SectionCard>
-        <TodayGameCards games={sortedGames} />
-      </SectionCard>
+      <TodayGameSummaryGrid dateJst={data.dateJst} games={sortedGames} />
     </main>
   );
 }

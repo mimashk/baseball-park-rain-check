@@ -32,6 +32,29 @@ body {
     BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
+/* 雨粒背景 */
+.raindrops-bg {
+  background-color: #f7f7fa;
+  background-image: radial-gradient(
+      circle at 15% 10%,
+      #fee20080 4px,
+      transparent 5px
+    ),
+    radial-gradient(circle at 55% 23%, #eb971380 6px, transparent 7px),
+    radial-gradient(circle at 85% 8%, #02a05180 3px, transparent 4px),
+    radial-gradient(circle at 25% 38%, #ee161f80 7px, transparent 8px),
+    radial-gradient(circle at 60% 45%, #1eb2e980 5px, transparent 6px),
+    radial-gradient(circle at 90% 35%, #003f8e80 5px, transparent 6px),
+    radial-gradient(circle at 10% 65%, #01609a80 6px, transparent 7px),
+    radial-gradient(circle at 45% 75%, #00000080 3px, transparent 4px),
+    radial-gradient(circle at 75% 68%, #a5811380 8px, transparent 9px),
+    radial-gradient(circle at 20% 92%, #051e4680 5px, transparent 6px),
+    radial-gradient(circle at 50% 95%, #fcc70080 4px, transparent 5px),
+    radial-gradient(circle at 88% 85%, #87001080 7px, transparent 8px);
+  background-size: 320px 480px;
+  background-repeat: repeat;
+}
+
 /* 共通UIパーツ */
 .card {
   background: var(--surface);

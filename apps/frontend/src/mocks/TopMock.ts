@@ -1,36 +1,43 @@
 import { TopDashboardResponse } from "@/types/TopDashboardResponse";
+import {
+  buildDailySchedule,
+  TEAM_META,
+  TEAM_WEATHER_BASE,
+} from "@/mocks/teamDashboardFixtures";
+import { TodayGame } from "@/types/TodayGame";
 
-export function buildMockTopDashboard(): TopDashboardResponse {
+export function buildMockTopDashboard(dateJst?: string): TopDashboardResponse {
+  const date = dateJst ?? "2026-02-05";
+  const schedule = buildDailySchedule(date);
+
+  const games: TodayGame[] = schedule.map((m, idx) => {
+    const weatherAtGameTime = TEAM_WEATHER_BASE[m.home];
+    const isOpenAir = TEAM_META[m.home].isOpenAir;
+
+    const base = new Date(`${date}T10:00:00Z`);
+    base.setMinutes(base.getMinutes() + idx * 30);
+
+    const cancelProbReason: TodayGame["cancelProbReason"] = isOpenAir
+      ? null
+      : "INDOOR";
+
+    return {
+      gameId: `mock-${date}-${m.home}-${m.away}`,
+      startAtUtc: base.toISOString(),
+      ballpark: m.ballpark,
+      status: "SCHEDULED",
+      home: { teamId: m.home, name: TEAM_META[m.home].name },
+      away: { teamId: m.away, name: TEAM_META[m.away].name },
+      weatherAtGameTime,
+      weatherAtGameTimeReason: null,
+      cancelProbPct: isOpenAir ? 25 + idx * 3 : null,
+      cancelProbReason,
+    };
+  });
+
   return {
-    batchCompletedAtUtc: "2026-02-05T00:10:00Z",
-    dateJst: "2026-02-05",
-    games: [
-      {
-        gameId: "mock-1",
-        startAtUtc: "2026-02-05T04:00:00Z",
-        ballpark: "阪神甲子園球場",
-        status: "SCHEDULED",
-        home: { teamId: "HT", name: "阪神" },
-        away: { teamId: "YG", name: "巨人" },
-        weatherAtGameTime: {
-          text: "くもり",
-          wmoCode: 3,
-          temperatureC: 12,
-          precipProbPct: 20,
-          precipMm: 0,
-        },
-        cancelProbPct: 15,
-      },
-      {
-        gameId: "mock-2",
-        startAtUtc: "2026-02-05T04:30:00Z",
-        ballpark: "マツダスタジアム",
-        status: "SCHEDULED",
-        home: { teamId: "C", name: "広島" },
-        away: { teamId: "D", name: "中日" },
-        weatherAtGameTime: null,
-        cancelProbPct: null,
-      },
-    ],
+    batchCompletedAtUtc: `${date}T00:10:00Z`,
+    dateJst: date,
+    games,
   };
 }

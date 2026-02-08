@@ -72,6 +72,15 @@ export class PredictCancellationUseCase {
 
       for (const game of games) {
         try {
+          if (!game.ballPark.isOpenAir()) {
+            results.push({
+              success: false,
+              gameId: game.id.toString(),
+              modelVersion: null,
+              error: "屋内球場は中止予測の対象外",
+            });
+            continue;
+          }
           const model = await this.modelRepository.findLatest(
             game.ballPark.id()
           );

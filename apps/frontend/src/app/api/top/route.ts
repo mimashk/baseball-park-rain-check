@@ -6,7 +6,7 @@ export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const date = url.searchParams.get("date") ?? undefined;
   if (process.env.USE_MOCK === "true") {
-    return NextResponse.json(buildMockTopDashboard());
+    return NextResponse.json(buildMockTopDashboard(date));
   }
 
   const container = createInfraContainer();

@@ -6,11 +6,12 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { teamId: string } }
 ) {
+  const { teamId } = await params;
   const url = new URL(req.url);
   const date = url.searchParams.get("date") ?? undefined;
 
   if (process.env.USE_MOCK === "true") {
-    return NextResponse.json(buildMockTeam(params.teamId, date));
+    return NextResponse.json(buildMockTeam(teamId, date));
   }
 
   const container = createInfraContainer();

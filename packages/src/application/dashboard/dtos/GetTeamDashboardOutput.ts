@@ -6,6 +6,6 @@ export interface GetTeamDashboardOutput {
   batchCompletedAtUtc: string;
   dateJst: string;
   todayGame: DashboardGameDto | null;
-  hourlyWindow: DashboardHourlyWeatherDto[];
+  hourlyWeathers: DashboardHourlyWeatherDto[];
   weekly: DashboardWeeklyWeatherAndGameDto[];
 }

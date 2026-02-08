@@ -44,20 +44,26 @@ export class GetTopDashboardQuery {
       };
     }
 
-    const gameIds = games.map((g) => g.id.toString());
-    const predictions = await this.predictionRepository.findLatestByGameIds(
-      gameIds
-    );
+    const eligibleGameIds = games
+      .filter((g) => g.ballPark.isOpenAir() && g.ballPark.id() !== 0)
+      .map((g) => g.id.toString());
+
+    const predictionMap =
+      eligibleGameIds.length === 0
+        ? new Map()
+        : await this.predictionRepository.findLatestByGameIds(eligibleGameIds);
 
     // ballParkごとに必要な時間帯の天気を先読み
     const weatherMapByPark = new Map<
       number,
       Map<number, BallParkHourlyWeatherForecast>
     >();
-    const ballParkIds = Array.from(new Set(games.map((g) => g.ballPark.id())));
+    const knownBallParkIds = Array.from(
+      new Set(games.map((g) => g.ballPark.id()))
+    ).filter((id) => id !== 0); // 未登録球場は除外
 
     await Promise.all(
-      ballParkIds.map(async (ballParkId) => {
+      knownBallParkIds.map(async (ballParkId) => {
         const baseTimes = games
           .filter((g) => g.ballPark.id() === ballParkId)
           .map((g) => floorToJstHourUtc(g.date));
@@ -80,7 +86,24 @@ export class GetTopDashboardQuery {
       const hourlyMap = weatherMapByPark.get(game.ballPark.id()) ?? new Map();
       const weatherAtGameTime = hourlyMap.get(toHourKeyUtc(baseUtc)) ?? null;
 
-      const prediction = predictions.get(game.id.toString());
+      const isKnown = game.ballPark.id() !== 0;
+      const isOpenAir = game.ballPark.isOpenAir();
+
+      const prediction = predictionMap.get(game.id.toString());
+
+      const weatherAtGameTimeReason = !isKnown
+        ? "UNKNOWN_BALLPARK"
+        : weatherAtGameTime
+        ? null
+        : "PENDING";
+
+      const cancelProbReason = !isKnown
+        ? "UNKNOWN_BALLPARK"
+        : !isOpenAir
+        ? "INDOOR"
+        : prediction
+        ? null
+        : "PENDING";
 
       return {
         gameId: game.id.toString(),
@@ -105,7 +128,9 @@ export class GetTopDashboardQuery {
               precipMm: weatherAtGameTime.rainFall.toNumber(),
             }
           : null,
+        weatherAtGameTimeReason,
         cancelProbPct: prediction?.probability ?? null,
+        cancelProbReason,
       };
     });
 

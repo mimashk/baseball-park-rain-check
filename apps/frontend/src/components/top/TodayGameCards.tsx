@@ -2,6 +2,8 @@ import { TodayGame } from "@/types/TodayGame";
 import { fmtTime } from "@/lib/formatters/jst";
 import { WeatherIcon } from "@/components/weather/WeatherIcon";
 import { getGameStatusInfo } from "@/lib/utils/gameStatusLabel";
+import { getCancelProbDisplay } from "@/lib/utils/cancelProbDisplay";
+import { getWeatherDisplay } from "@/lib/utils/weatherDisplay";
 
 type Props = { games: TodayGame[] };
 
@@ -13,6 +15,8 @@ export function TodayGameCards({ games }: Props) {
     <div className="grid gap-4 md:grid-cols-2">
       {games.map((game) => {
         const statusInfo = getGameStatusInfo(game.status);
+        const weatherDisplay = getWeatherDisplay(game);
+        const cancelProbDisplay = getCancelProbDisplay(game);
         return (
           <div key={game.gameId} className="rounded-2xl border bg-white p-4">
             <div className="flex items-center justify-between text-sm text-muted">
@@ -37,18 +41,18 @@ export function TodayGameCards({ games }: Props) {
               {game.weatherAtGameTime ? (
                 <div className="mt-1 flex items-center gap-2">
                   <WeatherIcon code={game.weatherAtGameTime.wmoCode} />
-                  <span>{game.weatherAtGameTime.text ?? "--"}</span>
+                  <span>{weatherDisplay}</span>
                   <span className="text-muted">
                     {game.weatherAtGameTime.temperatureC ?? "--"}℃
                   </span>
                 </div>
               ) : (
-                <span className="text-muted">--</span>
+                <span className="text-muted">{weatherDisplay}</span>
               )}
             </div>
 
             <div className="mt-2 text-sm text-muted">
-              中止確率 {game.cancelProbPct ?? "--"}%
+              中止確率 {cancelProbDisplay}
             </div>
           </div>
         );

@@ -9,5 +9,7 @@ export type TodayGame = {
   home: Team;
   away: Team;
   weatherAtGameTime: Weather | null;
+  weatherAtGameTimeReason: "UNKNOWN_BALLPARK" | "PENDING" | null;
   cancelProbPct: number | null;
+  cancelProbReason: "UNKNOWN_BALLPARK" | "PENDING" | "INDOOR" | null;
 };

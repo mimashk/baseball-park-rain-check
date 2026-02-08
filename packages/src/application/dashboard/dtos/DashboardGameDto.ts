@@ -9,5 +9,7 @@ export interface DashboardGameDto {
   home: DashboardTeamDto;
   away: DashboardTeamDto;
   weatherAtGameTime: DashboardWeatherDto | null;
+  weatherAtGameTimeReason: "UNKNOWN_BALLPARK" | "PENDING" | null;
   cancelProbPct: number | null;
+  cancelProbReason: "INDOOR" | "UNKNOWN_BALLPARK" | "PENDING" | null;
 }
