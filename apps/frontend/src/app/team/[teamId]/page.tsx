@@ -19,8 +19,6 @@ export default async function TeamPage({
   const showHourly = !!data.todayGame && data.hourlyWeathers.length > 0;
   const showWeekly = data.weekly.length > 0;
 
-  const teamTheme = TEAM_THEMES[teamId as TeamId];
-
   return (
     <div className="relative">
       <div className="absolute left-0 top-0 h-[120px] w-full" />
