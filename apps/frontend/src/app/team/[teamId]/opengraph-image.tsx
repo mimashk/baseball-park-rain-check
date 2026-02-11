@@ -23,9 +23,9 @@ export default async function Image({
   const teamLogoUrl = logoPath ? `${baseUrl}${logoPath}` : undefined;
   const siteLogoUrl = `${baseUrl}/logo.png`;
 
-  const fontBold = await fetch(`${baseUrl}/fonts/NotoSansJP-Bold.ttf`).then(
-    (res) => res.arrayBuffer()
-  );
+  const fontBoldUrl =
+    "https://storage.googleapis.com/bbprc-public-assets/NotoSansJP-Bold.ttf";
+  const fontBold = await fetch(fontBoldUrl).then((res) => res.arrayBuffer());
 
   const data = await getTeamDashboard(teamId as TeamId);
   const game = data.todayGame;
@@ -103,11 +103,11 @@ export default async function Image({
               </div>
             </div>
             <div
-              style={{ fontSize: 36, fontWeight: 700, display: "flex", gap: 8 }}
+              style={{ fontSize: 30, fontWeight: 700, display: "flex", gap: 8 }}
             >
               <span>本日の</span>
               <span>{teamName}</span>
-              <span>の試合の</span>
+              <span>の試合</span>
             </div>
             {probText ? (
               <div style={{ display: "flex" }}>
@@ -116,7 +116,7 @@ export default async function Image({
                 </span>
               </div>
             ) : (
-              <div style={{ fontSize: 28, opacity: 0.9 }}>{message}</div>
+              <div style={{ fontSize: 48, opacity: 0.9 }}>{message}</div>
             )}
             <div style={{ fontSize: 20, opacity: 0.6 }}>{dateText}</div>
           </div>
