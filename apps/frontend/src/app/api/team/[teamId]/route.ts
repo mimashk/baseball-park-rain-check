@@ -19,7 +19,7 @@ export async function GET(
 
   const data = await query.execute({
     dateJst: date,
-    teamId: params.teamId,
+    teamId: teamId,
   });
 
   return NextResponse.json(data);

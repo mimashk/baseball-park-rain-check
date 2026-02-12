@@ -1,33 +1,32 @@
-import { SectionCard } from "../../components/ui/SectionCard";
+import { SectionCard } from "@/components/ui/SectionCard";
+import { StaticPageLayout } from "@/components/ui/StaticPageLayout";
+import { LegalPageHeader } from "@/components/legal/LegalPageHeader";
+import { LegalSection } from "@/components/legal/LegalSection";
+import { StaticPageHead } from "@/components/ui/StaticPageHead";
 
 export const metadata = {
-  title: "プライバシーポリシー | プロ野球 雨天中止予測",
+  title: "プライバシーポリシー | プロ野球 雨天中止予報",
   description: "プライバシーポリシー",
 };
 
 export default function PrivacyPolicyPage() {
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-10">
-      <header className="space-y-2">
-        <p className="text-xs font-semibold text-muted">LEGAL</p>
-        <h1 className="text-2xl font-bold text-strong">プライバシーポリシー</h1>
-        <p className="text-sm text-muted">
-          本サイトにおける情報の取り扱いについての方針です。
-        </p>
-      </header>
+    <StaticPageLayout>
+      <StaticPageHead>
+        <LegalPageHeader
+          title="プライバシーポリシー"
+          description="本サイトにおける情報の取り扱いについての方針です。"
+        />
+      </StaticPageHead>
 
       <SectionCard className="space-y-6 p-6">
-        <section className="space-y-3">
+        <LegalSection divider>
           <p>
             本プライバシーポリシーは、当サイト（以下「本サイト」）における、ユーザーの情報の取り扱いについて定めるものです。
           </p>
-          <hr className="border-muted/30" />
-        </section>
+        </LegalSection>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-strong">
-            1. 個人情報の取得について
-          </h2>
+        <LegalSection title="1. 個人情報の取得について" divider>
           <p>
             本サイトでは、氏名、メールアドレス、住所、電話番号等の
             <span className="font-semibold">
@@ -49,13 +48,9 @@ export default function PrivacyPolicyPage() {
           <p>
             これらの情報は、個人を特定する目的で利用するものではありません。
           </p>
-          <hr className="border-muted/30" />
-        </section>
+        </LegalSection>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-strong">
-            2. 情報の利用目的
-          </h2>
+        <LegalSection title="2. 情報の利用目的" divider>
           <p>本サイトでは、取得した情報を以下の目的で利用します。</p>
           <ul className="list-disc space-y-1 pl-6 text-sm text-muted">
             <li>本サイトの運営および維持管理のため</li>
@@ -63,13 +58,9 @@ export default function PrivacyPolicyPage() {
             <li>不正アクセスや不正利用の防止のため</li>
             <li>広告配信およびその効果測定のため</li>
           </ul>
-          <hr className="border-muted/30" />
-        </section>
+        </LegalSection>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-strong">
-            3. アクセス解析ツールについて
-          </h2>
+        <LegalSection title="3. アクセス解析ツールについて" divider>
           <p>
             本サイトでは、利用状況を把握し、サービス改善に役立てるために、第三者が提供するアクセス解析ツール（例：
             <span className="font-semibold">【アクセス解析ツール名】</span>
@@ -81,13 +72,9 @@ export default function PrivacyPolicyPage() {
           <p>
             Cookieの使用を望まない場合は、ブラウザの設定により無効にすることが可能です。
           </p>
-          <hr className="border-muted/30" />
-        </section>
+        </LegalSection>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-strong">
-            4. 広告配信について
-          </h2>
+        <LegalSection title="4. 広告配信について" divider>
           <p>
             本サイトでは、第三者配信の広告サービス（例：
             <span className="font-semibold">【広告配信サービス名】</span>
@@ -105,13 +92,9 @@ export default function PrivacyPolicyPage() {
           <p>
             パーソナライズ広告を無効にする方法については、各広告配信事業者の提供するオプトアウト手段をご確認ください。
           </p>
-          <hr className="border-muted/30" />
-        </section>
+        </LegalSection>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-strong">
-            5. Cookieの使用について
-          </h2>
+        <LegalSection title="5. Cookieの使用について" divider>
           <p>
             本サイトでは、以下の目的のためにCookieを使用することがあります。
           </p>
@@ -126,24 +109,18 @@ export default function PrivacyPolicyPage() {
           <p>
             ユーザーはブラウザの設定により、Cookieの使用を拒否することができます。ただし、Cookieを無効にした場合、本サイトの一部機能が正常に動作しない場合があります。
           </p>
-          <hr className="border-muted/30" />
-        </section>
+        </LegalSection>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-strong">
-            6. 第三者への情報提供について
-          </h2>
+        <LegalSection title="6. 第三者への情報提供について" divider>
           <p>
             本サイトでは、法令に基づく場合を除き、取得した情報を第三者に提供することはありません。
           </p>
           <p>
             ただし、広告配信およびアクセス解析においては、第三者のサービスを利用するため、これらの事業者がそれぞれのプライバシーポリシーに基づいて情報を取り扱う場合があります。
           </p>
-          <hr className="border-muted/30" />
-        </section>
+        </LegalSection>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-strong">7. 免責事項</h2>
+        <LegalSection title="7. 免責事項" divider>
           <p>
             本サイトに掲載している情報（試合情報、天候情報、雨天中止予測確率等）は、公開情報や独自の分析に基づいて提供していますが、その正確性、完全性、最新性を保証するものではありません。
           </p>
@@ -155,24 +132,18 @@ export default function PrivacyPolicyPage() {
           <p>
             本サイトの情報を利用したことにより生じた損害について、運営者は一切の責任を負いません。
           </p>
-          <hr className="border-muted/30" />
-        </section>
+        </LegalSection>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-strong">
-            8. プライバシーポリシーの変更について
-          </h2>
+        <LegalSection title="8. プライバシーポリシーの変更について" divider>
           <p>
             本プライバシーポリシーの内容は、法令の改正や本サイトの運営方針の変更により、予告なく変更されることがあります。
           </p>
           <p>
             変更後のプライバシーポリシーは、本サイトに掲載した時点で効力を生じるものとします。
           </p>
-          <hr className="border-muted/30" />
-        </section>
+        </LegalSection>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-strong">9. お問い合わせ</h2>
+        <LegalSection title="9. お問い合わせ" divider={false}>
           <p>
             本サイトのプライバシーポリシーに関するお問い合わせは、以下の方法にてご連絡ください。
           </p>
@@ -187,8 +158,8 @@ export default function PrivacyPolicyPage() {
               </span>
             </li>
           </ul>
-        </section>
+        </LegalSection>
       </SectionCard>
-    </main>
+    </StaticPageLayout>
   );
 }

@@ -1,13 +1,13 @@
-import { getTeamDashboard } from "../../../lib/api/getTeamDashboard";
-import { fmtUpdate } from "../../../lib/formatters/jst";
-import { SectionCard } from "../../../components/ui/SectionCard";
-import { TodaySummary } from "../../../components/team/TodaySummary";
-import { HourlyForecast } from "../../../components/team/HourlyForecast";
-import { WeeklyForecast } from "../../../components/team/WeeklyForecast";
+import { getTeamDashboard } from "@/lib/api/getTeamDashboard";
+import { SectionCard } from "@/components/ui/SectionCard";
+import { TodaySummary } from "@/components/team/TodaySummary";
+import { HourlyForecast } from "@/components/team/HourlyForecast";
+import { WeeklyForecast } from "@/components/team/WeeklyForecast";
 import { TeamId } from "@/types/TeamId";
-import { TEAM_META } from "@/lib/ui/teamMeta";
+import { TEAM_META } from "@/lib/ui/team";
 import type { Metadata } from "next";
 import { XShareButton } from "@/components/ui/XShareButton";
+import { SiteHeader } from "@/components/ui/SiteHeader";
 
 export async function generateMetadata({
   params,
@@ -70,25 +70,12 @@ export default async function TeamPage({
     <div className="relative">
       <div className="absolute left-0 top-0 h-[120px] w-full pointer-events-none" />
       <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-4 py-10">
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-2 sm:gap-3">
-            <img
-              src="/logo.png"
-              alt="ロゴ"
-              className="h-6 w-6 object-contain sm:h-20 sm:w-20"
-            />
-            <h1 className="font-bold text-strong leading-tight text-xl sm:text-3xl">
-              <span className="block text-sm sm:text-xl">プロ野球</span>
-              <span className="block">雨天中止予報</span>
-            </h1>
-          </div>
-          <div className="flex flex-col items-end gap-2">
-            <p className="text-xs sm:text-sm text-muted">
-              最終更新: {fmtUpdate(data.batchCompletedAtUtc)}
-            </p>
+        <SiteHeader
+          batchCompletedAtUtc={data.batchCompletedAtUtc}
+          rightSlot={
             <XShareButton text={shareText} url={shareUrl} hashtags={hashtags} />
-          </div>
-        </header>
+          }
+        />
 
         <SectionCard>
           <TodaySummary

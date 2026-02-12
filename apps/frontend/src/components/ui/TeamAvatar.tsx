@@ -1,5 +1,5 @@
 import { Team } from "@/types/Team";
-import { TEAM_LOGO } from "@/lib/ui/teamLogo";
+import { TEAM_LOGO } from "@/lib/ui/team";
 
 type BlockProps = { team: Team; align: "left" | "right" };
 type RowProps = { team: Team };

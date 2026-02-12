@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "プロ野球 雨天中止予測",
+  title: "プロ野球 雨天中止予報",
   description: "雨天中止確率と天気をファンチームだけに絞って表示するアプリ",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL!),
 };
@@ -25,7 +25,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="ja">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased raindrops-bg`}
       >

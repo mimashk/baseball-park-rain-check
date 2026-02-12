@@ -1,6 +1,6 @@
 import { Hourly } from "@/types/HourlyWeather";
-import { fmtTime } from "../../lib/formatters/jst";
-import { WeatherIcon } from "../weather/WeatherIcon";
+import { fmtTime } from "@/lib/formatters/jst";
+import { WeatherIcon } from "@/components/weather/WeatherIcon";
 
 type Props = { hourly: Hourly[] };
 

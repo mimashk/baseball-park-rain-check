@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
-import { TEAM_META } from "@/lib/ui/teamMeta";
-import { TEAM_LOGO } from "@/lib/ui/teamLogo";
+import { TEAM_META, TEAM_LOGO } from "@/lib/ui/team";
 import { getTeamDashboard } from "@/lib/api/getTeamDashboard";
 import { TeamId } from "@/types/TeamId";
 
@@ -39,19 +38,13 @@ export default async function Image({
   const probText =
     typeof game?.cancelProbPct === "number" ? `${game.cancelProbPct}%` : null;
 
-  let message: string;
-
-  if (!game) {
-    message = "本日の試合はありません";
-  } else if (game.cancelProbReason === "UNKNOWN_BALLPARK") {
-    message = "メイン球場ではないため雨天中止確率は表示できません";
-  } else if (game.cancelProbReason === "INDOOR") {
-    message = "屋内球場のため開催予定です";
-  } else if (game.cancelProbReason === "PENDING") {
-    message = "雨天中止確率は準備中です";
-  } else {
-    message = "雨天中止確率は準備中です";
-  }
+  const message: string = (() => {
+    if (!game) return "本日の試合はありません";
+    if (game.cancelProbReason === "UNKNOWN_BALLPARK")
+      return "メイン球場ではないため予測できません";
+    if (game.cancelProbReason === "INDOOR") return "屋内球場のため開催予定です";
+    return "雨天中止確率は準備中です";
+  })();
 
   return new ImageResponse(
     (

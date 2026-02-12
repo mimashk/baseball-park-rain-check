@@ -1,36 +1,24 @@
-import { InfoRow } from "../../components/ui/InfoRow";
-import { SectionCard } from "../../components/ui/SectionCard";
+import { InfoRow } from "@/components/ui/InfoRow";
+import { SectionCard } from "@/components/ui/SectionCard";
+import { StaticPageHead } from "@/components/ui/StaticPageHead";
+import { StaticPageLayout } from "@/components/ui/StaticPageLayout";
 
 export const metadata = {
-  title: "運営元情報 | プロ野球 雨天中止予測",
+  title: "運営元情報 | プロ野球 雨天中止予報",
   description: "運営元情報",
 };
 
 export default function CompanyPage() {
   return (
-    <main className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-10">
-      <SectionCard className="relative overflow-hidden p-6 sm:p-8">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-slate-100" />
-        <div className="space-y-4">
-          <p className="text-xs font-semibold text-muted">ABOUT</p>
-          <div className="space-y-2">
-            <h1 className="text-2xl font-bold text-strong">運営元情報</h1>
-            <p className="text-sm text-muted">
-              本サイトの運営形態や連絡先など、基本情報をまとめています。
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <InfoRow label="サイト名">
-              <span className="font-semibold text-strong">
-                雨天中止予測（仮）
-              </span>
-            </InfoRow>
-            <InfoRow label="最終更新日">
-              <span className="font-semibold text-strong">2026年2月2日</span>
-            </InfoRow>
-          </div>
-        </div>
-      </SectionCard>
+    <StaticPageLayout>
+      <StaticPageHead>
+        <header className="space-y-2">
+          <h1 className="text-2xl font-bold text-strong">運営元情報</h1>
+          <p className="text-sm text-muted">
+            本サイトの運営形態や連絡先など、基本情報をまとめています。
+          </p>
+        </header>
+      </StaticPageHead>
 
       <div className="space-y-6">
         <SectionCard className="space-y-4 border border-slate-200 bg-slate-100/70 p-6 shadow-sm">
@@ -92,7 +80,7 @@ export default function CompanyPage() {
           <h2 className="text-lg font-semibold text-strong">事業内容</h2>
           <ul className="list-disc space-y-1 pl-6 text-sm text-muted">
             <li>プロ野球試合に関する情報の収集および整理</li>
-            <li>天候データをもとにした雨天中止予測の算出</li>
+            <li>天候データをもとにした雨天中止予測確率の算出</li>
             <li>上記情報のWebサイト上での公開・提供</li>
           </ul>
         </SectionCard>
@@ -134,6 +122,6 @@ export default function CompanyPage() {
           </p>
         </SectionCard>
       </div>
-    </main>
+    </StaticPageLayout>
   );
 }

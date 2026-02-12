@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { TEAM_IDS, TEAM_META } from "@/lib/ui/teamMeta";
-import { TEAM_LOGO } from "@/lib/ui/teamLogo";
-import { TEAM_THEMES } from "../ui/TeamTheme";
+import { TEAM_IDS, TEAM_META, TEAM_LOGO } from "@/lib/ui/team";
+import { TEAM_THEMES } from "@/components/ui/TeamTheme";
 
 export function TeamHeaderNav() {
   return (
@@ -16,13 +15,13 @@ export function TeamHeaderNav() {
           <Link
             key={id}
             href={`/team/${id}`}
-            aria-label={TEAM_META[id].name}
+            aria-label={TEAM_META[id].shortName}
             className="flex h-12 w-12 shrink-0 aspect-square items-center justify-center rounded-full border bg-white shadow-sm overflow-hidden transition hover:-translate-y-0.5 hover:bg-slate-50"
             style={{ borderColor: TEAM_THEMES[id].border }}
           >
             <img
               src={TEAM_LOGO[id]}
-              alt={TEAM_META[id].name}
+              alt={TEAM_META[id].shortName}
               className="h-8 w-8 rounded-full object-contain bg-white"
             />
           </Link>

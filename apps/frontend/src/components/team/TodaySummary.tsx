@@ -1,16 +1,16 @@
 import { Hourly } from "@/types/HourlyWeather";
 import { TodayGame } from "@/types/TodayGame";
-import { cancelColor } from "../../lib/utils/cancelProb";
-import { fmtDate, fmtTime } from "../../lib/formatters/jst";
-import { TeamBlock } from "../ui/TeamAvatar";
-import { WeatherIcon } from "../weather/WeatherIcon";
+import { cancelColor } from "@/lib/utils/cancelProb";
+import { fmtDate, fmtTime } from "@/lib/formatters/jst";
+import { TeamBlock } from "@/components/ui/TeamAvatar";
+import { WeatherIcon } from "@/components/weather/WeatherIcon";
 import { CancelProbGauge } from "./CancelProbGauge";
 import { getWeatherAtStart } from "@/lib/utils/weatherAtStart";
 import { getGameStatusInfo } from "@/lib/utils/gameStatusLabel";
 import { getWeatherDisplay } from "@/lib/utils/weatherDisplay";
 import { getCancelProbDisplay } from "@/lib/utils/cancelProbDisplay";
 import { TeamId } from "@/types/TeamId";
-import { TEAM_THEMES } from "../ui/TeamTheme";
+import { TEAM_THEMES } from "@/components/ui/TeamTheme";
 
 type Props = {
   dateJst: string;
