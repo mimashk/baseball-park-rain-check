@@ -106,6 +106,8 @@ export class ScheduledGameScraper {
       }
 
       const results: ScheduledGameInfo[] = [];
+      let hasGameItem = false; // 試合DOM自体が存在したか
+      let skippedByStatus = 0; // スコア/試合終了などでスキップした件数
 
       $(".bb-score").each((_, section) => {
         const category = this.emptyToNull(
@@ -118,6 +120,7 @@ export class ScheduledGameScraper {
         $(section)
           .find(".bb-score__item")
           .each((_, item) => {
+            hasGameItem = true;
             const container = $(item);
 
             const homeTeam = this.emptyToNull(
@@ -141,18 +144,22 @@ export class ScheduledGameScraper {
             );
             if (ballPark === null) return;
 
-            const startTime = this.emptyToNull(
+            // 開始前は時刻、開始後は「試合終了」やスコア表示になる
+            const statusText = this.emptyToNull(
               this.normalizeText(
-                container.find("time.bb-score__status").text().trim()
+                container.find(".bb-score__status").first().text().trim()
               )
             );
-            if (startTime === null) return;
+            if (statusText === null || !this.isStartTime(statusText)) {
+              skippedByStatus++;
+              return;
+            }
 
             results.push({
               year,
               month: actualMonth,
               day: actualDay,
-              startTime,
+              startTime: statusText,
               ballPark,
               category,
               homeTeam,
@@ -162,6 +169,11 @@ export class ScheduledGameScraper {
       });
 
       if (!results.length) {
+        // 試合DOMはあるが時刻形式が1件もない=過去進行/終了試合だけだったとみなして正常スキップ
+        if (hasGameItem && skippedByStatus > 0) {
+          return [];
+        }
+
         throw new InfrastructureError(
           "mapping",
           "試合情報が抽出できませんでした（HTML構造が変わった可能性）"
@@ -208,5 +220,10 @@ export class ScheduledGameScraper {
   private hasNoGameMessage($: cheerio.CheerioAPI): boolean {
     const text = $("p.bb-noData").first().text().trim();
     return text.includes("試合はありません");
+  }
+
+  private isStartTime(value: string): boolean {
+    // 例: "12:30"
+    return /^\d{1,2}:\d{2}$/.test(value);
   }
 }

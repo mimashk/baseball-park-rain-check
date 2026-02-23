@@ -19,7 +19,9 @@ app.post("/cron/schedule-initial-checkpoints", async (req, res, next) => {
   } catch (err) {
     next(err);
   } finally {
-    await scope.resolve("prisma").$disconnect();
+    if (process.env.STORAGE_BACKEND === "prisma") {
+      await scope.resolve("prisma").$disconnect();
+    }
   }
 });
 
@@ -44,7 +46,9 @@ app.post("/cron/run-game-checkpoint", async (req, res, next) => {
   } catch (err) {
     next(err);
   } finally {
-    await scope.resolve("prisma").$disconnect();
+    if (process.env.STORAGE_BACKEND === "prisma") {
+      await scope.resolve("prisma").$disconnect();
+    }
   }
 });
 
@@ -68,7 +72,9 @@ app.post(
     } catch (err) {
       next(err);
     } finally {
-      await scope.resolve("prisma").$disconnect();
+      if (process.env.STORAGE_BACKEND === "prisma") {
+        await scope.resolve("prisma").$disconnect();
+      }
     }
   }
 );
@@ -91,7 +97,9 @@ app.post("/cron/update-prediction", async (req, res, next) => {
   } catch (err) {
     next(err);
   } finally {
-    await scope.resolve("prisma").$disconnect();
+    if (process.env.STORAGE_BACKEND === "prisma") {
+      await scope.resolve("prisma").$disconnect();
+    }
   }
 });
 

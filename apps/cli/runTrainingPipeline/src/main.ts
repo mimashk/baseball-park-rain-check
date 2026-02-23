@@ -27,8 +27,10 @@ async function main() {
       timeWindowAfterHours,
     });
   } finally {
-    const prisma = scope.resolve("prisma");
-    await prisma.$disconnect();
+    if (process.env.STORAGE_BACKEND === "prisma") {
+      const prisma = scope.resolve("prisma");
+      await prisma.$disconnect();
+    }
   }
 }
 

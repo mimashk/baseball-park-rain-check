@@ -27,24 +27,25 @@ export default async function Image({
   const fontBold = await fetch(fontBoldUrl).then((res) => res.arrayBuffer());
 
   const data = await getTeamDashboard(teamId as TeamId);
-  const game = data.todayGame;
+
+  // daily由来の天気（weekly）を使う
+  const todayWeather = data.weekly[0]?.weather?.text ?? "天気情報更新中";
+  const hasTodayGame = Boolean(data.todayGame);
+
+  const leadText = hasTodayGame
+    ? `今日の天気は${todayWeather}！`
+    : "今日は試合がないので";
+  const teamNameText = `${teamName}の`;
+
+  const subText = hasTodayGame
+    ? `本日の試合の雨天中止予測をチェック！`
+    : `明日以降の試合情報と天気をチェック！`;
 
   const dateText = new Date().toLocaleDateString("ja-JP", {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
   });
-
-  const probText =
-    typeof game?.cancelProbPct === "number" ? `${game.cancelProbPct}%` : null;
-
-  const message: string = (() => {
-    if (!game) return "本日の試合はありません";
-    if (game.cancelProbReason === "UNKNOWN_BALLPARK")
-      return "メイン球場ではないため予測できません";
-    if (game.cancelProbReason === "INDOOR") return "屋内球場のため開催予定です";
-    return "雨天中止確率は準備中です";
-  })();
 
   return new ImageResponse(
     (
@@ -71,7 +72,8 @@ export default async function Image({
             padding: 48,
             display: "flex",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent: "flex-start",
+            gap: 36,
             boxShadow: "0 18px 36px rgba(15, 23, 42, 0.18)",
           }}
         >
@@ -83,7 +85,14 @@ export default async function Image({
               style={{ objectFit: "contain" }}
             />
           ) : null}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: 18,
+              maxWidth: 650,
+            }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               <img
                 src={siteLogoUrl}
@@ -95,22 +104,24 @@ export default async function Image({
                 プロ野球 雨天中止予報
               </div>
             </div>
-            <div
-              style={{ fontSize: 30, fontWeight: 700, display: "flex", gap: 8 }}
-            >
-              <span>本日の</span>
-              <span>{teamName}</span>
-              <span>の試合</span>
+
+            <div style={{ fontSize: 52, fontWeight: 800, lineHeight: 1.25 }}>
+              {leadText}
             </div>
-            {probText ? (
-              <div style={{ display: "flex" }}>
-                <span style={{ fontSize: 56, fontWeight: 800 }}>
-                  雨天中止予測確率は{probText}
-                </span>
-              </div>
-            ) : (
-              <div style={{ fontSize: 48, opacity: 0.9 }}>{message}</div>
-            )}
+
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 4,
+                fontSize: 34,
+                fontWeight: 700,
+                lineHeight: 1.35,
+              }}
+            >
+              <div style={{ display: "flex" }}>{teamNameText}</div>
+              <div style={{ display: "flex" }}>{subText}</div>
+            </div>
             <div style={{ fontSize: 20, opacity: 0.6 }}>{dateText}</div>
           </div>
         </div>

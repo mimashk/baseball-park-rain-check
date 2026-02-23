@@ -10,4 +10,6 @@ export const GameCategoryDictionary: Record<string, GameCategoryType> = {
   "CSセ・ファイナルステージ": GameCategoryType.CLIMAX_SERIES,
   "CSパ・ファイナルステージ": GameCategoryType.CLIMAX_SERIES,
   日本シリーズ: GameCategoryType.JAPAN_SERIES,
+  練習試合: GameCategoryType.PRACTICE_GAME,
+  球春みやざきベースボールゲームズ: GameCategoryType.SPRING_TRAINING_GAME,
 };

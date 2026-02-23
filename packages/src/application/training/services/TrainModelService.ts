@@ -11,10 +11,6 @@ import { CancellationModelTrainer } from "../interfaces/CancellationModelTrainer
 import { mapCancellationModelDtoToProps } from "../mapper/mapCancellationModelDtoToProps";
 import { mapTrainingExampleToRow } from "../mapper/mapTrainingExampleToRow";
 
-type TrainResult = {
-  model: CancellationModel;
-  usedWeathers: BallParkObservedHourlyWeather[];
-};
 export class TrainModelService {
   constructor(private readonly trainer: CancellationModelTrainer) {}
 
@@ -24,7 +20,7 @@ export class TrainModelService {
     timeWindowBeforeHours: number,
     timeWindowAfterHours: number,
     ballParkId: BallParkId
-  ): Promise<TrainResult> {
+  ): Promise<CancellationModel> {
     try {
       const window = TimeWindowSpec.create({
         beforeHours: timeWindowBeforeHours,
@@ -32,7 +28,6 @@ export class TrainModelService {
       });
 
       const examples: TrainingExample[] = [];
-      const usedWeathersMap = new Map<string, BallParkObservedHourlyWeather>();
 
       for (const game of pastGames) {
         const { from: windowFrom, to: windowTo } = window.toRange(game.date);
@@ -45,10 +40,6 @@ export class TrainModelService {
           );
         });
         if (!hourlyWeathers.length) continue;
-
-        for (const w of hourlyWeathers) {
-          usedWeathersMap.set(`${w.ballParkId}-${w.date.toISOString()}`, w);
-        }
 
         const features =
           TrainingWeatherFeatureAggregator.aggregate(hourlyWeathers);
@@ -74,7 +65,7 @@ export class TrainModelService {
       const props = mapCancellationModelDtoToProps(modelDto);
       const model = CancellationModel.create(props);
 
-      return { model, usedWeathers: Array.from(usedWeathersMap.values()) };
+      return model;
     } catch (err) {
       if (err instanceof DomainError || err instanceof ValidationError)
         throw err;

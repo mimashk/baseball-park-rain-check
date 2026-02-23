@@ -8,6 +8,7 @@ export type AppErrorCode =
   | "db"
   | "external_service"
   | "mapping"
+  | "object_storage"
   | "internal";
 
 export class AppError extends Error {

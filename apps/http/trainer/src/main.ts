@@ -33,7 +33,9 @@ app.post("/cron/run-training-pipeline", async (req, res, next) => {
   } catch (err) {
     next(err);
   } finally {
-    await scope.resolve("prisma").$disconnect();
+    if (process.env.STORAGE_BACKEND === "prisma") {
+      await scope.resolve("prisma").$disconnect();
+    }
   }
 });
 

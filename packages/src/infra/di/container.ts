@@ -14,8 +14,6 @@ import { PrismaTransactionExecutor } from "../persistence/mysql/PrismaTransactio
 import { PrismaScheduledGameRepository } from "../persistence/mysql/repository/PrismaScheduledGameRepository";
 import { PrismaBallParkDailyWeatherForecastRepository } from "../persistence/mysql/repository/PrismaBallParkDailyWeatherForecastRepository";
 
-import { PrismaBallParkObservedHourlyWeatherRepository } from "../persistence/mysql/repository/PrismaBallParkObservedHourlyWeatherRepository";
-import { PrismaPastGameRecordRepository } from "../persistence/mysql/repository/PrismaPastGameRecordRepository";
 import { PrismaCancellationModelRepository } from "../persistence/mysql/repository/PrismaCancellationModelRepository";
 
 import { TeamNameMapperImpl } from "../providers/mapper/TeamNameMapperImpl";
@@ -57,6 +55,25 @@ import { GetTeamDashboardQuery } from "../../application/dashboard/queries/GetTe
 import { GameCategoryMapperImpl } from "../providers/mapper/GameCategoryMapperImpl";
 import { PrismaCancellationPredictionRepository } from "../persistence/mysql/repository/PrismaCancellationPredictionRepository";
 import { GetTopDashboardQuery } from "../../application/dashboard/queries/GetTopDashboardQuery";
+import { TransactionExecutor } from "../../application/shared/interfaces/TransactionExecutor";
+import { ScheduledGameRepository } from "../../domain/scheduledGame/repositoryInterface/ScheduledGameRepository";
+import { BallParkDailyWeatherForecastRepository } from "../../domain/weatherForecast/repositoryInterface.ts/BallParkDailyWeatherForecastRepository";
+import { BallParkHourlyWeatherForecastRepository } from "../../domain/weatherForecast/repositoryInterface.ts/BallParkHourlyWeatherForecastRepository";
+import { CancellationModelRepository } from "../../domain/model/repositoryInterface/CancellationModelRepository";
+import { CancellationPredictionRepository } from "../../application/prediction/interfaces/CancellationPredictionRepository";
+import { BatchStatusRepository } from "../../application/dashboard/interfaces/BatchStatusRepository";
+import {
+  R2ObjectStore,
+  readR2ConfigFromEnv,
+} from "../persistence/r2/R2ObjectStore";
+import { NoopTransactionExecutor } from "../persistence/shared/NoopTransactionExecutor";
+import { R2ScheduledGameRepository } from "../persistence/r2/repository/R2ScheduledGameRepository";
+import { R2BallParkDailyWeatherForecastRepository } from "../persistence/r2/repository/R2BallParkDailyWeatherForecastRepository";
+import { R2BallParkHourlyWeatherForecastRepository } from "../persistence/r2/repository/R2BallParkHourlyWeatherForecastRepository";
+import { R2CancellationPredictionRepository } from "../persistence/r2/repository/R2CancellationPredictionRepository";
+import { R2CancellationModelRepository } from "../persistence/r2/repository/R2CancellationModelRepository";
+import { R2BatchStatusRepository } from "../persistence/r2/repository/R2BatchStatusRepository";
+import { DerivedBatchStatusRepository } from "../persistence/mysql/repository/PrismaBatchStatusRepository";
 
 const defaultCloudSchedulerConfig: CloudSchedulerConfig = {
   projectId: "baseball-park-rain-check",
@@ -71,8 +88,9 @@ const defaultCloudSchedulerConfig: CloudSchedulerConfig = {
 export type InfraCradle = {
   prisma: PrismaClient;
   cloudScheduler: CloudSchedulerConfig;
+  r2Store: R2ObjectStore;
 
-  transactionExecutor: PrismaTransactionExecutor;
+  transactionExecutor: TransactionExecutor;
 
   teamNameMapper: TeamNameMapperImpl;
   ballParkNameMapper: BallParkNameMapperImpl;
@@ -98,13 +116,12 @@ export type InfraCradle = {
   hourlyWeatherForecastProvider: OpenMeteoWeatherProvider;
   observedHourlyWeatherProvider: OpenMeteoWeatherProvider;
 
-  scheduledGameRepository: PrismaScheduledGameRepository;
-  ballParkDailyWeatherForecastRepository: PrismaBallParkDailyWeatherForecastRepository;
-  ballParkHourlyWeatherForecastRepository: PrismaBallParkHourlyWeatherForecastRepository;
-  ballParkObservedHourlyWeatherRepository: PrismaBallParkObservedHourlyWeatherRepository;
-  pastGameRecordRepository: PrismaPastGameRecordRepository;
-  cancellationModelRepository: PrismaCancellationModelRepository;
-  cancellationPredictionRepository: PrismaCancellationPredictionRepository;
+  scheduledGameRepository: ScheduledGameRepository;
+  ballParkDailyWeatherForecastRepository: BallParkDailyWeatherForecastRepository;
+  ballParkHourlyWeatherForecastRepository: BallParkHourlyWeatherForecastRepository;
+  cancellationModelRepository: CancellationModelRepository;
+  cancellationPredictionRepository: CancellationPredictionRepository;
+  batchStatusRepository: BatchStatusRepository;
 
   cancellationModelTrainer: CancellationModelTrainerImpl;
   cancellationPredictor: CancellationPredictorImpl;
@@ -128,7 +145,9 @@ export type InfraCradle = {
 };
 
 export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
-  const prisma = PrismaClientWrapper.getInstance();
+  const storageBackend = process.env.STORAGE_BACKEND ?? "prisma";
+  const isR2 = storageBackend === "r2";
+  // const prisma = PrismaClientWrapper.getInstance();
   const mergedConfig: CloudSchedulerConfig = {
     ...defaultCloudSchedulerConfig,
   };
@@ -138,12 +157,7 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
   });
 
   container.register({
-    prisma: asValue(prisma),
     cloudScheduler: asValue(mergedConfig),
-
-    transactionExecutor: asClass(PrismaTransactionExecutor, {
-      lifetime: Lifetime.SINGLETON,
-    }),
 
     teamNameMapper: asClass(TeamNameMapperImpl, {
       lifetime: Lifetime.SINGLETON,
@@ -231,40 +245,6 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
     ),
     observedHourlyWeatherProvider: asFunction(
       ({ weatherProvider }: InfraCradle) => weatherProvider,
-      { lifetime: Lifetime.SINGLETON }
-    ),
-
-    scheduledGameRepository: asFunction(
-      ({ prisma }: InfraCradle) => new PrismaScheduledGameRepository(prisma),
-      { lifetime: Lifetime.SINGLETON }
-    ),
-    ballParkDailyWeatherForecastRepository: asFunction(
-      ({ prisma }: InfraCradle) =>
-        new PrismaBallParkDailyWeatherForecastRepository(prisma),
-      { lifetime: Lifetime.SINGLETON }
-    ),
-    ballParkHourlyWeatherForecastRepository: asFunction(
-      ({ prisma }: InfraCradle) =>
-        new PrismaBallParkHourlyWeatherForecastRepository(prisma),
-      { lifetime: Lifetime.SINGLETON }
-    ),
-    ballParkObservedHourlyWeatherRepository: asFunction(
-      ({ prisma }: InfraCradle) =>
-        new PrismaBallParkObservedHourlyWeatherRepository(prisma),
-      { lifetime: Lifetime.SINGLETON }
-    ),
-    pastGameRecordRepository: asFunction(
-      ({ prisma }: InfraCradle) => new PrismaPastGameRecordRepository(prisma),
-      { lifetime: Lifetime.SINGLETON }
-    ),
-    cancellationModelRepository: asFunction(
-      ({ prisma }: InfraCradle) =>
-        new PrismaCancellationModelRepository(prisma),
-      { lifetime: Lifetime.SINGLETON }
-    ),
-    cancellationPredictionRepository: asFunction(
-      ({ prisma }: InfraCradle) =>
-        new PrismaCancellationPredictionRepository(prisma),
       { lifetime: Lifetime.SINGLETON }
     ),
 
@@ -375,8 +355,6 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
         fetchPastGamesService,
         fetchObservedHourlyWeatherService,
         trainModelService,
-        pastGameRecordRepository,
-        ballParkObservedHourlyWeatherRepository,
         cancellationModelRepository,
         transactionExecutor,
       }: InfraCradle) =>
@@ -384,8 +362,6 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
           fetchPastGamesService,
           fetchObservedHourlyWeatherService,
           trainModelService,
-          pastGameRecordRepository,
-          ballParkObservedHourlyWeatherRepository,
           cancellationModelRepository,
           transactionExecutor
         ),
@@ -399,6 +375,79 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
       lifetime: Lifetime.SINGLETON,
     }),
   });
+
+  if (isR2) {
+    const r2Store = new R2ObjectStore(readR2ConfigFromEnv());
+
+    container.register({
+      r2Store: asValue(r2Store),
+
+      transactionExecutor: asClass(NoopTransactionExecutor, {
+        lifetime: Lifetime.SINGLETON,
+      }),
+
+      scheduledGameRepository: asFunction(
+        ({ r2Store }) => new R2ScheduledGameRepository(r2Store),
+        { lifetime: Lifetime.SINGLETON }
+      ),
+      ballParkDailyWeatherForecastRepository: asFunction(
+        ({ r2Store }) => new R2BallParkDailyWeatherForecastRepository(r2Store),
+        { lifetime: Lifetime.SINGLETON }
+      ),
+      ballParkHourlyWeatherForecastRepository: asFunction(
+        ({ r2Store }) => new R2BallParkHourlyWeatherForecastRepository(r2Store),
+        { lifetime: Lifetime.SINGLETON }
+      ),
+      cancellationPredictionRepository: asFunction(
+        ({ r2Store }) => new R2CancellationPredictionRepository(r2Store),
+        { lifetime: Lifetime.SINGLETON }
+      ),
+      cancellationModelRepository: asFunction(
+        ({ r2Store }) => new R2CancellationModelRepository(r2Store),
+        { lifetime: Lifetime.SINGLETON }
+      ),
+      batchStatusRepository: asFunction(
+        ({ r2Store }) => new R2BatchStatusRepository(r2Store),
+        { lifetime: Lifetime.SINGLETON }
+      ),
+    });
+  } else {
+    const prisma = PrismaClientWrapper.getInstance();
+
+    container.register({
+      prisma: asValue(prisma),
+
+      transactionExecutor: asClass(PrismaTransactionExecutor, {
+        lifetime: Lifetime.SINGLETON,
+      }),
+
+      scheduledGameRepository: asFunction(
+        ({ prisma }) => new PrismaScheduledGameRepository(prisma),
+        { lifetime: Lifetime.SINGLETON }
+      ),
+      ballParkDailyWeatherForecastRepository: asFunction(
+        ({ prisma }) =>
+          new PrismaBallParkDailyWeatherForecastRepository(prisma),
+        { lifetime: Lifetime.SINGLETON }
+      ),
+      ballParkHourlyWeatherForecastRepository: asFunction(
+        ({ prisma }) =>
+          new PrismaBallParkHourlyWeatherForecastRepository(prisma),
+        { lifetime: Lifetime.SINGLETON }
+      ),
+      cancellationPredictionRepository: asFunction(
+        ({ prisma }) => new PrismaCancellationPredictionRepository(prisma),
+        { lifetime: Lifetime.SINGLETON }
+      ),
+      cancellationModelRepository: asFunction(
+        ({ prisma }) => new PrismaCancellationModelRepository(prisma),
+        { lifetime: Lifetime.SINGLETON }
+      ),
+      batchStatusRepository: asClass(DerivedBatchStatusRepository, {
+        lifetime: Lifetime.SINGLETON,
+      }),
+    });
+  }
 
   return container;
 };

@@ -10,6 +10,8 @@ export const GameCategoryType = {
   JAPAN_SERIES: "日本シリーズ",
   PRACTICE: "練習試合",
   PRE_SEASON: "プレーシーズンゲーム",
+  PRACTICE_GAME: "練習試合",
+  SPRING_TRAINING_GAME: "球春みやざきベースボールゲームズ",
 } as const;
 
 export type GameCategoryType =

@@ -3,8 +3,6 @@ import {
   BallParkId,
   openAirParks,
 } from "../../../domain/scheduledGame/valueObjects/BallPark";
-import { BallParkObservedHourlyWeatherRepository } from "../../../domain/training/repositoryInterface/BallParkObservedHourlyWeatherRepository";
-import { PastGameRecordRepository } from "../../../domain/training/repositoryInterface/PastGameRecordRepository";
 import { TransactionExecutor } from "../../shared/interfaces/TransactionExecutor";
 import { RunTrainingPipelineRequest } from "../dtos/RunTrainingPipelineRequest";
 import { RunTrainingPipelineResponse } from "../dtos/RunTrainingPipelineResponse";
@@ -26,8 +24,6 @@ export class RunTrainingPipelineUseCase {
     private readonly fetchPastGamesService: FetchPastGamesService,
     private readonly fetchObservedHourlyWeatherService: FetchObservedHourlyWeatherService,
     private readonly trainModelService: TrainModelService,
-    private readonly pastGameRepository: PastGameRecordRepository,
-    private readonly weatherRepository: BallParkObservedHourlyWeatherRepository,
     private readonly modelRepository: CancellationModelRepository,
     private readonly txExecutor: TransactionExecutor
   ) {}
@@ -55,7 +51,7 @@ export class RunTrainingPipelineUseCase {
       );
       if (!gamesForBallPark.length || !weathers.length) continue;
 
-      const { model, usedWeathers } = await this.trainModelService.execute(
+      const model = await this.trainModelService.execute(
         gamesForBallPark,
         weathers,
         request.timeWindowBeforeHours,
@@ -63,12 +59,6 @@ export class RunTrainingPipelineUseCase {
         ballParkId
       );
       await this.txExecutor.run(async (trx) => {
-        await this.pastGameRepository
-          .withTransaction(trx)
-          .upsertMany(pastGames);
-        await this.weatherRepository
-          .withTransaction(trx)
-          .upsertMany(usedWeathers);
         await this.modelRepository.withTransaction(trx).save(model);
       });
       results.push({
