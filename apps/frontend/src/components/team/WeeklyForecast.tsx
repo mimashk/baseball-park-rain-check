@@ -4,7 +4,7 @@ import { fmtDate, fmtTime } from "@/lib/formatters/jst";
 import { WeatherIcon } from "@/components/weather/WeatherIcon";
 import { TeamRow } from "@/components/ui/TeamAvatar";
 import { weatherBorderClass } from "@/lib/utils/weatherBorder";
-import { TEAM_THEMES } from "@/components/ui/TeamTheme";
+import { TEAM_THEMES } from "@/lib/ui/team";
 
 type Props = { weekly: Weekly[]; teamId: TeamId };
 

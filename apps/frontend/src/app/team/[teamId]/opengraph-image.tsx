@@ -20,7 +20,7 @@ export default async function Image({
 
   const backgroundImage = `url("${baseUrl}/og/raindrops.png")`;
   const teamLogoUrl = logoPath ? `${baseUrl}${logoPath}` : undefined;
-  const siteLogoUrl = `${baseUrl}/logo.png`;
+  const siteLogoUrl = `${baseUrl}/logo/logo.webp`;
 
   const fontBoldUrl =
     "https://storage.googleapis.com/bbprc-public-assets/NotoSansJP-Bold.ttf";

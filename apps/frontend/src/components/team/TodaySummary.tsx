@@ -10,7 +10,7 @@ import { getGameStatusInfo } from "@/lib/utils/gameStatusLabel";
 import { getWeatherDisplay } from "@/lib/utils/weatherDisplay";
 import { getCancelProbDisplay } from "@/lib/utils/cancelProbDisplay";
 import { TeamId } from "@/types/TeamId";
-import { TEAM_THEMES } from "@/components/ui/TeamTheme";
+import { TEAM_THEMES } from "@/lib/ui/team";
 
 type Props = {
   dateJst: string;

@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Team } from "@/types/Team";
 import { TEAM_LOGO } from "@/lib/ui/team";
 
@@ -15,9 +16,12 @@ export function TeamBlock({ team, align }: BlockProps) {
         align === "right" ? "justify-end" : ""
       }`}
     >
-      <img
+      <Image
         src={logoUrl}
         alt={team.name}
+        width={96}
+        height={96}
+        sizes="(max-width: 768px) 40px, (max-width: 1024px) 72px, 96px"
         className="h-10 w-10 md:h-18 md:w-18 lg:h-24 lg:w-24 bg-white object-contain"
       />
       <div
@@ -40,9 +44,12 @@ export function TeamRow({ team }: RowProps) {
   }
   return (
     <div className="flex items-center gap-2">
-      <img
+      <Image
         src={logoUrl}
         alt={team.name}
+        width={32}
+        height={32}
+        sizes="32px"
         className="h-8 w-8 rounded-full border border-[color:var(--border)] bg-white object-contain"
       />
       <span className="text-sm sm:text-base font-semibold text-strong leading-snug break-words">

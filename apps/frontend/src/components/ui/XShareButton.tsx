@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 type XShareButtonProps = {
   text: string;
   url: string;
@@ -28,9 +30,12 @@ export function XShareButton({
       rel="noopener noreferrer"
       className="flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full border bg-black shadow-sm overflow-hidden transition hover:-translate-y-0.5 hover:bg-zinc-900"
     >
-      <img
-        src="/share/x-icon-white.png"
+      <Image
+        src="/share/x-icon-white.webp"
         alt="Xでシェア"
+        width={20}
+        height={20}
+        sizes="20px"
         className="h-5 w-5 object-contain"
       />
     </a>

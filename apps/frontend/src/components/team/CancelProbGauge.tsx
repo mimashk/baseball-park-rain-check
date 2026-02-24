@@ -46,7 +46,7 @@ const colorFromValue = (value: number) => {
 
 export function CancelProbGauge({
   value,
-  label = "雨天中止予測確率",
+  label = "雨天中止予測",
   size = 165,
   color,
 }: Props) {
