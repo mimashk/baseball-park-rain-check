@@ -32,10 +32,6 @@ app.post("/cron/run-training-pipeline", async (req, res, next) => {
     res.json(result);
   } catch (err) {
     next(err);
-  } finally {
-    if (process.env.STORAGE_BACKEND === "prisma") {
-      await scope.resolve("prisma").$disconnect();
-    }
   }
 });
 
@@ -56,8 +52,10 @@ app.use(
         .status(400)
         .json({ code: err.code, message: err.message, details: err.details });
     }
-    console.error("予期せぬエラーが発生しました", err);
-    return res.status(500).json({ message: "予期せぬエラーが発生しました" });
+    console.error("トレーナーAPIで予期せぬエラーが発生しました", err);
+    return res
+      .status(500)
+      .json({ message: "トレーナーAPIで予期せぬエラーが発生しました" });
   }
 );
 

@@ -18,10 +18,6 @@ app.post("/cron/schedule-initial-checkpoints", async (req, res, next) => {
     res.json(result);
   } catch (err) {
     next(err);
-  } finally {
-    if (process.env.STORAGE_BACKEND === "prisma") {
-      await scope.resolve("prisma").$disconnect();
-    }
   }
 });
 
@@ -45,10 +41,6 @@ app.post("/cron/run-game-checkpoint", async (req, res, next) => {
     res.json(result);
   } catch (err) {
     next(err);
-  } finally {
-    if (process.env.STORAGE_BACKEND === "prisma") {
-      await scope.resolve("prisma").$disconnect();
-    }
   }
 });
 
@@ -71,10 +63,6 @@ app.post(
       res.json(result);
     } catch (err) {
       next(err);
-    } finally {
-      if (process.env.STORAGE_BACKEND === "prisma") {
-        await scope.resolve("prisma").$disconnect();
-      }
     }
   }
 );
@@ -96,10 +84,6 @@ app.post("/cron/update-prediction", async (req, res, next) => {
     res.json(result);
   } catch (err) {
     next(err);
-  } finally {
-    if (process.env.STORAGE_BACKEND === "prisma") {
-      await scope.resolve("prisma").$disconnect();
-    }
   }
 });
 
@@ -120,8 +104,10 @@ app.use(
         .status(400)
         .json({ code: err.code, message: err.message, details: err.details });
     }
-    console.error("予期せぬエラーが発生しました", err);
-    return res.status(500).json({ message: "予期せぬエラーが発生しました" });
+    console.error("リフレッシャーAPIで予期せぬエラーが発生しました", err);
+    return res
+      .status(500)
+      .json({ message: "リフレッシャーAPIで予期せぬエラーが発生しました" });
   }
 );
 

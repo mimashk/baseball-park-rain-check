@@ -12,7 +12,13 @@ export function WeatherIcon({ code }: Props) {
       ? "🌧️"
       : code < 80
       ? "❄️"
-      : "⛈️";
+      : code < 85
+      ? "🌧️"
+      : code < 90
+      ? "❄️"
+      : code < 100
+      ? "⚡️"
+      : "☁️";
 
   return <span className="text-lg">{icon}</span>;
 }

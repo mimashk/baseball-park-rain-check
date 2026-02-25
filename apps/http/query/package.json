@@ -1,10 +1,10 @@
 {
-  "name": "@baseball/trainer",
+  "name": "@baseball/query",
   "private": true,
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "start": "node dist/apps/http/trainer/src/main.js",
-    "start:local": "DOTENV_CONFIG_PATH=../../../.env node -r dotenv/config dist/apps/http/trainer/src/main.js",
+    "start": "node dist/apps/http/query/src/main.js",
+    "start:local": "DOTENV_CONFIG_PATH=../../../.env node -r dotenv/config dist/apps/http/query/src/main.js",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

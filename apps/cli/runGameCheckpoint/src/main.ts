@@ -14,24 +14,19 @@ async function main() {
       jobKey: "checkpoint-2026-1-13-1234567890",
       now: new Date(),
     });
-  } finally {
-    if (process.env.STORAGE_BACKEND === "prisma") {
-      const prisma = scope.resolve("prisma");
-      await prisma.$disconnect();
+  } catch (err) {
+    if (
+      err instanceof DomainError ||
+      err instanceof ValidationError ||
+      err instanceof NotFoundError ||
+      err instanceof AppError
+    ) {
+      console.error(`[${err.code}] ${err.message}`, err.details ?? "");
+    } else {
+      console.error("予期しないエラーが発生しました", err);
     }
+    process.exit(1);
   }
 }
 
-main().catch((err) => {
-  if (
-    err instanceof DomainError ||
-    err instanceof ValidationError ||
-    err instanceof NotFoundError ||
-    err instanceof AppError
-  ) {
-    console.error(`[${err.code}] ${err.message}`, err.details ?? "");
-  } else {
-    console.error("予期しないエラーが発生しました", err);
-  }
-  process.exit(1);
-});
+main();
