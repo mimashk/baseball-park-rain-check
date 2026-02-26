@@ -53,7 +53,7 @@ export class RunGameCheckpointUseCase {
       await this.scheduler.upsertCheckpoint({
         jobKey: request.jobKey,
         runAt: nextRunAt,
-        endpointPath: "/cron/checkpoint",
+        endpointPath: "/cron/run-game-checkpoint",
         query: { gameId: gameIdStr, jobKey: request.jobKey },
       });
 

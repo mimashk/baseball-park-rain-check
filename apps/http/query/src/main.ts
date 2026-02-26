@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import express from "express";
 import { createInfraContainer } from "../../../../packages/src/infra/di/container";
 import { DomainError } from "../../../../packages/src/shared/errors/DomainError";
@@ -8,6 +9,33 @@ import { AppError } from "../../../../packages/src/shared/errors/AppError";
 
 const app = express();
 app.use(express.json());
+
+const expectedToken = process.env.QUERY_API_BEARER_TOKEN;
+if (!expectedToken) {
+  console.warn("QUERY_API_BEARER_TOKEN が設定されていません");
+}
+
+app.use((req, res, next) => {
+  if (!expectedToken) {
+    return res.status(500).json({ message: "サーバー認証設定がありません" });
+  }
+
+  const auth = req.header("authorization");
+  if (!auth?.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "認証の形式が不正です" });
+  }
+
+  const token = auth.slice("Bearer ".length);
+  const a = Buffer.from(token);
+  const b = Buffer.from(expectedToken);
+
+  // 長さ違い時の例外回避
+  if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+    return res.status(401).json({ message: "認証に失敗しました" });
+  }
+
+  next();
+});
 
 const container = createInfraContainer();
 

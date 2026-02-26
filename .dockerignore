@@ -1,0 +1,22 @@
+# dependencies
+**/node_modules
+
+# build outputs
+**/dist
+**/.next
+**/coverage
+
+# git/editor
+.git
+.gitignore
+.vscode
+.cursor
+
+# logs
+**/*.log
+npm-debug.log*
+
+# env/local files (必要なら調整)
+.env
+.env.*
+apps/frontend/.env.local

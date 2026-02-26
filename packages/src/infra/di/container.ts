@@ -65,13 +65,23 @@ import { R2CancellationModelRepository } from "../persistence/r2/repository/R2Ca
 import { R2BatchStatusRepository } from "../persistence/r2/repository/R2BatchStatusRepository";
 
 const defaultCloudSchedulerConfig: CloudSchedulerConfig = {
-  projectId: "baseball-park-rain-check",
-  location: "asia-northeast1",
-  timeZone: "Asia/Tokyo",
-  baseUrl: "https://asia-northeast1-baseball-park-rain-check.run.app",
+  projectId:
+    process.env.CLOUD_SCHEDULER_PROJECT_ID ?? "baseball-park-rain-check",
+  location: process.env.CLOUD_SCHEDULER_LOCATION ?? "asia-northeast1",
+  timeZone: process.env.CLOUD_SCHEDULER_TIME_ZONE ?? "Asia/Tokyo",
+  baseUrl:
+    process.env.CHECKPOINT_BASE_URL ??
+    "https://asia-northeast1-baseball-park-rain-check.run.app",
   invokerServiceAccountEmail:
+    process.env.SCHEDULER_INVOKER_SERVICE_ACCOUNT_EMAIL ??
     "scheduler-invoker@baseball-park-rain-check.iam.gserviceaccount.com",
-  scopes: ["https://www.googleapis.com/auth/cloud-platform"],
+  scopes: (
+    process.env.CLOUD_SCHEDULER_SCOPES ??
+    "https://www.googleapis.com/auth/cloud-platform"
+  )
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
 };
 
 export type InfraCradle = {

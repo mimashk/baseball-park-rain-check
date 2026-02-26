@@ -25,7 +25,20 @@ export async function GET(req: NextRequest) {
   const upstreamUrl = new URL("/dashboards/top", QUERY_API_BASE_URL);
   if (date) upstreamUrl.searchParams.set("date", date);
 
-  const upstream = await fetch(upstreamUrl, { cache: "no-store" });
+  const queryApiToken = process.env.QUERY_API_BEARER_TOKEN;
+  if (!queryApiToken) {
+    return NextResponse.json(
+      { message: "QUERY_API_BEARER_TOKEN が設定されていません" },
+      { status: 500 }
+    );
+  }
+
+  const upstream = await fetch(upstreamUrl, {
+    cache: "no-store",
+    headers: {
+      Authorization: `Bearer ${queryApiToken}`,
+    },
+  });
 
   if (!upstream.ok) {
     return NextResponse.json(
