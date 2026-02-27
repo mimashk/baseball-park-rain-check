@@ -10,6 +10,25 @@ app.use(express.json());
 
 const container = createInfraContainer();
 
+const jstDateFormatter = new Intl.DateTimeFormat("en-US", {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+});
+
+function jstYmd(date: Date) {
+  const parts = jstDateFormatter.formatToParts(date);
+  const y = Number(parts.find((p) => p.type === "year")?.value);
+  const m = Number(parts.find((p) => p.type === "month")?.value);
+  const d = Number(parts.find((p) => p.type === "day")?.value);
+  return { y, m, d };
+}
+
+function jstDateToUtcDate(y: number, m: number, d: number, hh = 0, mm = 0) {
+  return new Date(Date.UTC(y, m - 1, d, hh - 9, mm, 0, 0));
+}
+
 app.post("/cron/schedule-initial-checkpoints", async (req, res, next) => {
   const scope = container.createScope();
   try {
@@ -47,18 +66,18 @@ app.post("/cron/run-game-checkpoint", async (req, res, next) => {
 app.post(
   "/cron/refresh-weather-forecast-and-scheduled-game",
   async (req, res, next) => {
-    const from = new Date();
-    from.setDate(from.getDate() + 1);
-    const to = new Date();
-    to.setDate(to.getDate() + 8);
+    const now = new Date();
+    const { y, m, d } = jstYmd(now);
+    const from = jstDateToUtcDate(y, m, d + 1, 0, 0);
+    const to = jstDateToUtcDate(y, m, d + 8, 23, 59);
     const scope = container.createScope();
     try {
       const usecase = scope.resolve(
         "refreshScheduledGameAndDailyWeatherForecastUsecase"
       );
       const result = await usecase.execute({
-        from: new Date(),
-        to: new Date(),
+        from,
+        to,
       });
       res.json(result);
     } catch (err) {
@@ -100,6 +119,12 @@ app.use(
       err instanceof NotFoundError ||
       err instanceof AppError
     ) {
+      console.warn(
+        "リフレッシャーAPIでエラーが発生しました",
+        err.code,
+        err.message,
+        err.details ?? ""
+      );
       return res
         .status(400)
         .json({ code: err.code, message: err.message, details: err.details });

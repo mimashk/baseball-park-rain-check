@@ -22,21 +22,38 @@ export class ScheduledGameFetcherImpl implements ScheduledGameFetcher {
       .filter((dto): dto is ScheduledGameDto => dto !== null);
   }
 
+  private readonly jstFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  private toJstDateKey(date: Date): string {
+    const parts = this.jstFormatter.formatToParts(date);
+    const y = parts.find((p) => p.type === "year")?.value;
+    const m = parts.find((p) => p.type === "month")?.value;
+    const d = parts.find((p) => p.type === "day")?.value;
+    if (!y || !m || !d) throw new Error("Failed to format JST date");
+    return `${y}-${m}-${d}`; // YYYY-MM-DD
+  }
+
+  private addOneDayKey(key: string): string {
+    const [y, m, d] = key.split("-").map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    dt.setUTCDate(dt.getUTCDate() + 1);
+    return dt.toISOString().slice(0, 10);
+  }
+
   private rangeDays(from: Date, to: Date) {
     const res: { year: number; month: number; day: number }[] = [];
-    const cursor = new Date(
-      from.getFullYear(),
-      from.getMonth(),
-      from.getDate()
-    );
-    const end = new Date(to.getFullYear(), to.getMonth(), to.getDate());
-    while (cursor <= end) {
-      res.push({
-        year: cursor.getFullYear(),
-        month: cursor.getMonth() + 1,
-        day: cursor.getDate(),
-      });
-      cursor.setDate(cursor.getDate() + 1);
+    let current = this.toJstDateKey(from);
+    const end = this.toJstDateKey(to);
+
+    while (current <= end) {
+      const [year, month, day] = current.split("-").map(Number);
+      res.push({ year, month, day });
+      current = this.addOneDayKey(current);
     }
     return res;
   }

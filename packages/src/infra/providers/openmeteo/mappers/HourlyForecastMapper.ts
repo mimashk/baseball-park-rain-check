@@ -6,19 +6,16 @@ import { HourlyForecastResponse } from "../types/OpenMeteoTypes";
 export class HourlyForecastMapper {
   static toDto(response: HourlyForecastResponse): HourlyWeatherForecastDto[] {
     const hourly = response.hourly();
-    const utcOffsetSeconds = response.utcOffsetSeconds();
     if (!hourly)
       throw new InfrastructureError(
         "mapping",
-        "Open-Meteo APIのレスポンスにhourlyが含まれていません",
-        { details: { utcOffsetSeconds } }
+        "Open-Meteo APIのレスポンスにhourlyが含まれていません"
       );
 
     const times = TimeSeriesGenerator.generate({
       timeStartSec: Number(hourly.time()),
       timeEndSec: Number(hourly.timeEnd()),
       intervalSec: hourly.interval(),
-      utcOffsetSeconds,
     });
 
     const weatherCodes = hourly.variables(0)!.valuesArray();

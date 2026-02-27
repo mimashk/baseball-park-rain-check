@@ -50,13 +50,15 @@ export class PastGameFormatter {
     day: number,
     startTime: string
   ): Date {
-    return new Date(
-      year,
-      month - 1,
-      day,
-      parseInt(startTime.split(":")[0]),
-      parseInt(startTime.split(":")[1])
-    );
+    const [h, m] = startTime.split(":").map(Number);
+    if (!Number.isFinite(h) || !Number.isFinite(m)) {
+      throw new InfrastructureError(
+        "mapping",
+        `開始時刻の形式が不正です: ${startTime}`
+      );
+    }
+    const utcMs = Date.UTC(year, month - 1, day, h - 9, m, 0, 0); // JST -> UTC
+    return new Date(utcMs);
   }
 
   private requireTeam(external: string): TeamId {

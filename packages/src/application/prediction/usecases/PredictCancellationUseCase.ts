@@ -65,8 +65,12 @@ export class PredictCancellationUseCase {
         });
         games.push(testGame);
       }
-      if (games.length === 0)
-        throw new NotFoundError("今日の試合が見つかりません");
+      if (games.length === 0) {
+        return {
+          message: "本日の対象試合はありませんでした",
+          results: [],
+        };
+      }
 
       const results: PredictResult[] = [];
 
@@ -170,7 +174,11 @@ export class PredictCancellationUseCase {
             modelVersion: model.version.toString(),
           });
         } catch (err) {
-          if (err instanceof DomainError || err instanceof ValidationError) {
+          if (
+            err instanceof DomainError ||
+            err instanceof ValidationError ||
+            err instanceof NotFoundError
+          ) {
             results.push({
               success: false,
               gameId: game.id.toString(),
@@ -183,12 +191,12 @@ export class PredictCancellationUseCase {
             success: false,
             gameId: game.id.toString(),
             modelVersion: null,
-            error: "予測に失敗しました",
+            error: "予測処理に失敗しました",
           });
         }
       }
       return {
-        message: "予測に成功しました",
+        message: "予測処理を完了しました",
         results,
       };
     } catch (err) {

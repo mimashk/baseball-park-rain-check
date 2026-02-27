@@ -106,14 +106,15 @@ export class CloudSchedulerCheckpointAdapter implements CheckpointScheduler {
   }
 
   private toCronInTokyo(runAt: Date): string {
-    // Cloud Scheduler の schedule は cron。
-    // timeZone="Asia/Tokyo" を指定するので、runAt は Tokyo time の Date を想定。
-    // ※より厳密にやるなら timezone-aware の変換を入れてください（Luxon 等）
-    const min = runAt.getMinutes();
-    const hour = runAt.getHours();
-    const day = runAt.getDate();
-    const month = runAt.getMonth() + 1;
-    return `${min} ${hour} ${day} ${month} *`;
+    const parts = this.jstFormatter.formatToParts(runAt);
+    const min = parts.find((p) => p.type === "minute")?.value;
+    const hour = parts.find((p) => p.type === "hour")?.value;
+    const day = parts.find((p) => p.type === "day")?.value;
+    const month = parts.find((p) => p.type === "month")?.value;
+    if (!min || !hour || !day || !month) {
+      throw new ExternalServiceError("JST cron 変換に失敗しました");
+    }
+    return `${Number(min)} ${Number(hour)} ${Number(day)} ${Number(month)} *`;
   }
 
   private async getAuth() {
@@ -129,4 +130,14 @@ export class CloudSchedulerCheckpointAdapter implements CheckpointScheduler {
       });
     }
   }
+
+  private readonly jstFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
 }

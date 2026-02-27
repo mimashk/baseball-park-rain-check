@@ -6,20 +6,16 @@ import { DailyForecastResponse } from "../types/OpenMeteoTypes";
 export class DailyForecastMapper {
   static toDto(response: DailyForecastResponse): DailyWeatherForecastDto[] {
     const daily = response.daily();
-    const utcOffsetSeconds = response.utcOffsetSeconds();
-
     if (!daily)
       throw new InfrastructureError(
         "mapping",
-        "Open-Meteo APIのレスポンスにdailyが含まれていません",
-        { details: { utcOffsetSeconds } }
+        "Open-Meteo APIのレスポンスにdailyが含まれていません"
       );
 
     const times = TimeSeriesGenerator.generate({
       timeStartSec: Number(daily.time()),
       timeEndSec: Number(daily.timeEnd()),
       intervalSec: daily.interval(),
-      utcOffsetSeconds,
     });
 
     const weatherCodes = daily.variables(0)!.valuesArray();

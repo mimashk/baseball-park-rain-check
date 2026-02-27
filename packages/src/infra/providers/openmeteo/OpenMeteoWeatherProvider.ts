@@ -26,7 +26,7 @@ export class OpenMeteoWeatherProvider
     points: DailyForecastPoint[]
   ): Promise<DailyWeatherForecastDto[]> {
     const tasks = points.map(async (point) => {
-      const date = point.date.toISOString().split("T")[0];
+      const date = this.toJstDateKey(point.date);
       const params = OpenMeteoParamsGenerator.buildDailyForecast({
         latitude: point.latitude,
         longitude: point.longitude,
@@ -65,8 +65,8 @@ export class OpenMeteoWeatherProvider
     from: Date,
     to: Date
   ): Promise<ObservedHourlyWeatherDto[]> {
-    const startDate = from.toISOString().split("T")[0];
-    const endDate = to.toISOString().split("T")[0];
+    const startDate = this.toJstDateKey(from);
+    const endDate = this.toJstDateKey(to);
     const params = OpenMeteoParamsGenerator.buildHourlyArchive({
       latitude,
       longitude,
@@ -78,5 +78,21 @@ export class OpenMeteoWeatherProvider
       params
     );
     return HourlyObservationMapper.toDto(res);
+  }
+
+  private readonly jstDateFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  private toJstDateKey(date: Date): string {
+    const parts = this.jstDateFormatter.formatToParts(date);
+    const year = parts.find((p) => p.type === "year")?.value;
+    const month = parts.find((p) => p.type === "month")?.value;
+    const day = parts.find((p) => p.type === "day")?.value;
+    if (!year || !month || !day) throw new Error("Failed to format JST date");
+    return `${year}-${month}-${day}`;
   }
 }

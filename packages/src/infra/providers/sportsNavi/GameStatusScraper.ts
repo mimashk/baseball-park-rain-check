@@ -20,9 +20,7 @@ export class GameStatusScraper {
   }
 
   private async fetchHtml(date: Date): Promise<string> {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
+    const { year, month, day } = this.toJstYmd(date);
     const mm = String(month).padStart(2, "0");
     const dd = String(day).padStart(2, "0");
     const url = `https://baseball.yahoo.co.jp/npb/schedule/?date=${year}-${mm}-${dd}`;
@@ -115,6 +113,24 @@ export class GameStatusScraper {
         }
       );
     }
+  }
+
+  private readonly jstFormatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Tokyo",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+
+  private toJstYmd(date: Date): { year: number; month: number; day: number } {
+    const parts = this.jstFormatter.formatToParts(date);
+    const y = parts.find((p) => p.type === "year")?.value;
+    const m = parts.find((p) => p.type === "month")?.value;
+    const d = parts.find((p) => p.type === "day")?.value;
+    if (!y || !m || !d) {
+      throw new InfrastructureError("mapping", "JST日付の生成に失敗しました");
+    }
+    return { year: Number(y), month: Number(m), day: Number(d) };
   }
 
   private normalizeText(text: string): string {

@@ -42,6 +42,7 @@ export default async function Image({
     : `明日以降の試合情報と天気をチェック！`;
 
   const dateText = new Date().toLocaleDateString("ja-JP", {
+    timeZone: "Asia/Tokyo",
     year: "numeric",
     month: "2-digit",
     day: "2-digit",

@@ -8,20 +8,16 @@ export class HourlyObservationMapper {
     response: HourlyObservationResponse
   ): ObservedHourlyWeatherDto[] {
     const hourly = response.hourly();
-    const utcOffsetSeconds = response.utcOffsetSeconds();
     if (!hourly)
-      if (!hourly)
-        throw new InfrastructureError(
-          "mapping",
-          "Open-Meteo APIのレスポンスにhourlyが含まれていません",
-          { details: { utcOffsetSeconds } }
-        );
+      throw new InfrastructureError(
+        "mapping",
+        "Open-Meteo APIのレスポンスにhourlyが含まれていません"
+      );
 
     const times = TimeSeriesGenerator.generate({
       timeStartSec: Number(hourly.time()),
       timeEndSec: Number(hourly.timeEnd()),
       intervalSec: hourly.interval(),
-      utcOffsetSeconds,
     });
 
     const temperatures = hourly.variables(0)!.valuesArray();
