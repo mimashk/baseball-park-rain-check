@@ -2,9 +2,6 @@ import { TransactionContext } from "../../shared/interfaces/TransactionContext";
 import { BallParkHourlyWeatherForecast } from "../valueObjects/BallParkHourlyWeatherForecast";
 
 export interface BallParkHourlyWeatherForecastRepository {
-  withTransaction(
-    tx: TransactionContext
-  ): BallParkHourlyWeatherForecastRepository;
   updateMany(
     ballParkHourlyWeatherForecasts: BallParkHourlyWeatherForecast[]
   ): Promise<void>;

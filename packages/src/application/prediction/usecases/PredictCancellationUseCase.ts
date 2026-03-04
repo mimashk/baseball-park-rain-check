@@ -15,7 +15,6 @@ import { mapCancellationModelToDto } from "../mapper/mapCancellationModelToDto";
 import { BallParkCatalog } from "../../../domain/scheduledGame/valueObjects/BallPark";
 import { HourlyWeatherForecastProvider } from "../interfaces/HourlyWeatherForecastProvider";
 import { BallParkHourlyWeatherForecastRepository } from "../../../domain/weatherForecast/repositoryInterface.ts/BallParkHourlyWeatherForecastRepository";
-import { TransactionExecutor } from "../../shared/interfaces/TransactionExecutor";
 import { BallParkWeatherPoint } from "../../../domain/weatherForecast/valueObjects/BallParkWeatherPoint";
 import { mapHourlyWeatherForecastDtoToProps } from "../mapper/mapHourlyWeatherForecastDtoToProps";
 import { BallParkHourlyWeatherForecast } from "../../../domain/weatherForecast/valueObjects/BallParkHourlyWeatherForecast";
@@ -42,8 +41,7 @@ export class PredictCancellationUseCase {
     private readonly predictor: CancellationPredictor,
     private readonly weatherForecastProvider: HourlyWeatherForecastProvider,
     private readonly ballParkHourlyWeatherForecastRepository: BallParkHourlyWeatherForecastRepository,
-    private readonly predictionRepository: CancellationPredictionRepository,
-    private readonly txExecutor: TransactionExecutor
+    private readonly predictionRepository: CancellationPredictionRepository
   ) {}
 
   async execute(
@@ -121,11 +119,9 @@ export class PredictCancellationUseCase {
             .map(BallParkHourlyWeatherForecast.create);
 
           // 気象データを永続化（TX1）
-          await this.txExecutor.run(async (trx) => {
-            await this.ballParkHourlyWeatherForecastRepository
-              .withTransaction(trx)
-              .updateMany(hourlyWeatherForecasts);
-          });
+          await this.ballParkHourlyWeatherForecastRepository.updateMany(
+            hourlyWeatherForecasts
+          );
 
           if (hourlyWeatherForecasts.length === 0)
             throw new ValidationError("予測に使える気象データがありません", {
@@ -158,13 +154,11 @@ export class PredictCancellationUseCase {
             CancellationProbability.from(probability).toNumber();
 
           // 予測結果を永続化（TX2）
-          await this.txExecutor.run(async (trx) => {
-            await this.predictionRepository.withTransaction(trx).upsert({
-              gameId: game.id.toString(),
-              probability: normalized,
-              modelVersion: model.version.toString(),
-              predictedAtUtc: new Date().toISOString(),
-            });
+          await this.predictionRepository.upsert({
+            gameId: game.id.toString(),
+            probability: normalized,
+            modelVersion: model.version.toString(),
+            predictedAtUtc: new Date().toISOString(),
           });
 
           results.push({

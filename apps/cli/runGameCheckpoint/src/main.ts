@@ -12,6 +12,7 @@ async function main() {
     const usecase = scope.resolve("runGameCheckpointUseCase");
     await usecase.execute({
       jobKey: "checkpoint-2026-1-13-1234567890",
+      gameId: "019c89ae-ff89-750b-8abb-cb3a818668ee",
       now: new Date(),
     });
   } catch (err) {

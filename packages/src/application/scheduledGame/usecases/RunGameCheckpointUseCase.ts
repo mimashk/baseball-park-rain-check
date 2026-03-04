@@ -21,7 +21,7 @@ export class RunGameCheckpointUseCase {
     request: RunGameCheckpointRequest
   ): Promise<RunGameCheckpointResponse> {
     try {
-      const gameIdStr = this.gameIdFromJobKey(request.jobKey);
+      const gameIdStr = request.gameId;
       const gameId = GameId.fromString(gameIdStr);
       const game = await this.gameRepository.findById(gameId);
       if (!game) {
@@ -77,15 +77,5 @@ export class RunGameCheckpointUseCase {
         }
       );
     }
-  }
-
-  private gameIdFromJobKey(jobKey: string): string {
-    const parts = jobKey.split("-");
-    const gameId = parts[parts.length - 1];
-    if (!gameId)
-      throw new ValidationError("jobKey から gameId を取得できません", {
-        jobKey,
-      });
-    return gameId;
   }
 }

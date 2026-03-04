@@ -3,9 +3,9 @@ import {
   GetObjectCommand,
   PutObjectCommand,
   ListObjectsV2Command,
+  DeleteObjectCommand,
 } from "@aws-sdk/client-s3";
 import { ValidationError } from "../../../shared/errors/ValidationError";
-import { InfrastructureError } from "../../../shared/errors/InfrastructureError";
 import { ObjectStorageError } from "../../../shared/errors/ObjectStorageError";
 
 export type R2Config = {
@@ -108,5 +108,32 @@ export class R2ObjectStore {
     }
 
     return keys;
+  }
+
+  async deleteKey(key: string): Promise<void> {
+    try {
+      await this.client.send(
+        new DeleteObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+        })
+      );
+    } catch (err: unknown) {
+      throw new ObjectStorageError("R2のデータ削除に失敗しました", {
+        cause: err,
+        details: { key },
+      });
+    }
+  }
+
+  async deleteKeys(keys: string[]): Promise<void> {
+    try {
+      await Promise.all(keys.map((key) => this.deleteKey(key)));
+    } catch (err: unknown) {
+      throw new ObjectStorageError("R2の複数データ削除に失敗しました", {
+        cause: err,
+        details: { count: keys.length },
+      });
+    }
   }
 }

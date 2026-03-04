@@ -27,12 +27,6 @@ export class R2BallParkDailyWeatherForecastRepository
 {
   constructor(private readonly store: R2ObjectStore) {}
 
-  withTransaction(
-    _tx: TransactionContext
-  ): BallParkDailyWeatherForecastRepository {
-    return this;
-  }
-
   async updateMany(items: BallParkDailyWeatherForecast[]): Promise<void> {
     try {
       await Promise.all(

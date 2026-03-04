@@ -45,7 +45,6 @@ import { RefreshScheduledGameAndDailyWeatherForecastUsecase } from "../../applic
 import { GetTeamDashboardQuery } from "../../application/dashboard/queries/GetTeamDashboardQuery";
 import { GameCategoryMapperImpl } from "../providers/mapper/GameCategoryMapperImpl";
 import { GetTopDashboardQuery } from "../../application/dashboard/queries/GetTopDashboardQuery";
-import { TransactionExecutor } from "../../application/shared/interfaces/TransactionExecutor";
 import { ScheduledGameRepository } from "../../domain/scheduledGame/repositoryInterface/ScheduledGameRepository";
 import { BallParkDailyWeatherForecastRepository } from "../../domain/weatherForecast/repositoryInterface.ts/BallParkDailyWeatherForecastRepository";
 import { BallParkHourlyWeatherForecastRepository } from "../../domain/weatherForecast/repositoryInterface.ts/BallParkHourlyWeatherForecastRepository";
@@ -56,7 +55,6 @@ import {
   R2ObjectStore,
   readR2ConfigFromEnv,
 } from "../persistence/r2/R2ObjectStore";
-import { NoopTransactionExecutor } from "../persistence/shared/NoopTransactionExecutor";
 import { R2ScheduledGameRepository } from "../persistence/r2/repository/R2ScheduledGameRepository";
 import { R2BallParkDailyWeatherForecastRepository } from "../persistence/r2/repository/R2BallParkDailyWeatherForecastRepository";
 import { R2BallParkHourlyWeatherForecastRepository } from "../persistence/r2/repository/R2BallParkHourlyWeatherForecastRepository";
@@ -87,8 +85,6 @@ const defaultCloudSchedulerConfig: CloudSchedulerConfig = {
 export type InfraCradle = {
   cloudScheduler: CloudSchedulerConfig;
   r2Store: R2ObjectStore;
-
-  transactionExecutor: TransactionExecutor;
 
   teamNameMapper: TeamNameMapperImpl;
   ballParkNameMapper: BallParkNameMapperImpl;
@@ -264,14 +260,12 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
         dailyWeatherForecastProvider,
         scheduledGameRepository,
         ballParkDailyWeatherForecastRepository,
-        transactionExecutor,
       }: InfraCradle) =>
         new RefreshScheduledGameAndDailyWeatherForecastUsecase(
           scheduledGameFetcher,
           dailyWeatherForecastProvider,
           scheduledGameRepository,
-          ballParkDailyWeatherForecastRepository,
-          transactionExecutor
+          ballParkDailyWeatherForecastRepository
         ),
       { lifetime: Lifetime.SINGLETON }
     ),
@@ -313,7 +307,6 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
         hourlyWeatherForecastProvider,
         ballParkHourlyWeatherForecastRepository,
         cancellationPredictionRepository,
-        transactionExecutor,
       }: InfraCradle) =>
         new PredictCancellationUseCase(
           scheduledGameRepository,
@@ -321,8 +314,7 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
           cancellationPredictor,
           hourlyWeatherForecastProvider,
           ballParkHourlyWeatherForecastRepository,
-          cancellationPredictionRepository,
-          transactionExecutor
+          cancellationPredictionRepository
         ),
       { lifetime: Lifetime.SINGLETON }
     ),
@@ -351,14 +343,12 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
         fetchObservedHourlyWeatherService,
         trainModelService,
         cancellationModelRepository,
-        transactionExecutor,
       }: InfraCradle) =>
         new RunTrainingPipelineUseCase(
           fetchPastGamesService,
           fetchObservedHourlyWeatherService,
           trainModelService,
-          cancellationModelRepository,
-          transactionExecutor
+          cancellationModelRepository
         ),
       { lifetime: Lifetime.SINGLETON }
     ),
@@ -375,10 +365,6 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
 
   container.register({
     r2Store: asValue(r2Store),
-
-    transactionExecutor: asClass(NoopTransactionExecutor, {
-      lifetime: Lifetime.SINGLETON,
-    }),
 
     scheduledGameRepository: asFunction(
       ({ r2Store }) => new R2ScheduledGameRepository(r2Store),

@@ -3,7 +3,6 @@ import {
   BallParkId,
   openAirParks,
 } from "../../../domain/scheduledGame/valueObjects/BallPark";
-import { TransactionExecutor } from "../../shared/interfaces/TransactionExecutor";
 import { RunTrainingPipelineRequest } from "../dtos/RunTrainingPipelineRequest";
 import { RunTrainingPipelineResponse } from "../dtos/RunTrainingPipelineResponse";
 import { FetchObservedHourlyWeatherService } from "../services/FetchObservedHourlyWeatherService";
@@ -24,8 +23,7 @@ export class RunTrainingPipelineUseCase {
     private readonly fetchPastGamesService: FetchPastGamesService,
     private readonly fetchObservedHourlyWeatherService: FetchObservedHourlyWeatherService,
     private readonly trainModelService: TrainModelService,
-    private readonly modelRepository: CancellationModelRepository,
-    private readonly txExecutor: TransactionExecutor
+    private readonly modelRepository: CancellationModelRepository
   ) {}
 
   async execute(
@@ -58,9 +56,7 @@ export class RunTrainingPipelineUseCase {
         request.timeWindowAfterHours,
         ballParkId
       );
-      await this.txExecutor.run(async (trx) => {
-        await this.modelRepository.withTransaction(trx).save(model);
-      });
+      await this.modelRepository.save(model);
       results.push({
         version: model.version.toString(),
         ballParkId: model.ballParkId,

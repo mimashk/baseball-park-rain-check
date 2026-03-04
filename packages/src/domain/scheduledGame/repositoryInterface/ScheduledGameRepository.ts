@@ -4,8 +4,13 @@ import { GameId } from "../valueObjects/GameId";
 import { GameStatusType } from "../valueObjects/GameStatus";
 
 export interface ScheduledGameRepository {
-  withTransaction(tx: TransactionContext): ScheduledGameRepository;
   upsertMany(scheduledGames: ScheduledGame[]): Promise<void>;
+  replaceByDateRange(
+    from: Date,
+    to: Date,
+    scheduledGames: ScheduledGame[]
+  ): Promise<void>;
+  purgeBefore(cutoff: Date): Promise<void>;
   updateStatus(gameId: GameId, status: GameStatusType): Promise<void>;
   findByDate(from: Date, to: Date): Promise<ScheduledGame[]>;
   findAtDate(date: Date): Promise<ScheduledGame[]>;

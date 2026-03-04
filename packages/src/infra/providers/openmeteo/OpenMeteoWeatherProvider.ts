@@ -25,21 +25,50 @@ export class OpenMeteoWeatherProvider
   async fetchDailyForecasts(
     points: DailyForecastPoint[]
   ): Promise<DailyWeatherForecastDto[]> {
-    const tasks = points.map(async (point) => {
-      const date = this.toJstDateKey(point.date);
-      const params = OpenMeteoParamsGenerator.buildDailyForecast({
-        latitude: point.latitude,
-        longitude: point.longitude,
-        startDate: date,
-        endDate: date,
-      });
-      const res = await this.client.fetchDailyForecastFirst(
-        OpenMeteoEndpoints.FORECAST,
-        params
-      );
-      return DailyForecastMapper.toDto(res);
-    });
-    return (await Promise.all(tasks)).flat();
+    // 1) 同一点・同日の重複を除去
+    const uniquePoints = Array.from(
+      new Map(
+        points.map((p) => [
+          `${this.toJstDateKey(p.date)}::${p.latitude}::${p.longitude}`,
+          p,
+        ])
+      ).values()
+    );
+
+    // 2) 並列数を制限
+    const CONCURRENCY = 3;
+    const results: DailyWeatherForecastDto[][] = new Array(uniquePoints.length);
+    let cursor = 0;
+
+    const worker = async () => {
+      while (true) {
+        const i = cursor++;
+        if (i >= uniquePoints.length) return;
+        const point = uniquePoints[i];
+        const date = this.toJstDateKey(point.date);
+
+        const params = OpenMeteoParamsGenerator.buildDailyForecast({
+          latitude: point.latitude,
+          longitude: point.longitude,
+          startDate: date,
+          endDate: date,
+        });
+
+        const res = await this.client.fetchDailyForecastFirst(
+          OpenMeteoEndpoints.FORECAST,
+          params
+        );
+        results[i] = DailyForecastMapper.toDto(res);
+      }
+    };
+
+    await Promise.all(
+      Array.from({ length: Math.min(CONCURRENCY, uniquePoints.length) }, () =>
+        worker()
+      )
+    );
+
+    return results.flat();
   }
 
   async fetchHourlyForecasts(

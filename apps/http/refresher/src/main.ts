@@ -42,10 +42,19 @@ app.post("/cron/schedule-initial-checkpoints", async (req, res, next) => {
 
 app.post("/cron/run-game-checkpoint", async (req, res, next) => {
   const jobKeyParam = (req.query as any)?.jobKey || (req.body as any)?.jobKey;
+  const gameIdParam = (req.query as any)?.gameId || (req.body as any)?.gameId;
   if (!jobKeyParam) {
     return next(
       new ValidationError("jobKey が指定されていません", {
         jobKey: jobKeyParam,
+      })
+    );
+  }
+
+  if (!gameIdParam) {
+    return next(
+      new ValidationError("gameId が指定されていません", {
+        gameId: gameIdParam,
       })
     );
   }
@@ -55,6 +64,7 @@ app.post("/cron/run-game-checkpoint", async (req, res, next) => {
     const usecase = scope.resolve("runGameCheckpointUseCase");
     const result = await usecase.execute({
       jobKey: jobKeyParam,
+      gameId: gameIdParam,
       now: new Date(),
     });
     res.json(result);

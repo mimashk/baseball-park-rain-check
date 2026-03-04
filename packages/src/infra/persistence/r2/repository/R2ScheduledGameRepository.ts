@@ -3,7 +3,6 @@ import { ScheduledGame } from "../../../../domain/scheduledGame/entities/Schedul
 import { GameId } from "../../../../domain/scheduledGame/valueObjects/GameId";
 import { GameStatusType } from "../../../../domain/scheduledGame/valueObjects/GameStatus";
 import { TeamId } from "../../../../domain/scheduledGame/valueObjects/BaseballTeam";
-import { TransactionContext } from "../../../../domain/shared/interfaces/TransactionContext";
 import { R2ObjectStore } from "../R2ObjectStore";
 import {
   listJstDateKeys,
@@ -29,11 +28,6 @@ type ScheduledGameRecord = {
 
 export class R2ScheduledGameRepository implements ScheduledGameRepository {
   constructor(private readonly store: R2ObjectStore) {}
-
-  withTransaction(_tx: TransactionContext): ScheduledGameRepository {
-    // R2ではトランザクション非対応。現時点方針では no-op。
-    return this;
-  }
 
   async upsertMany(games: ScheduledGame[]): Promise<void> {
     try {
@@ -135,6 +129,9 @@ export class R2ScheduledGameRepository implements ScheduledGameRepository {
       );
       return rec ? this.toDomain(rec) : null;
     } catch (err: unknown) {
+      if (this.isNoSuchKeyFromObjectStorageError(err)) {
+        return null;
+      }
       throw new ObjectStorageError(
         "指定IDの試合予定データの取得に失敗しました",
         {
@@ -143,6 +140,94 @@ export class R2ScheduledGameRepository implements ScheduledGameRepository {
         }
       );
     }
+  }
+
+  async replaceByDateRange(
+    from: Date,
+    to: Date,
+    games: ScheduledGame[]
+  ): Promise<void> {
+    try {
+      const keysToDelete = await this.collectKeysToDeleteInDateRange(from, to);
+      if (keysToDelete.length > 0) {
+        await this.store.deleteKeys(keysToDelete);
+      }
+      await this.upsertMany(games);
+    } catch (err: unknown) {
+      throw new ObjectStorageError("試合予定データの範囲置換に失敗しました", {
+        cause: err,
+        details: { from, to, count: games.length },
+      });
+    }
+  }
+
+  async purgeBefore(cutoff: Date): Promise<void> {
+    const cutoffKey = toJstDateKeyByParts(cutoff);
+
+    try {
+      const byDateKeys = await this.store.listKeys(
+        "scheduled-games/by-date-jst/"
+      );
+      const targets = byDateKeys.filter((key) => {
+        const dateKey = this.extractDateKeyFromByDateKey(key);
+        return dateKey !== null && dateKey < cutoffKey;
+      });
+
+      if (targets.length === 0) return;
+
+      const keys = new Set<string>();
+      for (const byDateKey of targets) {
+        keys.add(byDateKey);
+
+        const gameId = this.extractGameIdFromByDateKey(byDateKey);
+        if (gameId) {
+          keys.add(scheduledGameByIdKey(gameId));
+        }
+      }
+
+      await this.store.deleteKeys([...keys]);
+    } catch (err: unknown) {
+      throw new ObjectStorageError("古い試合予定データの削除に失敗しました", {
+        cause: err,
+        details: { cutoff: cutoff.toISOString() },
+      });
+    }
+  }
+
+  private async collectKeysToDeleteInDateRange(
+    from: Date,
+    to: Date
+  ): Promise<string[]> {
+    const dates = listJstDateKeys(from, to);
+    const byDateKeys = (
+      await Promise.all(
+        dates.map((d) => this.store.listKeys(scheduledGameByDatePrefix(d)))
+      )
+    ).flat();
+
+    const keys = new Set<string>();
+    for (const byDateKey of byDateKeys) {
+      keys.add(byDateKey);
+      const gameId = this.extractGameIdFromByDateKey(byDateKey);
+      if (gameId) {
+        keys.add(scheduledGameByIdKey(gameId));
+      }
+    }
+
+    return [...keys];
+  }
+
+  private extractDateKeyFromByDateKey(key: string): string | null {
+    // scheduled-games/by-date-jst/YYYY-MM-DD/{gameId}.json
+    const parts = key.split("/");
+    if (parts.length < 4) return null;
+    return parts[2] ?? null;
+  }
+
+  private extractGameIdFromByDateKey(key: string): string | null {
+    const fileName = key.split("/").pop();
+    if (!fileName || !fileName.endsWith(".json")) return null;
+    return fileName.slice(0, -5); // ".json"を除去
   }
 
   private toRecord(g: ScheduledGame): ScheduledGameRecord {
@@ -189,5 +274,26 @@ export class R2ScheduledGameRepository implements ScheduledGameRepository {
         }
       );
     }
+  }
+
+  private isNoSuchKeyFromObjectStorageError(err: unknown): boolean {
+    if (!(err instanceof ObjectStorageError)) return false;
+
+    const cause = (err as { cause?: unknown }).cause;
+    if (!cause || typeof cause !== "object") return false;
+
+    const c = cause as {
+      name?: string;
+      code?: string;
+      Code?: string;
+      $metadata?: { httpStatusCode?: number };
+    };
+
+    return (
+      c.name === "NoSuchKey" ||
+      c.code === "NoSuchKey" ||
+      c.Code === "NoSuchKey" ||
+      c.$metadata?.httpStatusCode === 404
+    );
   }
 }

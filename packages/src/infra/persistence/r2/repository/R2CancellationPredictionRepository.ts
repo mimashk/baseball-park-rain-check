@@ -10,10 +10,6 @@ export class R2CancellationPredictionRepository
 {
   constructor(private readonly store: R2ObjectStore) {}
 
-  withTransaction(_trx: TransactionContext): CancellationPredictionRepository {
-    return this;
-  }
-
   async upsert(prediction: CancellationPredictionDto): Promise<void> {
     try {
       await this.store.putJson(

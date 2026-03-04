@@ -27,11 +27,6 @@ export class R2CancellationModelRepository
 {
   constructor(private readonly store: R2ObjectStore) {}
 
-  withTransaction(_tx: TransactionContext): CancellationModelRepository {
-    // R2はTXを持たないので no-op
-    return this;
-  }
-
   async save(model: CancellationModel): Promise<void> {
     const key = cancellationModelLatestFileKey(model.ballParkId);
     const doc: CancellationModelDoc = {

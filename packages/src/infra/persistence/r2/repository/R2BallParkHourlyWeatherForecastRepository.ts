@@ -26,13 +26,6 @@ export class R2BallParkHourlyWeatherForecastRepository
 {
   constructor(private readonly store: R2ObjectStore) {}
 
-  // [delete] トランザクション非対応。現時点方針では no-op。
-  withTransaction(
-    _tx: TransactionContext
-  ): BallParkHourlyWeatherForecastRepository {
-    return this;
-  }
-
   async updateMany(items: BallParkHourlyWeatherForecast[]): Promise<void> {
     // 引数を展開して、ballParkIdとdateをキーにグループ化
     const grouped = new Map<string, BallParkHourlyWeatherForecast[]>();
