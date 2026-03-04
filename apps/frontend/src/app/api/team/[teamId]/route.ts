@@ -7,7 +7,7 @@ const CACHE_CONTROL = "s-maxage=1800, max-age=300, stale-while-revalidate=300";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { teamId: string } }
+  { params }: { params: Promise<{ teamId: string }> }
 ) {
   const { teamId } = await params;
   const url = new URL(req.url);

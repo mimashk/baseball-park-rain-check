@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "baseball-park-rain-check-frontend",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2024-12-30",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "vars": {
+    "NEXT_PUBLIC_SITE_URL": "https://baseball-park-rain-check-frontend.mima-shoki-031255.workers.dev",
+    "QUERY_API_BASE_URL": "https://query-332196625860.asia-northeast1.run.app",
+    "USE_MOCK": "false"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "baseball-park-rain-check-frontend"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  }
+}
