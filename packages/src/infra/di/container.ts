@@ -355,9 +355,11 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
 
     getTeamDashboardQuery: asClass(GetTeamDashboardQuery, {
       lifetime: Lifetime.SINGLETON,
+      injectionMode: InjectionMode.CLASSIC,
     }),
     getTopDashboardQuery: asClass(GetTopDashboardQuery, {
       lifetime: Lifetime.SINGLETON,
+      injectionMode: InjectionMode.CLASSIC,
     }),
   });
 

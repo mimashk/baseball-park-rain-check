@@ -73,6 +73,10 @@ export class R2ObjectStore {
       const text = await res.Body.transformToString();
       return JSON.parse(text) as T;
     } catch (err: unknown) {
+      // キー未存在は正常系として null を返す
+      if (this.isNoSuchKeyError(err)) {
+        return null;
+      }
       throw new ObjectStorageError("R2からデータを取得できませんでした", {
         cause: err,
       });
@@ -135,5 +139,25 @@ export class R2ObjectStore {
         details: { count: keys.length },
       });
     }
+  }
+
+  private isNoSuchKeyError(err: unknown): boolean {
+    if (!err || typeof err !== "object") return false;
+
+    const e = err as {
+      name?: string;
+      code?: string;
+      Code?: string;
+      message?: string;
+      $metadata?: { httpStatusCode?: number };
+    };
+
+    return (
+      e.name === "NoSuchKey" ||
+      e.code === "NoSuchKey" ||
+      e.Code === "NoSuchKey" ||
+      e.$metadata?.httpStatusCode === 404 ||
+      (typeof e.message === "string" && e.message.includes("NoSuchKey"))
+    );
   }
 }

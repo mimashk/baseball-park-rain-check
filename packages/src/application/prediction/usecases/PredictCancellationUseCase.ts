@@ -19,6 +19,7 @@ import { BallParkWeatherPoint } from "../../../domain/weatherForecast/valueObjec
 import { mapHourlyWeatherForecastDtoToProps } from "../mapper/mapHourlyWeatherForecastDtoToProps";
 import { BallParkHourlyWeatherForecast } from "../../../domain/weatherForecast/valueObjects/BallParkHourlyWeatherForecast";
 import { CancellationPredictionRepository } from "../interfaces/CancellationPredictionRepository";
+import { AppError } from "../../../shared/errors/AppError";
 
 type PredictResult =
   | {
@@ -168,6 +169,22 @@ export class PredictCancellationUseCase {
             modelVersion: model.version.toString(),
           });
         } catch (err) {
+          if (err instanceof AppError) {
+            console.error("予測が失敗しました。", {
+              gameId: game.id.toString(),
+              ballParkId: game.ballPark.id(),
+              code: err.code,
+              message: err.message,
+              details: err.details,
+              cause: (err as any).cause,
+            });
+          } else {
+            console.error("予測が失敗しました。(不明なエラー)", {
+              gameId: game.id.toString(),
+              ballParkId: game.ballPark.id(),
+              err,
+            });
+          }
           if (
             err instanceof DomainError ||
             err instanceof ValidationError ||

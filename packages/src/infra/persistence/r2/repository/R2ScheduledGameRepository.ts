@@ -129,9 +129,6 @@ export class R2ScheduledGameRepository implements ScheduledGameRepository {
       );
       return rec ? this.toDomain(rec) : null;
     } catch (err: unknown) {
-      if (this.isNoSuchKeyFromObjectStorageError(err)) {
-        return null;
-      }
       throw new ObjectStorageError(
         "指定IDの試合予定データの取得に失敗しました",
         {
@@ -274,26 +271,5 @@ export class R2ScheduledGameRepository implements ScheduledGameRepository {
         }
       );
     }
-  }
-
-  private isNoSuchKeyFromObjectStorageError(err: unknown): boolean {
-    if (!(err instanceof ObjectStorageError)) return false;
-
-    const cause = (err as { cause?: unknown }).cause;
-    if (!cause || typeof cause !== "object") return false;
-
-    const c = cause as {
-      name?: string;
-      code?: string;
-      Code?: string;
-      $metadata?: { httpStatusCode?: number };
-    };
-
-    return (
-      c.name === "NoSuchKey" ||
-      c.code === "NoSuchKey" ||
-      c.Code === "NoSuchKey" ||
-      c.$metadata?.httpStatusCode === 404
-    );
   }
 }
