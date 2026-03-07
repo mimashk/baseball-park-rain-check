@@ -51,7 +51,7 @@ export class BallParkDailyWeatherForecast {
       WeatherPattern.fromCode(props.weatherCode),
       temperatureMin,
       temperatureMax,
-      PrecipitationProbability.fromPercent(props.precipitationProbability),
+      PrecipitationProbability.fromRate(props.precipitationProbability),
       RainFall.fromMillimeters(props.rainFall),
       props.ballParkId
     );

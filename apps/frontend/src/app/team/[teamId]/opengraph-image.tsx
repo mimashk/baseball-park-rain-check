@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { TEAM_META, TEAM_LOGO } from "@/lib/ui/team";
 import { getTeamDashboard } from "@/lib/api/getTeamDashboard";
 import { TeamId } from "@/types/TeamId";
+import { getBaseUrl } from "@/lib/api/getBaseUrl";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -16,11 +17,16 @@ export default async function Image({
   const teamName =
     TEAM_META[teamId as keyof typeof TEAM_META]?.fullName ?? "チーム";
   const logoPath = TEAM_LOGO[teamId];
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL!;
+  const baseUrl = await getBaseUrl();
 
-  const backgroundImage = `url("${baseUrl}/og/raindrops.png")`;
-  const teamLogoUrl = logoPath ? `${baseUrl}${logoPath}` : undefined;
-  const siteLogoUrl = `${baseUrl}/logo/logo.webp`;
+  const backgroundImage = `url("${new URL(
+    "/og/raindrops.png",
+    baseUrl
+  ).toString()}")`;
+  const teamLogoUrl = logoPath
+    ? new URL(logoPath, baseUrl).toString()
+    : undefined;
+  const siteLogoUrl = new URL("/logo/logo.webp", baseUrl).toString();
 
   const fontBoldUrl =
     "https://storage.googleapis.com/bbprc-public-assets/NotoSansJP-Bold.ttf";
@@ -29,7 +35,10 @@ export default async function Image({
   const data = await getTeamDashboard(teamId as TeamId);
 
   // daily由来の天気（weekly）を使う
-  const todayWeather = data.weekly[0]?.weather?.text ?? "天気情報更新中";
+  const todayWeather =
+    data.todayGame?.weatherAtGameTime?.text ??
+    data.weekly.find((w) => w.dateJst === data.dateJst)?.weather?.text ??
+    "天気情報更新中";
   const hasTodayGame = Boolean(data.todayGame);
 
   const leadText = hasTodayGame

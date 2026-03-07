@@ -15,8 +15,8 @@ export class PredictionWeatherFeatureAggregator {
 
     const avgTemp = this.avg(hourly.map((h) => h.temperature.toNumber()));
     const avgRain = this.avg(hourly.map((h) => h.rainFall.toNumber()));
-    const precipitationProbability = PrecipitationProbability.fromPercent(
-      this.avg(hourly.map((h) => h.precipitationProbability.toPercent()))
+    const precipitationProbability = PrecipitationProbability.fromRate(
+      this.avg(hourly.map((h) => h.precipitationProbability.toRate()))
     );
 
     return AggregatedPredictionWeatherFeatures.create({

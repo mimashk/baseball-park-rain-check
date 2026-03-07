@@ -17,13 +17,13 @@ import {
 import { BaseballTeam } from "../../../domain/scheduledGame/valueObjects/BaseballTeam";
 import { DashboardGameDto } from "../dtos/DashboardGameDto";
 import { BatchStatusRepository } from "../interfaces/BatchStatusRepository";
-import { CancellationPredictionRepository } from "@application/prediction/interfaces/CancellationPredictionRepository";
+import { CancellationPredictionRepository } from "../../../application/prediction/interfaces/CancellationPredictionRepository";
 
 export class GetTeamDashboardQuery {
   constructor(
     private readonly scheduledGameRepository: ScheduledGameRepository,
-    private readonly hourlyRepository: BallParkHourlyWeatherForecastRepository,
-    private readonly dailyRepository: BallParkDailyWeatherForecastRepository,
+    private readonly ballParkHourlyWeatherForecastRepository: BallParkHourlyWeatherForecastRepository,
+    private readonly ballParkDailyWeatherForecastRepository: BallParkDailyWeatherForecastRepository,
     private readonly batchStatusRepository: BatchStatusRepository,
     private readonly cancellationPredictionRepository: CancellationPredictionRepository
   ) {}
@@ -73,7 +73,7 @@ export class GetTeamDashboardQuery {
       const isOpenAir = todayGame.ballPark.isOpenAir();
 
       const hourly = isKnown
-        ? await this.hourlyRepository.findByDateAndBallPark(
+        ? await this.ballParkHourlyWeatherForecastRepository.findByDateAndBallPark(
             fromUtc,
             toUtc,
             todayGame.ballPark.id()
@@ -215,7 +215,7 @@ export class GetTeamDashboardQuery {
         }
 
         const weathers =
-          (await this.dailyRepository.findByDateAndBallPark(
+          (await this.ballParkDailyWeatherForecastRepository.findByDateAndBallPark(
             startUtc,
             endUtc,
             game.ballPark.id()

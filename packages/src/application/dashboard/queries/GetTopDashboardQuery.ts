@@ -18,9 +18,9 @@ import { BallParkHourlyWeatherForecast } from "../../../domain/weatherForecast/v
 export class GetTopDashboardQuery {
   constructor(
     private readonly scheduledGameRepository: ScheduledGameRepository,
-    private readonly hourlyRepository: BallParkHourlyWeatherForecastRepository,
+    private readonly ballParkHourlyWeatherForecastRepository: BallParkHourlyWeatherForecastRepository,
     private readonly batchStatusRepository: BatchStatusRepository,
-    private readonly predictionRepository: CancellationPredictionRepository
+    private readonly cancellationPredictionRepository: CancellationPredictionRepository
   ) {}
 
   async execute(req: GetTopDashboardInput): Promise<GetTopDashboardOutput> {
@@ -51,7 +51,9 @@ export class GetTopDashboardQuery {
     const predictionMap =
       eligibleGameIds.length === 0
         ? new Map()
-        : await this.predictionRepository.findLatestByGameIds(eligibleGameIds);
+        : await this.cancellationPredictionRepository.findLatestByGameIds(
+            eligibleGameIds
+          );
 
     // ballParkごとに必要な時間帯の天気を先読み
     const weatherMapByPark = new Map<
@@ -69,11 +71,12 @@ export class GetTopDashboardQuery {
           .map((g) => floorToJstHourUtc(g.date));
         const from = new Date(Math.min(...baseTimes.map((d) => d.getTime())));
         const to = new Date(Math.max(...baseTimes.map((d) => d.getTime())));
-        const hourly = await this.hourlyRepository.findByDateAndBallPark(
-          from,
-          to,
-          ballParkId
-        );
+        const hourly =
+          await this.ballParkHourlyWeatherForecastRepository.findByDateAndBallPark(
+            from,
+            to,
+            ballParkId
+          );
         weatherMapByPark.set(
           ballParkId,
           new Map(hourly.map((h) => [toHourKeyUtc(h.date), h]))

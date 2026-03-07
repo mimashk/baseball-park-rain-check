@@ -17,7 +17,7 @@ export function jstDayRangeUtc(dateJst: string) {
 export function addDaysJst(dateJst: string, days: number) {
   const base = new Date(`${dateJst}T00:00:00+09:00`);
   base.setDate(base.getDate() + days);
-  return toJstDateString(new Date(base.getTime() - JST_OFFSET_MS));
+  return toJstDateString(base);
 }
 
 export function addHours(date: Date, hours: number) {

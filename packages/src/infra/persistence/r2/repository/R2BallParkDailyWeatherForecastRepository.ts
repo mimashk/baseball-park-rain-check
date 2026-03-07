@@ -40,7 +40,7 @@ export class R2BallParkDailyWeatherForecastRepository
             weatherCode: item.weatherPattern.code(),
             temperatureMin: item.temperatureMin.toNumber(),
             temperatureMax: item.temperatureMax.toNumber(),
-            precipitationProbability: item.precipitationProbability.toPercent(),
+            precipitationProbability: item.precipitationProbability.toRate(),
             rainFall: item.rainFall.toNumber(),
             ballParkId: item.ballParkId,
           };

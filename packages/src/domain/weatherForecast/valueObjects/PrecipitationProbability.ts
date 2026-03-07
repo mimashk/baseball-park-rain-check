@@ -3,9 +3,9 @@ import { ensureNumberPresent } from "../../shared/utils/ensurePresent";
 import { ensureProbability } from "../../shared/utils/ensureProbability";
 
 export class PrecipitationProbability {
-  private constructor(private readonly percent: number) {}
+  private constructor(private readonly rate: number) {}
 
-  static fromPercent(value: number): PrecipitationProbability {
+  static fromRate(value: number): PrecipitationProbability {
     const normalizedValue = ensureNumberPresent("降水確率", value);
     const normalizedProbability = ensureProbability(
       "降水確率",
@@ -15,6 +15,10 @@ export class PrecipitationProbability {
   }
 
   toPercent(): number {
-    return this.percent;
+    return this.rate * 100;
+  }
+
+  toRate(): number {
+    return this.rate;
   }
 }

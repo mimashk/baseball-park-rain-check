@@ -7,7 +7,7 @@ export function mapAggregatedPredictionWeatherFeaturesToRow(
   return {
     avgTemperature: features.avgTemperature.toNumber(),
     avgRainFall: features.avgRainFall.toNumber(),
-    rainOccurRate: features.precipitationProbability.toPercent() / 100, // 降水確率を0..1に正規化
+    rainOccurRate: features.precipitationProbability.toRate(), // 降水確率を0..1に正規化
     sampleCount: features.sampleCount,
   };
 }

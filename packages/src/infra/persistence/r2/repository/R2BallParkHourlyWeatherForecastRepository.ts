@@ -61,7 +61,7 @@ export class R2BallParkHourlyWeatherForecastRepository
               weatherCode: valueAtHour.weatherPattern.code(),
               temperature: valueAtHour.temperature.toNumber(),
               precipitationProbability:
-                valueAtHour.precipitationProbability.toPercent(),
+                valueAtHour.precipitationProbability.toRate(),
               rainFall: valueAtHour.rainFall.toNumber(),
               ballParkId: valueAtHour.ballParkId,
             };

@@ -39,7 +39,7 @@ export class BallParkHourlyWeatherForecast {
       ensureDatePresent("日付", props.date),
       WeatherPattern.fromCode(props.weatherCode),
       TemperatureCelsius.from(props.temperature),
-      PrecipitationProbability.fromPercent(props.precipitationProbability),
+      PrecipitationProbability.fromRate(props.precipitationProbability),
       RainFall.fromMillimeters(props.rainFall),
       props.ballParkId
     );

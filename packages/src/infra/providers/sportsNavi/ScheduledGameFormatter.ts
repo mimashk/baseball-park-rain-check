@@ -2,7 +2,7 @@ import { BallParkNameMapper } from "../../../application/shared/interfaces/BallP
 import { ScheduledGameDto } from "../../../application/refresher/dtos/ScheduledGameDto";
 import { TeamNameMapper } from "../../../application/shared/interfaces/TeamNameMapper";
 import { GameCategoryMapper } from "../../../application/refresher/interfaces/GameCategoryMapper";
-import { GameCategoryType } from "@domain/scheduledGame/valueObjects/GameCategory";
+import { GameCategoryType } from "../../../domain/scheduledGame/valueObjects/GameCategory";
 import { InfrastructureError } from "../../../shared/errors/InfrastructureError";
 import { ScheduledGameInfo } from "./ScheduledGameScraper";
 

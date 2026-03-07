@@ -1,6 +1,7 @@
 import { Hourly } from "@/types/HourlyWeather";
 import { fmtTime } from "@/lib/formatters/jst";
 import { WeatherIcon } from "@/components/weather/WeatherIcon";
+import { format1dp } from "@/lib/formatters/number";
 
 type Props = { hourly: Hourly[] };
 
@@ -28,13 +29,13 @@ export function HourlyForecast({ hourly }: Props) {
               <span className="text-strong">{slot.weather?.text ?? "--"}</span>
             </div>
             <p className="text-sm text-muted mt-1">
-              気温 {slot.weather?.temperatureC ?? "--"}℃
+              気温 {format1dp(slot.weather?.temperatureC) ?? "--"}℃
             </p>
             <p className="text-sm text-muted">
               降水確率 {slot.weather?.precipProbPct ?? "--"}%
             </p>
             <p className="text-sm text-muted">
-              降水量 {slot.weather?.precipMm ?? "--"}mm
+              降水量 {format1dp(slot.weather?.precipMm) ?? "--"}mm
             </p>
           </div>
         ))}

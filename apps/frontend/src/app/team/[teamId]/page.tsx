@@ -64,7 +64,9 @@ export default async function TeamPage({
     "プロ野球",
     teamName,
     data.todayGame?.ballpark ?? "",
-  ];
+  ]
+    .map((v) => (v ?? "").trim())
+    .filter((v) => v.length > 0);
 
   return (
     <div className="relative">
