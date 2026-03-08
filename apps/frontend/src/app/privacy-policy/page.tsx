@@ -62,9 +62,8 @@ export default function PrivacyPolicyPage() {
 
         <LegalSection title="3. アクセス解析ツールについて" divider>
           <p>
-            本サイトでは、利用状況を把握し、サービス改善に役立てるために、第三者が提供するアクセス解析ツール（例：
-            <span className="font-semibold">【アクセス解析ツール名】</span>
-            ）を利用する場合があります。
+            本サイトでは、利用状況を把握し、サービス改善に役立てるために、第三者が提供するアクセス解析ツール（例：Cloudflare
+            Web Analytics）を利用する場合があります。
           </p>
           <p>
             これらのアクセス解析ツールでは、Cookieを使用してトラフィックデータを収集することがありますが、収集されるデータは匿名であり、個人を特定するものではありません。
@@ -76,9 +75,8 @@ export default function PrivacyPolicyPage() {
 
         <LegalSection title="4. 広告配信について" divider>
           <p>
-            本サイトでは、第三者配信の広告サービス（例：
-            <span className="font-semibold">【広告配信サービス名】</span>
-            ）を利用する場合があります。
+            本サイトでは、第三者配信の広告サービス（例：Google
+            AdSense）を利用する場合があります。
           </p>
           <p>
             これらの広告配信事業者は、ユーザーの興味に応じた広告を表示するため、Cookieを使用することがあります。
@@ -149,12 +147,31 @@ export default function PrivacyPolicyPage() {
           </p>
           <ul className="list-disc space-y-1 pl-6 text-sm text-muted">
             <li>
-              運営者名：<span className="font-semibold">【運営者名】</span>
+              運営者名：
+              <span className="font-semibold">
+                プロ野球 雨天中止予報（{" "}
+                <a
+                  href="https://x.com/bb_raincheck"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-muted underline underline-offset-2 hover:text-strong"
+                >
+                  @bb_raincheck
+                </a>
+                ）
+              </span>
             </li>
             <li>
               お問い合わせ先：
               <span className="font-semibold">
-                【メールアドレスまたはお問い合わせフォームURL】
+                <a
+                  href="https://docs.google.com/forms/d/e/1FAIpQLSf_bC-Us0r_OAH673EDtIJLlLmerFSSFX8s470W5hdliKQjTw/viewform?usp=dialog"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-muted underline underline-offset-2 hover:text-strong"
+                >
+                  お問い合わせフォーム
+                </a>
               </span>
             </li>
           </ul>

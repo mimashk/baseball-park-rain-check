@@ -1,4 +1,3 @@
-import { InfoRow } from "@/components/ui/InfoRow";
 import { SectionCard } from "@/components/ui/SectionCard";
 import { StaticPageHead } from "@/components/ui/StaticPageHead";
 import { StaticPageLayout } from "@/components/ui/StaticPageLayout";
@@ -46,7 +45,16 @@ export default function CompanyPage() {
             <div className="space-y-1 rounded-lg border border-white/80 bg-white/90 p-4 sm:col-span-2">
               <dt className="text-xs font-semibold text-muted">運営者</dt>
               <dd className="font-semibold text-strong">
-                【運営者名（個人名またはハンドルネーム）】
+                プロ野球 雨天中止予報（{" "}
+                <a
+                  href="https://x.com/bb_raincheck"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-muted underline underline-offset-2 hover:text-strong"
+                >
+                  @bb_raincheck
+                </a>
+                ）
               </dd>
               <p className="text-xs text-muted">
                 本サイトは個人により運営されており、特定の球団、リーグ、団体とは一切関係ありません。
@@ -55,7 +63,14 @@ export default function CompanyPage() {
             <div className="space-y-1 rounded-lg border border-white/80 bg-white/90 p-4 sm:col-span-2">
               <dt className="text-xs font-semibold text-muted">連絡先</dt>
               <dd className="font-semibold text-strong">
-                【GoogleフォームのURL】
+                <a
+                  href="https://docs.google.com/forms/d/e/1FAIpQLSf_bC-Us0r_OAH673EDtIJLlLmerFSSFX8s470W5hdliKQjTw/viewform?usp=dialog"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-muted underline underline-offset-2 hover:text-strong"
+                >
+                  お問い合わせフォーム
+                </a>
               </dd>
               <p className="text-xs text-muted">
                 お問い合わせ内容によっては、返信できない場合があります。あらかじめご了承ください。

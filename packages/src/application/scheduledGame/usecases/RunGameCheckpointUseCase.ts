@@ -1,9 +1,10 @@
 import { ScheduledGameRepository } from "../../../domain/scheduledGame/repositoryInterface/ScheduledGameRepository";
 import { GameId } from "../../../domain/scheduledGame/valueObjects/GameId";
+import { GameStatusType } from "../../../domain/scheduledGame/valueObjects/GameStatus";
 import { DomainError } from "../../../shared/errors/DomainError";
 import { NotFoundError } from "../../../shared/errors/NotFoundError";
 import { ValidationError } from "../../../shared/errors/ValidationError";
-import { ensureValidDateRange } from "../../shared/utils/ensureValidDateRange";
+import { ensureValidDate } from "../../shared/utils/ensureValidDate";
 import { RunGameCheckpointRequest } from "../dtos/RunGameCheckpointRequest";
 import { RunGameCheckpointResponse } from "../dtos/RunGameCheckpointResponse";
 import { CheckpointScheduler } from "../interfaces/CheckpointScheduler";
@@ -27,8 +28,8 @@ export class RunGameCheckpointUseCase {
       if (!game) {
         throw new NotFoundError("試合が見つかりません", { gameId });
       }
-      const { from: normalizedNow, to: normalizedStartAt } =
-        ensureValidDateRange("now", "startAt", request.now, game.date);
+      const normalizedNow = ensureValidDate("now", request.now);
+      const normalizedStartAt = ensureValidDate("startAt", game.date);
 
       const status = await this.updateGameStatusService.execute(gameId);
 
@@ -38,12 +39,15 @@ export class RunGameCheckpointUseCase {
         status,
       });
 
-      if (nextInterval === null) {
-        // 終了：次回は不要。ジョブを消す（one-shot風）
+      if (
+        status === GameStatusType.COMPLETED ||
+        status === GameStatusType.CANCELLED ||
+        nextInterval === null
+      ) {
         await this.scheduler.deleteCheckpoint(request.jobKey);
         return {
           nextRunAt: null,
-          message: `${game.date.toISOString()}の試合が終了もしくは中止となりました。`,
+          message: "試合終了または中止のためジョブを削除しました",
         };
       }
 

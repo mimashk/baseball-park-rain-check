@@ -1,10 +1,10 @@
 import { ScheduledGameRepository } from "../../../domain/scheduledGame/repositoryInterface/ScheduledGameRepository";
 import { CheckpointScheduler } from "../interfaces/CheckpointScheduler";
-import { ensureValidDateRange } from "../../shared/utils/ensureValidDateRange";
 import { DecideNextIntervalMinutesService } from "../services/DecideNextIntervalMinutesService";
 import { GameStatusType } from "../../../domain/scheduledGame/valueObjects/GameStatus";
 import { ScheduleInitialGameCheckpointRequest } from "../dtos/ScheduleInitialGameCheckpointRequest";
 import { ScheduleInitialGameCheckpointResponse } from "../dtos/ScheduleInitialGameCheckpointResponse";
+import { ensureValidDate } from "../../shared/utils/ensureValidDate";
 
 export class ScheduleInitialGameCheckpointUseCase {
   constructor(
@@ -15,54 +15,64 @@ export class ScheduleInitialGameCheckpointUseCase {
   async execute(
     req: ScheduleInitialGameCheckpointRequest
   ): Promise<ScheduleInitialGameCheckpointResponse> {
-    const games = await this.gameRepository.findAtDate(req.now);
+    const normalizedNow = ensureValidDate("now", req.now);
+    const games = await this.gameRepository.findAtDate(normalizedNow);
     if (games.length === 0) {
       return {
         message: "指定日の試合がないため初回チェックポイントは作成しません",
       };
     }
-    // [TODO]一旦1試合のみなので先頭を取得
-    const game = games[0];
 
-    // now と startAt を正規化
-    const { from: normalizedNow, to: normalizedStartAt } = ensureValidDateRange(
-      "now",
-      "startAt",
-      req.now,
-      game.date
-    );
+    const checkpoints: Array<{
+      gameId: string;
+      jobKey: string;
+      nextRunAt: Date;
+    }> = [];
+    for (const game of games) {
+      const normalizedStartAt = ensureValidDate("startAt", game.date);
 
-    // 初回は scheduled 前提で次の間隔を計算
-    const nextInterval = DecideNextIntervalMinutesService.execute({
-      now: normalizedNow,
-      startAt: normalizedStartAt,
-      status: GameStatusType.SCHEDULED,
-    });
+      // 初回は scheduled 前提で次の間隔を計算
+      const nextInterval = DecideNextIntervalMinutesService.execute({
+        now: normalizedNow,
+        startAt: normalizedStartAt,
+        status: GameStatusType.SCHEDULED,
+      });
 
-    // もし既に終了/過去ならスキップ
-    if (nextInterval === null) {
+      // もし既に終了/過去ならスキップ
+      if (nextInterval === null) {
+        continue;
+      }
+
+      const nextRunAt = new Date(
+        normalizedNow.getTime() + nextInterval * 60_000
+      );
+      const jobKey = `checkpoint-${game.date.getFullYear()}-${
+        game.date.getMonth() + 1
+      }-${game.date.getDate()}-${game.id.toString()}`;
+
+      await this.scheduler.upsertCheckpoint({
+        jobKey,
+        runAt: nextRunAt,
+        endpointPath: "/cron/run-game-checkpoint",
+        query: { gameId: game.id.toString(), jobKey },
+      });
+
+      checkpoints.push({
+        gameId: game.id.toString(),
+        jobKey,
+        nextRunAt,
+      });
+    }
+
+    if (checkpoints.length === 0) {
       return {
-        message:
-          "初回チェックポイントを登録する必要がありません（過去試合など）",
+        message: "初回チェックポイントを登録する必要がありません",
       };
     }
 
-    const nextRunAt = new Date(normalizedNow.getTime() + nextInterval * 60_000);
-    const jobKey = `checkpoint-${game.date.getFullYear()}-${
-      game.date.getMonth() + 1
-    }-${game.date.getDate()}-${game.id.toString()}`;
-
-    await this.scheduler.upsertCheckpoint({
-      jobKey,
-      runAt: nextRunAt,
-      endpointPath: "/cron/run-game-checkpoint",
-      query: { gameId: game.id.toString(), jobKey },
-    });
-
     return {
-      nextRunAt,
-      jobKey,
-      message: `${nextRunAt.toISOString()} に初回チェックポイントを登録しました`,
+      message: `${checkpoints.length}件の初回チェックポイントを登録しました`,
+      checkpoints,
     };
   }
 }

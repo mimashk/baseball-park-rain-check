@@ -143,11 +143,32 @@ export default function TermsPage() {
           <p>本規約に関するお問い合わせは、以下の方法にてご連絡ください。</p>
           <ul className="list-disc space-y-1 pl-6 text-sm text-muted">
             <li>
-              運営者名：<span className="font-semibold">【運営者名】</span>
+              運営者名：
+              <span className="font-semibold">
+                プロ野球 雨天中止予報（{" "}
+                <a
+                  href="https://x.com/bb_raincheck"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-muted underline underline-offset-2 hover:text-strong"
+                >
+                  @bb_raincheck
+                </a>
+                ）
+              </span>
             </li>
             <li>
               お問い合わせ先：
-              <span className="font-semibold">【お問い合わせフォームURL】</span>
+              <span className="font-semibold">
+                <a
+                  href="https://docs.google.com/forms/d/e/1FAIpQLSf_bC-Us0r_OAH673EDtIJLlLmerFSSFX8s470W5hdliKQjTw/viewform?usp=dialog"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-semibold text-muted underline underline-offset-2 hover:text-strong"
+                >
+                  お問い合わせフォーム
+                </a>
+              </span>
             </li>
           </ul>
         </LegalSection>

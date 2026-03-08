@@ -1,6 +1,5 @@
 import { GameStatusType } from "../../../domain/scheduledGame/valueObjects/GameStatus";
-import { ValidationError } from "../../../shared/errors/ValidationError";
-import { ensureValidDateRange } from "../../shared/utils/ensureValidDateRange";
+import { ensureValidDate } from "../../shared/utils/ensureValidDate";
 
 const MINUTES_BEFORE_START = 120;
 const MINUTES_AFTER_START = 180;
@@ -15,9 +14,11 @@ export class DecideNextIntervalMinutesService {
   }): number | null {
     const { now, startAt, status } = params;
 
-    const { from, to } = ensureValidDateRange("now", "startAt", now, startAt);
-    const diffMs = from.getTime() - to.getTime();
-    const diffMin = diffMs / 60_000;
+    const normalizedNow = ensureValidDate("now", now);
+    const normalizedStartAt = ensureValidDate("startAt", startAt);
+
+    const diffMin =
+      (normalizedNow.getTime() - normalizedStartAt.getTime()) / 60_000;
 
     // 試合前：開始2時間前〜開始まで = 10分間隔
     if (diffMin < 0) {
