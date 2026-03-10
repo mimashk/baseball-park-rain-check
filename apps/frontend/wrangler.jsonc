@@ -9,7 +9,7 @@
     "binding": "ASSETS"
   },
   "vars": {
-    "NEXT_PUBLIC_SITE_URL": "https://baseball-park-rain-check-frontend.mima-shoki-031255.workers.dev",
+    "NEXT_PUBLIC_SITE_URL": "https://baseballraincheck.jp",
     "QUERY_API_BASE_URL": "https://query-332196625860.asia-northeast1.run.app",
     "USE_MOCK": "false"
   },
@@ -21,5 +21,12 @@
   ],
   "images": {
     "binding": "IMAGES"
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "invocation_logs": true,
+      "head_sampling_rate": 1
+    }
   }
 }

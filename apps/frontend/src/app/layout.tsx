@@ -17,6 +17,11 @@ export const metadata: Metadata = {
   title: "プロ野球 雨天中止予報",
   description: "雨天中止確率と天気をファンチームだけに絞って表示するアプリ",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL!),
+  icons: {
+    icon: "/logo/logo_square.png",
+    apple: "/logo/logo_square.png",
+    shortcut: "/logo/logo_square.png",
+  },
 };
 
 export default function RootLayout({
