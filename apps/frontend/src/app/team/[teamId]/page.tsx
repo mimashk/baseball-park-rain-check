@@ -12,12 +12,6 @@ import { getTeamDashboardData } from "@/lib/server/dashboardData";
 
 export const revalidate = 600;
 
-export const dynamicParams = false;
-
-export function generateStaticParams() {
-  return TEAM_IDS.map((teamId) => ({ teamId }));
-}
-
 function isTeamId(value: string): value is TeamId {
   return TEAM_IDS.includes(value as TeamId);
 }

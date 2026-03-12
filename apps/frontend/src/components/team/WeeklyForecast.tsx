@@ -5,7 +5,7 @@ import { WeatherIcon } from "@/components/weather/WeatherIcon";
 import { TeamRow } from "@/components/ui/TeamAvatar";
 import { weatherBorderClass } from "@/lib/utils/weatherBorder";
 import { TEAM_THEMES } from "@/lib/ui/team";
-import { format1dp } from "@/lib/formatters/number";
+import { format1dp, formatPercent } from "@/lib/formatters/number";
 
 type Props = { weekly: Weekly[]; teamId: TeamId };
 
@@ -54,8 +54,8 @@ export function WeeklyForecast({ weekly, teamId }: Props) {
                       {format1dp(w.lowC) ?? "--"}℃
                     </p>
                     <p className="text-sm text-muted">
-                      降水確率 {w.weather?.precipProbPct ?? "--"}% / 降水量{" "}
-                      {format1dp(w.weather?.precipMm) ?? "--"}mm
+                      降水確率 {formatPercent(w.weather?.precipProbPct) ?? "--"}
+                      % / 降水量 {format1dp(w.weather?.precipMm) ?? "--"}mm
                     </p>
                   </div>
 

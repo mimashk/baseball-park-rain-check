@@ -11,7 +11,7 @@ import { getWeatherDisplay } from "@/lib/utils/weatherDisplay";
 import { getCancelProbDisplay } from "@/lib/utils/cancelProbDisplay";
 import { TeamId } from "@/types/TeamId";
 import { TEAM_THEMES } from "@/lib/ui/team";
-import { format1dp } from "@/lib/formatters/number";
+import { format1dp, formatPercent } from "@/lib/formatters/number";
 
 type Props = {
   dateJst: string;
@@ -103,8 +103,9 @@ export function TodaySummary({ dateJst, game, hourly, focusTeamId }: Props) {
                     <span className="text-muted text-xs sm:text-sm">
                       {" "}
                       {format1dp(weatherAtStart.temperatureC) ?? "--"}℃ /
-                      降水確率 {weatherAtStart.precipProbPct ?? "--"}% / 降水量{" "}
-                      {format1dp(weatherAtStart.precipMm) ?? "--"}mm{" "}
+                      降水確率{" "}
+                      {formatPercent(weatherAtStart.precipProbPct) ?? "--"}% /
+                      降水量 {format1dp(weatherAtStart.precipMm) ?? "--"}mm{" "}
                     </span>{" "}
                   </div>
                 ) : (
