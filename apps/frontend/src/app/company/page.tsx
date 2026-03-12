@@ -5,6 +5,9 @@ import { StaticPageLayout } from "@/components/ui/StaticPageLayout";
 export const metadata = {
   title: "運営元情報 | プロ野球 雨天中止予報",
   description: "運営元情報",
+  alternates: {
+    canonical: "/company",
+  },
 };
 
 export default function CompanyPage() {

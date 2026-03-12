@@ -7,6 +7,9 @@ import { StaticPageHead } from "@/components/ui/StaticPageHead";
 export const metadata = {
   title: "プライバシーポリシー | プロ野球 雨天中止予報",
   description: "プライバシーポリシー",
+  alternates: {
+    canonical: "/privacy-policy",
+  },
 };
 
 export default function PrivacyPolicyPage() {

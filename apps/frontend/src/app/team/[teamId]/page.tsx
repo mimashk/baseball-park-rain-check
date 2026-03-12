@@ -1,13 +1,26 @@
-import { getTeamDashboard } from "@/lib/api/getTeamDashboard";
 import { SectionCard } from "@/components/ui/SectionCard";
 import { TodaySummary } from "@/components/team/TodaySummary";
 import { HourlyForecast } from "@/components/team/HourlyForecast";
 import { WeeklyForecast } from "@/components/team/WeeklyForecast";
 import { TeamId } from "@/types/TeamId";
-import { TEAM_META } from "@/lib/ui/team";
+import { TEAM_IDS, TEAM_META } from "@/lib/ui/team";
+import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { XShareButton } from "@/components/ui/XShareButton";
 import { SiteHeader } from "@/components/ui/SiteHeader";
+import { getTeamDashboardData } from "@/lib/server/dashboardData";
+
+export const revalidate = 600;
+
+export const dynamicParams = false;
+
+export function generateStaticParams() {
+  return TEAM_IDS.map((teamId) => ({ teamId }));
+}
+
+function isTeamId(value: string): value is TeamId {
+  return TEAM_IDS.includes(value as TeamId);
+}
 
 export async function generateMetadata({
   params,
@@ -15,14 +28,19 @@ export async function generateMetadata({
   params: { teamId: string };
 }): Promise<Metadata> {
   const { teamId } = await params;
+  if (!isTeamId(teamId)) notFound();
+
   const teamName = TEAM_META[teamId as TeamId].fullName;
 
   const title = `${teamName} 雨天中止予報`;
-  const description = `${teamName}の今日の試合の雨天中止確率をチェック！`;
+  const description = `${teamName}の試合の雨天中止確率を予測して表示するサービス。${teamName}のホーム球場の過去10年分の雨天中止データを分析して正確な中止予測をお届け。`;
 
   return {
     title,
     description,
+    alternates: {
+      canonical: `/team/${teamId}`,
+    },
     openGraph: {
       title,
       description,
@@ -52,7 +70,9 @@ export default async function TeamPage({
   params: Promise<{ teamId: TeamId }>;
 }) {
   const { teamId } = await params;
-  const data = await getTeamDashboard(teamId);
+  if (!isTeamId(teamId)) notFound();
+
+  const data = await getTeamDashboardData(teamId);
   const showHourly = !!data.todayGame && data.hourlyWeathers.length > 0;
   const showWeekly = data.weekly.length > 0;
   const teamName = TEAM_META[teamId].fullName;

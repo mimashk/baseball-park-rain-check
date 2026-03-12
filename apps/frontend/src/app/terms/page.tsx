@@ -7,6 +7,9 @@ import { StaticPageHead } from "@/components/ui/StaticPageHead";
 export const metadata = {
   title: "利用規約 | プロ野球 雨天中止予報",
   description: "利用規約",
+  alternates: {
+    canonical: "/terms",
+  },
 };
 
 export default function TermsPage() {

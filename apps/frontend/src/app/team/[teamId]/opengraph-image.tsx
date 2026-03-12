@@ -1,11 +1,17 @@
 import { ImageResponse } from "next/og";
-import { TEAM_META, TEAM_LOGO } from "@/lib/ui/team";
-import { getTeamDashboard } from "@/lib/api/getTeamDashboard";
+import { notFound } from "next/navigation";
+import { TEAM_IDS, TEAM_META, TEAM_LOGO } from "@/lib/ui/team";
+import { getTeamDashboardData } from "@/lib/server/dashboardData";
 import { TeamId } from "@/types/TeamId";
-import { getBaseUrl } from "@/lib/api/getBaseUrl";
+import { getRequestOrigin } from "@/lib/server/getRequestOrigin";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+export const revalidate = 600;
+
+function isTeamId(value: string): value is TeamId {
+  return TEAM_IDS.includes(value as TeamId);
+}
 
 export default async function Image({
   params,
@@ -13,11 +19,12 @@ export default async function Image({
   params: Promise<{ teamId: string }>;
 }) {
   const { teamId } = await params;
+  if (!isTeamId(teamId)) notFound();
 
   const teamName =
     TEAM_META[teamId as keyof typeof TEAM_META]?.fullName ?? "チーム";
   const logoPath = TEAM_LOGO[teamId];
-  const baseUrl = await getBaseUrl();
+  const baseUrl = await getRequestOrigin();
 
   const backgroundImage = `url("${new URL(
     "/og/raindrops.png",
@@ -32,7 +39,7 @@ export default async function Image({
     "https://storage.googleapis.com/bbprc-public-assets/NotoSansJP-Bold.ttf";
   const fontBold = await fetch(fontBoldUrl).then((res) => res.arrayBuffer());
 
-  const data = await getTeamDashboard(teamId as TeamId);
+  const data = await getTeamDashboardData(teamId as TeamId);
 
   // daily由来の天気（weekly）を使う
   const todayWeather =

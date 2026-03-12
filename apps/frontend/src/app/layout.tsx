@@ -15,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "プロ野球 雨天中止予報",
-  description: "雨天中止確率と天気をファンチームだけに絞って表示するアプリ",
+  description:
+    "プロ野球の試合の雨天中止確率を予測して表示するサービス。球場ごとに過去10年分の雨天中止データを分析して正確な中止予測をお届け。",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL!),
   icons: {
     icon: "/logo/logo_square.png",

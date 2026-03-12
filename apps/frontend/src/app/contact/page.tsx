@@ -4,6 +4,9 @@ import { StaticPageLayout } from "@/components/ui/StaticPageLayout";
 export const metadata = {
   title: "お問い合わせ先 | プロ野球 雨天中止予報",
   description: "お問い合わせフォーム",
+  alternates: {
+    canonical: "/contact",
+  },
 };
 
 export default function ContactPage() {
