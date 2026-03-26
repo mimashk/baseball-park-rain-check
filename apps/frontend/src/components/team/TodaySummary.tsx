@@ -41,6 +41,17 @@ export function TodaySummary({ dateJst, game, hourly, focusTeamId }: Props) {
   const statusInfo = getGameStatusInfo(game?.status);
   const cancelProbDisplay = game ? getCancelProbDisplay(game) : "--";
   const weatherDisplay = game ? getWeatherDisplay(game) : "--";
+
+  const isFinalStatus =
+    game?.status === "CANCELLED" || game?.status === "COMPLETED";
+
+  const gaugeValue =
+    !isFinalStatus &&
+    game &&
+    game.cancelProbReason === null &&
+    game.cancelProbPct !== null
+      ? game.cancelProbPct
+      : null;
   return (
     <div
       className="rounded-2xl border border-[color:var(--border)] bg-white shadow-sm border-l-4"
@@ -77,18 +88,15 @@ export function TodaySummary({ dateJst, game, hourly, focusTeamId }: Props) {
             </div>
 
             <div className="flex flex-col items-center gap-5 text-center">
-              {game.status === "CANCELLED" ||
-              game.status === "COMPLETED" ? null : cancelProbDisplay ===
-                "--" ? (
-                <span className="text-muted">--</span>
-              ) : cancelProbDisplay === "予測準備中" ? (
-                <span className="text-muted">予測準備中</span>
-              ) : (
-                <CancelProbGauge
-                  value={game.cancelProbPct!}
-                  color={cancelColor(game.cancelProbPct!)}
-                />
-              )}
+              {!isFinalStatus &&
+                (gaugeValue !== null ? (
+                  <CancelProbGauge
+                    value={gaugeValue}
+                    color={cancelColor(gaugeValue)}
+                  />
+                ) : (
+                  <span className="text-muted">{cancelProbDisplay}</span>
+                ))}
 
               <div className="rounded-2xl bg-slate-50 px-4 py-3 text-center">
                 {" "}

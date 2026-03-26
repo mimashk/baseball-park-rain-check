@@ -15,7 +15,7 @@ export function SiteBranding() {
         height={80}
         sizes="(max-width: 640px) 24px, 80px"
         priority
-        className="h-6 w-6 object-contain sm:h-20 sm:w-20"
+        className="h-10 w-10 object-contain sm:h-20 sm:w-20"
       />
       <h1 className="font-bold text-strong leading-tight text-xl sm:text-3xl">
         <span className="block text-sm sm:text-xl">プロ野球</span>

@@ -14,12 +14,6 @@ export function WeeklyForecast({ weekly, teamId }: Props) {
 
   return (
     <div className="p-5 flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-strong">
-          週間予報 / 試合予定
-        </h2>
-      </div>
-
       <div className="grid-2col">
         <div className="flex flex-col gap-4">
           {weekly.map((w) => {

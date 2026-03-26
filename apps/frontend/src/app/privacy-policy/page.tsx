@@ -168,7 +168,7 @@ export default function PrivacyPolicyPage() {
               お問い合わせ先：
               <span className="font-semibold">
                 <a
-                  href="https://docs.google.com/forms/d/e/1FAIpQLSf_bC-Us0r_OAH673EDtIJLlLmerFSSFX8s470W5hdliKQjTw/viewform?usp=dialog"
+                  href="https://docs.google.com/forms/d/e/1FAIpQLSf-O5dp6S-vRDt4VZJII71E71Z3t53BEgOpEsO56W1NMLT8QA/viewform?usp=dialog"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="font-semibold text-muted underline underline-offset-2 hover:text-strong"

@@ -5,11 +5,6 @@ import { TEAM_IDS, TEAM_META, TEAM_LOGO, TEAM_THEMES } from "@/lib/ui/team";
 export function TeamHeaderNav() {
   return (
     <div className="pt-1">
-      <div className="mb-2 h-px w-full bg-[color:var(--border)]" />
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-muted">TEAM SELECT</span>
-      </div>
-
       <div className="flex gap-2 overflow-x-auto overflow-y-visible py-2">
         {TEAM_IDS.map((id) => (
           <Link

@@ -9,6 +9,9 @@ import type { Metadata } from "next";
 import { XShareButton } from "@/components/ui/XShareButton";
 import { SiteHeader } from "@/components/ui/SiteHeader";
 import { getTeamDashboardData } from "@/lib/server/dashboardData";
+import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
+import { FaqSection } from "@/components/ui/FaqSection";
+import { TOP_FAQ_ITEMS } from "@/lib/ui/faq";
 
 export const revalidate = 600;
 
@@ -70,22 +73,33 @@ export default async function TeamPage({
   const showHourly = !!data.todayGame && data.hourlyWeathers.length > 0;
   const showWeekly = data.weekly.length > 0;
   const teamName = TEAM_META[teamId].fullName;
+  const teamShortName = TEAM_META[teamId].shortName;
+  const ballParkName = data.todayGame?.ballpark ?? "";
 
   const shareText = "今日の試合の雨天中止確率をチェック！";
-  const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/team/${teamId}`;
   const hashtags = [
     "雨天中止予報",
     "プロ野球",
+    "天気",
+    "雨",
+    "中止",
+    "雨天中止",
+    teamShortName,
     teamName,
     data.todayGame?.ballpark ?? "",
   ]
     .map((v) => (v ?? "").trim())
     .filter((v) => v.length > 0);
 
+  const shareUrl = new URL(
+    `/team/${teamId}`,
+    process.env.NEXT_PUBLIC_SITE_URL!
+  ).toString();
+
   return (
     <div className="relative">
       <div className="absolute left-0 top-0 h-[120px] w-full pointer-events-none" />
-      <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-6 px-4 py-10">
+      <main className="mx-auto flex min-h-screen max-w-5xl flex-col gap-12 px-4 py-10">
         <SiteHeader
           batchCompletedAtUtc={data.batchCompletedAtUtc}
           rightSlot={
@@ -93,26 +107,40 @@ export default async function TeamPage({
           }
         />
 
-        <SectionCard>
-          <TodaySummary
-            dateJst={data.dateJst}
-            game={data.todayGame}
-            hourly={data.hourlyWeathers}
-            focusTeamId={teamId}
-          />
-        </SectionCard>
+        <section className="space-y-2">
+          <SectionEyebrow>今日の{teamName}の試合</SectionEyebrow>
+          <SectionCard>
+            <TodaySummary
+              dateJst={data.dateJst}
+              game={data.todayGame}
+              hourly={data.hourlyWeathers}
+              focusTeamId={teamId}
+            />
+          </SectionCard>
+        </section>
 
         {showHourly && (
-          <SectionCard>
-            <HourlyForecast hourly={data.hourlyWeathers} />
-          </SectionCard>
+          <section className="space-y-2">
+            <SectionEyebrow>試合開始時間周辺の天気予報</SectionEyebrow>
+            <SectionCard>
+              <HourlyForecast hourly={data.hourlyWeathers} />
+            </SectionCard>
+          </section>
         )}
 
         {showWeekly && (
-          <SectionCard>
-            <WeeklyForecast weekly={data.weekly} teamId={teamId} />
-          </SectionCard>
+          <section className="space-y-2">
+            <SectionEyebrow>週間天気予報と試合スケジュール</SectionEyebrow>
+            <SectionCard>
+              <WeeklyForecast weekly={data.weekly} teamId={teamId} />
+            </SectionCard>
+          </section>
         )}
+
+        <section className="space-y-2">
+          <SectionEyebrow>よくある質問</SectionEyebrow>
+          <FaqSection items={TOP_FAQ_ITEMS} />
+        </section>
       </main>
     </div>
   );

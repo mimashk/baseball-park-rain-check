@@ -5,7 +5,7 @@ const links = [
   { href: "/contact", label: "お問い合わせ先" },
   { href: "/privacy-policy", label: "プライバシーポリシー" },
   { href: "/terms", label: "利用規約" },
-  { href: "/company", label: "運営元情報" },
+  { href: "/about", label: "このサイトについて" },
 ];
 
 export function Footer() {

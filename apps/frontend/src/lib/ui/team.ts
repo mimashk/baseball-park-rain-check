@@ -65,7 +65,7 @@ export const TEAMS: Team[] = [
   },
   {
     id: "F",
-    shortName: "日本ハム",
+    shortName: "ファイターズ",
     fullName: "北海道日本ハムファイターズ",
     logo: "/teams/f.svg",
     order: 7,
@@ -97,7 +97,7 @@ export const TEAMS: Team[] = [
   },
   {
     id: "H",
-    shortName: "ソフトバンク",
+    shortName: "ホークス",
     fullName: "福岡ソフトバンクホークス",
     logo: "/teams/h.webp",
     order: 11,

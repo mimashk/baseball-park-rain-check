@@ -22,7 +22,7 @@ export default function ContactPage() {
       </StaticPageHead>
       <iframe
         title="お問い合わせフォーム"
-        src="https://docs.google.com/forms/d/e/1FAIpQLSf_bC-Us0r_OAH673EDtIJLlLmerFSSFX8s470W5hdliKQjTw/viewform?embedded=true"
+        src="https://docs.google.com/forms/d/e/1FAIpQLSf-O5dp6S-vRDt4VZJII71E71Z3t53BEgOpEsO56W1NMLT8QA/viewform?embedded=true"
         className="w-full h-[900px] rounded-xl border-0 bg-transparent"
         loading="lazy"
       />

@@ -11,7 +11,7 @@
     "images:convert": "tsx scripts/convertImages.ts",
     "images:svgo": "svgo -f public/teams --config svgo.config.mjs",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "deploy": "NEXT_PUBLIC_SITE_URL=https://baseballraincheck.jp opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {

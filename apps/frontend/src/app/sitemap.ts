@@ -6,13 +6,7 @@ const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL ?? "").replace(/\/+$/, "");
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();
 
-  const staticRoutes = [
-    "",
-    "/company",
-    "/privacy-policy",
-    "/terms",
-    "/contact",
-  ];
+  const staticRoutes = ["", "/about", "/privacy-policy", "/terms", "/contact"];
 
   const staticEntries: MetadataRoute.Sitemap = staticRoutes.map((path) => ({
     url: `${siteUrl}${path || "/"}`,
