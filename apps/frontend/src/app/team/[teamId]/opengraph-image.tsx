@@ -33,11 +33,7 @@ export default async function Image({
   const teamLogoUrl = logoPath
     ? new URL(logoPath, baseUrl).toString()
     : undefined;
-  const siteLogoUrl = new URL("/logo/logo.webp", baseUrl).toString();
-
-  const fontBoldUrl =
-    "https://storage.googleapis.com/bbprc-public-assets/NotoSansJP-Bold.ttf";
-  const fontBold = await fetch(fontBoldUrl).then((res) => res.arrayBuffer());
+  const siteLogoUrl = new URL("/logo/logo.png", baseUrl).toString();
 
   const data = await getTeamDashboardData(teamId as TeamId);
 
@@ -146,14 +142,6 @@ export default async function Image({
     ),
     {
       ...size,
-      fonts: [
-        {
-          name: "NotoSansJP",
-          data: fontBold,
-          weight: 700,
-          style: "normal",
-        },
-      ],
     }
   );
 }
