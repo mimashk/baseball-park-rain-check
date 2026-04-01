@@ -153,7 +153,8 @@ export class GetTeamDashboardQuery {
             }
           : null,
         weatherAtGameTimeReason,
-        cancelProbPct: prediction?.probability ?? null,
+        cancelProbPct:
+          prediction?.probability != null ? prediction.probability * 100 : null,
         cancelProbReason,
       };
 

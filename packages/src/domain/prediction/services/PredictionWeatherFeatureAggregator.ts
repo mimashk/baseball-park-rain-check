@@ -1,6 +1,5 @@
 import { ValidationError } from "../../../shared/errors/ValidationError";
 import { BallParkHourlyWeatherForecast } from "../../weatherForecast/valueObjects/BallParkHourlyWeatherForecast";
-import { PrecipitationProbability } from "../../weatherForecast/valueObjects/PrecipitationProbability";
 import { RainFall } from "../../weatherForecast/valueObjects/RainFall";
 import { TemperatureCelsius } from "../../weatherForecast/valueObjects/Temperature";
 import { AggregatedPredictionWeatherFeatures } from "../valueObjects/AggregatedPredictionWeatherFeatures";
@@ -15,14 +14,14 @@ export class PredictionWeatherFeatureAggregator {
 
     const avgTemp = this.avg(hourly.map((h) => h.temperature.toNumber()));
     const avgRain = this.avg(hourly.map((h) => h.rainFall.toNumber()));
-    const precipitationProbability = PrecipitationProbability.fromRate(
-      this.avg(hourly.map((h) => h.precipitationProbability.toRate()))
+    const rainOccurRate = this.avg(
+      hourly.map((h) => (h.rainFall.toNumber() > 0 ? 1 : 0))
     );
 
     return AggregatedPredictionWeatherFeatures.create({
       avgTemperature: TemperatureCelsius.from(avgTemp),
       avgRainFall: RainFall.fromMillimeters(avgRain),
-      precipitationProbability,
+      rainOccurRate,
       sampleCount: hourly.length,
     });
   }

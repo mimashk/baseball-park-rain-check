@@ -4,6 +4,7 @@ import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 const nextConfig: NextConfig = {
   images: {
     minimumCacheTTL: 2592000, // 30 days
+    unoptimized: true,
   },
   async headers() {
     return [

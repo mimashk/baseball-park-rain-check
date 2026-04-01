@@ -7,4 +7,5 @@ export const GameStatusDictionary: Record<string, GameStatusType> = {
   試合中: GameStatusType.IN_PROGRESS,
   試合終了: GameStatusType.COMPLETED,
   試合中止: GameStatusType.CANCELLED,
+  開始遅延: GameStatusType.SCHEDULED,
 };
