@@ -1,6 +1,9 @@
 export const featureOrder = [
   "avgTemperature",
-  "avgRainFall",
+  "logAvgRainFall",
   "rainOccurRate",
+  "maxRainFall",
+  "hoursAbove1mm",
+  "hoursAbove3mm",
 ] as const;
 export type FeatureKey = (typeof featureOrder)[number];

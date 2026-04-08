@@ -35,8 +35,11 @@ export class CancellationPredictorImpl implements CancellationPredictor {
 
     const featureMap: FeatureMap = {
       avgTemperature: features.avgTemperature,
-      avgRainFall: features.avgRainFall,
+      logAvgRainFall: features.logAvgRainFall,
       rainOccurRate: features.rainOccurRate,
+      maxRainFall: features.maxRainFall,
+      hoursAbove1mm: features.hoursAbove1mm,
+      hoursAbove3mm: features.hoursAbove3mm,
     };
 
     // 1) 特徴ベクトル化（欠損/非数チェック含む）

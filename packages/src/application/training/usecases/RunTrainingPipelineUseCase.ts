@@ -29,16 +29,30 @@ export class RunTrainingPipelineUseCase {
   async execute(
     request: RunTrainingPipelineRequest
   ): Promise<RunTrainingPipelineResponse> {
+    const startedAt = Date.now();
     const openAirBallParks = openAirParks();
+    console.log("training_pipeline_started", {
+      from: request.from.toISOString(),
+      to: request.to.toISOString(),
+      timeWindowBeforeHours: request.timeWindowBeforeHours,
+      timeWindowAfterHours: request.timeWindowAfterHours,
+      targetBallParkCount: openAirBallParks.length,
+    });
     const pastGames = await this.fetchPastGamesService.execute(
       request.from,
       request.to
     );
-    console.log("pastGamesが取得完了");
+    console.log("training_pipeline_past_games_fetched", {
+      pastGameCount: pastGames.length,
+    });
 
     const results: TrainingPipelineResult[] = [];
     for (const ballPark of openAirBallParks) {
       const ballParkId = ballPark.id();
+      console.log("training_pipeline_ballpark_started", {
+        ballParkId,
+        ballParkName: ballPark.name(),
+      });
       const weathers = await this.fetchObservedHourlyWeatherService.execute(
         ballParkId,
         request.from,
@@ -47,7 +61,17 @@ export class RunTrainingPipelineUseCase {
       const gamesForBallPark = pastGames.filter(
         (g) => g.ballPark.id() === ballParkId
       );
-      if (!gamesForBallPark.length || !weathers.length) continue;
+      if (!gamesForBallPark.length || !weathers.length) {
+        console.log("training_pipeline_ballpark_skipped", {
+          ballParkId,
+          ballParkName: ballPark.name(),
+          gameCount: gamesForBallPark.length,
+          weatherCount: weathers.length,
+          reason:
+            gamesForBallPark.length === 0 ? "NO_GAMES" : "NO_OBSERVED_WEATHER",
+        });
+        continue;
+      }
 
       const model = await this.trainModelService.execute(
         gamesForBallPark,
@@ -57,6 +81,13 @@ export class RunTrainingPipelineUseCase {
         ballParkId
       );
       await this.modelRepository.save(model);
+      console.log("training_pipeline_ballpark_completed", {
+        ballParkId,
+        ballParkName: ballPark.name(),
+        version: model.version.toString(),
+        gameCount: gamesForBallPark.length,
+        weatherCount: weathers.length,
+      });
       results.push({
         version: model.version.toString(),
         ballParkId: model.ballParkId,
@@ -66,6 +97,11 @@ export class RunTrainingPipelineUseCase {
         trainedCount: pastGames.length,
       });
     }
+    const elapsedMs = Date.now() - startedAt;
+    console.log("training_pipeline_completed", {
+      trainedBallParkCount: results.length,
+      elapsedMs,
+    });
     return {
       message: `${results.length}球場の学習が完了しました`,
       results: results.map((result) => ({
