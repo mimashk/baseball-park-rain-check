@@ -34,7 +34,10 @@ import { CancellationModelTrainerImpl } from "../statisticalModels/logisticRegre
 import { CancellationPredictorImpl } from "../statisticalModels/logisticRegression/CancellationPredictorImpl";
 import { PredictCancellationUseCase } from "../../application/prediction/usecases/PredictCancellationUseCase";
 import { RunGameCheckpointUseCase } from "../../application/scheduledGame/usecases/RunGameCheckpointUseCase";
+import { ExportTrainingDatasetCsvUseCase } from "../../application/training/usecases/ExportTrainingDatasetCsvUseCase";
+import { ExportTrainingSourceDataCsvUseCase } from "../../application/training/usecases/ExportTrainingSourceDataCsvUseCase";
 import { RunTrainingPipelineUseCase } from "../../application/training/usecases/RunTrainingPipelineUseCase";
+import { BuildTrainingDatasetService } from "../../application/training/services/BuildTrainingDatasetService";
 import { FetchPastGamesService } from "../../application/training/services/FetchPastGamesService";
 import { FetchObservedHourlyWeatherService } from "../../application/training/services/FetchObservedHourlyWeatherService";
 import { TrainModelService } from "../../application/training/services/TrainModelService";
@@ -126,9 +129,12 @@ export type InfraCradle = {
   scheduleInitialGameCheckpointUseCase: ScheduleInitialGameCheckpointUseCase;
   runGameCheckpointUseCase: RunGameCheckpointUseCase;
   predictCancellationUseCase: PredictCancellationUseCase;
+  exportTrainingDatasetCsvUseCase: ExportTrainingDatasetCsvUseCase;
+  exportTrainingSourceDataCsvUseCase: ExportTrainingSourceDataCsvUseCase;
   runTrainingPipelineUseCase: RunTrainingPipelineUseCase;
   refreshScheduledGameAndDailyWeatherForecastUsecase: RefreshScheduledGameAndDailyWeatherForecastUsecase;
 
+  buildTrainingDatasetService: BuildTrainingDatasetService;
   fetchPastGamesService: FetchPastGamesService;
   fetchObservedHourlyWeatherService: FetchObservedHourlyWeatherService;
   trainModelService: TrainModelService;
@@ -331,9 +337,46 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
       { lifetime: Lifetime.SINGLETON }
     ),
 
+    buildTrainingDatasetService: asFunction(
+      () => new BuildTrainingDatasetService(),
+      { lifetime: Lifetime.SINGLETON }
+    ),
+
     trainModelService: asFunction(
-      ({ cancellationModelTrainer }: InfraCradle) =>
-        new TrainModelService(cancellationModelTrainer),
+      ({
+        cancellationModelTrainer,
+        buildTrainingDatasetService,
+      }: InfraCradle) =>
+        new TrainModelService(
+          cancellationModelTrainer,
+          buildTrainingDatasetService
+        ),
+      { lifetime: Lifetime.SINGLETON }
+    ),
+
+    exportTrainingDatasetCsvUseCase: asFunction(
+      ({
+        fetchPastGamesService,
+        fetchObservedHourlyWeatherService,
+        buildTrainingDatasetService,
+      }: InfraCradle) =>
+        new ExportTrainingDatasetCsvUseCase(
+          fetchPastGamesService,
+          fetchObservedHourlyWeatherService,
+          buildTrainingDatasetService
+        ),
+      { lifetime: Lifetime.SINGLETON }
+    ),
+
+    exportTrainingSourceDataCsvUseCase: asFunction(
+      ({
+        pastGameFetcher,
+        observedHourlyWeatherProvider,
+      }: InfraCradle) =>
+        new ExportTrainingSourceDataCsvUseCase(
+          pastGameFetcher,
+          observedHourlyWeatherProvider
+        ),
       { lifetime: Lifetime.SINGLETON }
     ),
 

@@ -12,6 +12,7 @@ export const BallParkDictionary: Record<string, KnownBallParkName> = {
   エスコンＦ: "エスコンフィールド北海道",
   エスコンF: "エスコンフィールド北海道",
   楽天モバイル: "楽天モバイルパーク宮城",
+  楽天生命パーク: "楽天モバイルパーク宮城",
   ベルーナ: "ベルーナドーム",
   ZOZOマリン: "ZOZOマリンスタジアム",
   京セラD大阪: "京セラドーム大阪",
