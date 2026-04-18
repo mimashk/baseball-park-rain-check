@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { MDXRemote } from "next-mdx-remote-client/rsc";
-import remarkGfm from "remark-gfm";
-import rehypeSlug from "rehype-slug";
 import { ArticleLayout } from "@/components/article/ArticleLayout";
-import { mdxComponents } from "@/components/mdx/MdxComponents";
 import { getAllArticleSlugs, getArticleBySlug } from "@/lib/content/articles";
 
 type Props = {
@@ -31,14 +27,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-function MdxError({ error }: { error: Error }) {
-  return (
-    <p className="text-sm text-red-600">
-      記事の読み込みに失敗しました: {error.message}
-    </p>
-  );
-}
-
 export default async function ArticlePage({ params }: Props) {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
@@ -49,16 +37,9 @@ export default async function ArticlePage({ params }: Props) {
 
   return (
     <ArticleLayout meta={article.meta}>
-      <MDXRemote
-        source={article.body}
-        components={mdxComponents}
-        onError={MdxError}
-        options={{
-          mdxOptions: {
-            remarkPlugins: [remarkGfm],
-            rehypePlugins: [rehypeSlug],
-          },
-        }}
+      <div
+        className="article-content"
+        dangerouslySetInnerHTML={{ __html: article.html }}
       />
     </ArticleLayout>
   );

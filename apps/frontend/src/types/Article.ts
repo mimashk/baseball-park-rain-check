@@ -3,6 +3,7 @@ export type ArticleFrontmatter = {
   description: string;
   publishedAt: string;
   updatedAt?: string;
+  category: string;
   tags?: string[];
   draft?: boolean;
 };
@@ -13,5 +14,5 @@ export type ArticleMeta = ArticleFrontmatter & {
 
 export type Article = {
   meta: ArticleMeta;
-  body: string;
+  html: string;
 };
