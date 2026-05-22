@@ -8,6 +8,7 @@ import { TopIntroCard } from "@/components/top/TopIntroCard";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { FaqSection } from "@/components/ui/FaqSection";
 import { TOP_FAQ_ITEMS } from "@/lib/ui/faq";
+import { TopAfterGamesAd } from "@/components/top/TopAfterGamesAd";
 
 export const revalidate = 600;
 export const metadata: Metadata = {
@@ -42,6 +43,8 @@ export default async function Home() {
         <SectionEyebrow>今日の試合一覧</SectionEyebrow>
         <TodayGameSummaryGrid dateJst={data.dateJst} games={sortedGames} />
       </section>
+
+      <TopAfterGamesAd />
 
       <section className="space-y-2">
         <SectionEyebrow>よくある質問</SectionEyebrow>

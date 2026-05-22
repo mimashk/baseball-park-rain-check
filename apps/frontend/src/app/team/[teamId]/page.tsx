@@ -12,6 +12,7 @@ import { getTeamDashboardData } from "@/lib/server/dashboardData";
 import { SectionEyebrow } from "@/components/ui/SectionEyebrow";
 import { FaqSection } from "@/components/ui/FaqSection";
 import { TOP_FAQ_ITEMS } from "@/lib/ui/faq";
+import { TeamAfterWeatherAd } from "@/components/team/TeamAfterWeatherAd";
 
 export const revalidate = 600;
 
@@ -127,6 +128,8 @@ export default async function TeamPage({
             </SectionCard>
           </section>
         )}
+
+        {showHourly && showWeekly && <TeamAfterWeatherAd />}
 
         {showWeekly && (
           <section className="space-y-2">
