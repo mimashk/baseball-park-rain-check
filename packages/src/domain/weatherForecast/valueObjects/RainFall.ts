@@ -6,7 +6,7 @@ export class RainFall {
 
   static fromMillimeters(value: number): RainFall {
     const normalizedValue = ensureNumberPresent("降水量", value);
-    if (normalizedValue < 0 || normalizedValue > 100)
+    if (normalizedValue < 0 || normalizedValue > 1000)
       throw new ValidationError("降水量の範囲外です", {
         rainFall: normalizedValue,
       });
