@@ -42,14 +42,17 @@ export class PredictCancellationUseCase {
     private readonly predictor: CancellationPredictor,
     private readonly weatherForecastProvider: HourlyWeatherForecastProvider,
     private readonly ballParkHourlyWeatherForecastRepository: BallParkHourlyWeatherForecastRepository,
-    private readonly predictionRepository: CancellationPredictionRepository
+    private readonly predictionRepository: CancellationPredictionRepository,
   ) {}
 
   async execute(
-    req: PredictCancellationRequest
+    req: PredictCancellationRequest,
   ): Promise<PredictCancellationResponse> {
     try {
-      const games = await this.gameRepository.findAtDate(req.todayDate);
+      const from = req.todayDate;
+      const to = new Date(req.todayDate);
+      to.setDate(to.getDate() + req.forecastDays - 1); // 例: forecastDays=7 なら今日+6日まで
+      const games = await this.gameRepository.findByDate(from, to);
 
       // [TODO] 消す
       if (games.length === 0 && process.env.USE_TEST_GAME === "1") {
@@ -85,15 +88,21 @@ export class PredictCancellationUseCase {
             continue;
           }
           const model = await this.modelRepository.findLatest(
-            game.ballPark.id()
+            game.ballPark.id(),
           );
           if (!model) throw new NotFoundError("モデルが見つかりません", {});
 
-          const requiredDays = Math.ceil(req.timeWindowAfterHours / 24);
+          const daysAhead = Math.floor(
+            (game.date.getTime() - req.todayDate.getTime()) /
+              (24 * 60 * 60 * 1000),
+          );
+          const requiredDays =
+            daysAhead + Math.ceil(req.timeWindowAfterHours / 24);
           if (req.forecastDays < requiredDays) {
             throw new ValidationError("予測に必要な予報日数が足りません", {
               requiredDays,
               forecastDays: req.forecastDays,
+              daysAhead,
             });
           }
 
@@ -108,20 +117,20 @@ export class PredictCancellationUseCase {
             await this.weatherForecastProvider.fetchHourlyForecasts(
               BallParkWeatherPoint.create(game.ballPark.id()).latitude(),
               BallParkWeatherPoint.create(game.ballPark.id()).longitude(),
-              req.forecastDays
+              req.forecastDays,
             )
           )
             .map((hourlyWeatherForecastDto) =>
               mapHourlyWeatherForecastDtoToProps(
                 hourlyWeatherForecastDto,
-                game.ballPark.id()
-              )
+                game.ballPark.id(),
+              ),
             )
             .map(BallParkHourlyWeatherForecast.create);
 
           // 気象データを永続化（TX1）
           await this.ballParkHourlyWeatherForecastRepository.updateMany(
-            hourlyWeatherForecasts
+            hourlyWeatherForecasts,
           );
 
           if (hourlyWeatherForecasts.length === 0)
@@ -131,7 +140,7 @@ export class PredictCancellationUseCase {
             });
 
           const filteredHourlyWeatherForecasts = hourlyWeatherForecasts.filter(
-            (f) => from <= f.date && f.date <= to
+            (f) => from <= f.date && f.date <= to,
           );
 
           if (filteredHourlyWeatherForecasts.length === 0)
@@ -142,7 +151,7 @@ export class PredictCancellationUseCase {
 
           const aggregatedFeatures =
             PredictionWeatherFeatureAggregator.aggregate(
-              filteredHourlyWeatherForecasts
+              filteredHourlyWeatherForecasts,
             );
 
           const probability = this.predictor.predict({

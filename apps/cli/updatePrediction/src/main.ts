@@ -8,7 +8,7 @@ const container = createInfraContainer();
 
 const timeWindowBeforeHours = 3;
 const timeWindowAfterHours = 3;
-const forecastDays = 3;
+const forecastDays = 10;
 const todayDate = new Date();
 async function main() {
   const scope = container.createScope();

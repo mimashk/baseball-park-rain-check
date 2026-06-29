@@ -47,7 +47,7 @@ app.post("/cron/run-game-checkpoint", async (req, res, next) => {
     return next(
       new ValidationError("jobKey が指定されていません", {
         jobKey: jobKeyParam,
-      })
+      }),
     );
   }
 
@@ -55,7 +55,7 @@ app.post("/cron/run-game-checkpoint", async (req, res, next) => {
     return next(
       new ValidationError("gameId が指定されていません", {
         gameId: gameIdParam,
-      })
+      }),
     );
   }
 
@@ -83,7 +83,7 @@ app.post(
     const scope = container.createScope();
     try {
       const usecase = scope.resolve(
-        "refreshScheduledGameAndDailyWeatherForecastUsecase"
+        "refreshScheduledGameAndDailyWeatherForecastUsecase",
       );
       const result = await usecase.execute({
         from,
@@ -93,14 +93,14 @@ app.post(
     } catch (err) {
       next(err);
     }
-  }
+  },
 );
 
 app.post("/cron/update-prediction", async (req, res, next) => {
   const scope = container.createScope();
   const timeWindowBeforeHours = 3;
   const timeWindowAfterHours = 3;
-  const forecastDays = 3;
+  const forecastDays = 10;
   const todayDate = new Date();
   try {
     const usecase = scope.resolve("predictCancellationUseCase");
@@ -121,7 +121,7 @@ app.use(
     err: unknown,
     _req: express.Request,
     res: express.Response,
-    _next: express.NextFunction
+    _next: express.NextFunction,
   ) => {
     if (
       err instanceof DomainError ||
@@ -133,7 +133,7 @@ app.use(
         "リフレッシャーAPIでエラーが発生しました",
         err.code,
         err.message,
-        err.details ?? ""
+        err.details ?? "",
       );
       return res
         .status(400)
@@ -143,7 +143,7 @@ app.use(
     return res
       .status(500)
       .json({ message: "リフレッシャーAPIで予期せぬエラーが発生しました" });
-  }
+  },
 );
 
 const port = process.env.PORT ?? 8081;

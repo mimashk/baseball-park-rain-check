@@ -10,6 +10,7 @@
       "@domain/*": ["packages/src/domain/*"],
       "@application/*": ["packages/src/application/*"],
       "@infra/*": ["packages/src/infra/*"]
-    }
+    },
+    "ignoreDeprecations": "5.0"
   }
 }
