@@ -25,7 +25,7 @@ export class GetTeamDashboardQuery {
     private readonly ballParkHourlyWeatherForecastRepository: BallParkHourlyWeatherForecastRepository,
     private readonly ballParkDailyWeatherForecastRepository: BallParkDailyWeatherForecastRepository,
     private readonly batchStatusRepository: BatchStatusRepository,
-    private readonly cancellationPredictionRepository: CancellationPredictionRepository
+    private readonly cancellationPredictionRepository: CancellationPredictionRepository,
   ) {}
 
   async execute(req: GetTeamDashboardInput): Promise<GetTeamDashboardOutput> {
@@ -41,11 +41,11 @@ export class GetTeamDashboardQuery {
       const { startUtc, endUtc } = jstDayRangeUtc(dateJst);
       const todayGames = await this.scheduledGameRepository.findByDate(
         startUtc,
-        endUtc
+        endUtc,
       );
       const todayGame =
         todayGames.find(
-          (g) => g.homeTeam.id() === teamId || g.awayTeam.id() === teamId
+          (g) => g.homeTeam.id() === teamId || g.awayTeam.id() === teamId,
         ) ?? null;
 
       const batchCompletedAt =
@@ -76,7 +76,7 @@ export class GetTeamDashboardQuery {
         ? await this.ballParkHourlyWeatherForecastRepository.findByDateAndBallPark(
             fromUtc,
             toUtc,
-            todayGame.ballPark.id()
+            todayGame.ballPark.id(),
           )
         : [];
 
@@ -94,11 +94,11 @@ export class GetTeamDashboardQuery {
                 temperatureC: hit.temperature.toNumber(),
                 precipProbPct: Math.max(
                   0,
-                  Math.round(hit.precipitationProbability.toPercent())
+                  Math.round(hit.precipitationProbability.toPercent()),
                 ),
                 precipMm: Math.max(
                   0,
-                  Math.round(hit.rainFall.toNumber() * 10) / 10
+                  Math.round(hit.rainFall.toNumber() * 10) / 10,
                 ),
               }
             : null,
@@ -121,10 +121,10 @@ export class GetTeamDashboardQuery {
         !isKnown
           ? "UNKNOWN_BALLPARK"
           : !isOpenAir
-          ? "INDOOR"
-          : prediction
-          ? null
-          : "PENDING";
+            ? "INDOOR"
+            : prediction
+              ? null
+              : "PENDING";
 
       const home = {
         teamId: todayGame.homeTeam.id(),
@@ -190,13 +190,23 @@ export class GetTeamDashboardQuery {
 
     const weeklyGames = await this.scheduledGameRepository.findByDate(
       jstDayRangeUtc(dates[0]).startUtc,
-      jstDayRangeUtc(dates[6]).endUtc
+      jstDayRangeUtc(dates[6]).endUtc,
     );
     const weeklyTargetGames = weeklyGames.filter((g) => {
       const isHome = g.homeTeam.id() === teamId;
       const isAway = g.awayTeam.id() === teamId;
       return isHome || isAway;
     });
+
+    // 週間試合の中止予測を一括取得（屋外かつ既知球場のみ予測対象）
+    const predictableGameIds = weeklyTargetGames
+      .filter((g) => g.ballPark.id() !== 0 && g.ballPark.isOpenAir())
+      .map((g) => g.id.toString());
+    const predictionMap = predictableGameIds.length
+      ? await this.cancellationPredictionRepository.findLatestByGameIds(
+          predictableGameIds,
+        )
+      : new Map();
 
     return Promise.all(
       dates.map(async (d) => {
@@ -219,9 +229,26 @@ export class GetTeamDashboardQuery {
           (await this.ballParkDailyWeatherForecastRepository.findByDateAndBallPark(
             startUtc,
             endUtc,
-            game.ballPark.id()
+            game.ballPark.id(),
           )) ?? null;
         const weather = weathers[0] ?? null;
+
+        const isKnown = game.ballPark.id() !== 0;
+        const isOpenAir = game.ballPark.isOpenAir();
+        const prediction = predictionMap.get(game.id.toString());
+        const cancelProbPct =
+          prediction?.probability != null ? prediction.probability * 100 : null;
+        const cancelProbReason:
+          | "UNKNOWN_BALLPARK"
+          | "PENDING"
+          | "INDOOR"
+          | null = !isKnown
+          ? "UNKNOWN_BALLPARK"
+          : !isOpenAir
+            ? "INDOOR"
+            : prediction
+              ? null
+              : "PENDING";
 
         return {
           dateJst: d,
@@ -251,9 +278,11 @@ export class GetTeamDashboardQuery {
               teamId: game.awayTeam.id(),
               name: BaseballTeam.from(game.awayTeam.id()).labelJa(),
             },
+            cancelProbPct,
+            cancelProbReason,
           },
         };
-      })
+      }),
     );
   }
 }

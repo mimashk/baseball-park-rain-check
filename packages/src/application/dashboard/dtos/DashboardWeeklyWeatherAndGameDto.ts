@@ -12,5 +12,7 @@ export interface DashboardWeeklyWeatherAndGameDto {
     ballpark: string;
     home: DashboardTeamDto;
     away: DashboardTeamDto;
+    cancelProbPct: number | null;
+    cancelProbReason: "UNKNOWN_BALLPARK" | "PENDING" | "INDOOR" | null;
   } | null;
 }

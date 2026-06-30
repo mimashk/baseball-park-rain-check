@@ -12,5 +12,7 @@ export type Weekly = {
     ballpark: string;
     home: Team;
     away: Team;
+    cancelProbPct: number | null;
+    cancelProbReason: "UNKNOWN_BALLPARK" | "PENDING" | "INDOOR" | null;
   } | null;
 };
