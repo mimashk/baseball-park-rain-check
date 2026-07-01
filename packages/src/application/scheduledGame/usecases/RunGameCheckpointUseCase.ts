@@ -15,11 +15,11 @@ export class RunGameCheckpointUseCase {
   constructor(
     private readonly updateGameStatusService: UpdateGameStatusService,
     private readonly scheduler: CheckpointScheduler,
-    private readonly gameRepository: ScheduledGameRepository
+    private readonly gameRepository: ScheduledGameRepository,
   ) {}
 
   async execute(
-    request: RunGameCheckpointRequest
+    request: RunGameCheckpointRequest,
   ): Promise<RunGameCheckpointResponse> {
     try {
       const gameIdStr = request.gameId;
@@ -37,6 +37,7 @@ export class RunGameCheckpointUseCase {
         now: normalizedNow,
         startAt: normalizedStartAt,
         status,
+        isNightGame: game.isNightGame(),
       });
 
       if (
@@ -78,7 +79,7 @@ export class RunGameCheckpointUseCase {
         {
           cause: err,
           jobKey: request.jobKey,
-        }
+        },
       );
     }
   }

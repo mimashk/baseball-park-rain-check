@@ -40,7 +40,7 @@ export class ScheduledGame {
     readonly homeTeam: BaseballTeam,
     readonly awayTeam: BaseballTeam,
     readonly ballPark: BallPark,
-    private _status: GameStatus // メインスポンサーとイベントを追加したいが、MVPだといらないかなと思うので一旦省略
+    private _status: GameStatus, // メインスポンサーとイベントを追加したいが、MVPだといらないかなと思うので一旦省略
   ) {}
 
   static create(props: CreateScheduledGameProps): ScheduledGame {
@@ -53,7 +53,7 @@ export class ScheduledGame {
       BaseballTeam.from(props.homeTeam),
       BaseballTeam.from(props.awayTeam),
       BallPark.fromString(props.ballPark),
-      GameStatus.scheduled()
+      GameStatus.scheduled(),
     );
   }
 
@@ -72,7 +72,7 @@ export class ScheduledGame {
       props.homeTeam ? BaseballTeam.from(props.homeTeam) : this.homeTeam,
       props.awayTeam ? BaseballTeam.from(props.awayTeam) : this.awayTeam,
       props.ballPark ? BallPark.fromString(props.ballPark) : this.ballPark,
-      this._status
+      this._status,
     );
   }
 
@@ -91,12 +91,24 @@ export class ScheduledGame {
           status = status.toInProgress().toCompleted();
         if (props.status === "cancelled") status = status.toCancelled();
         return status;
-      })()
+      })(),
     );
   }
 
   status(): GameStatus {
     return this._status;
+  }
+
+  // 開始時刻(JST)が17時以降ならナイトゲームとみなす
+  isNightGame(): boolean {
+    const jstHour = Number(
+      new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Tokyo",
+        hour: "2-digit",
+        hour12: false,
+      }).format(this.date),
+    );
+    return jstHour >= 17;
   }
 
   start(now: Date) {

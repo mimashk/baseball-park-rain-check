@@ -9,11 +9,11 @@ import { ensureValidDate } from "../../shared/utils/ensureValidDate";
 export class ScheduleInitialGameCheckpointUseCase {
   constructor(
     private readonly scheduler: CheckpointScheduler,
-    private readonly gameRepository: ScheduledGameRepository
+    private readonly gameRepository: ScheduledGameRepository,
   ) {}
 
   async execute(
-    req: ScheduleInitialGameCheckpointRequest
+    req: ScheduleInitialGameCheckpointRequest,
   ): Promise<ScheduleInitialGameCheckpointResponse> {
     const normalizedNow = ensureValidDate("now", req.now);
     const games = await this.gameRepository.findAtDate(normalizedNow);
@@ -36,6 +36,7 @@ export class ScheduleInitialGameCheckpointUseCase {
         now: normalizedNow,
         startAt: normalizedStartAt,
         status: GameStatusType.SCHEDULED,
+        isNightGame: game.isNightGame(),
       });
 
       // もし既に終了/過去ならスキップ
@@ -44,7 +45,7 @@ export class ScheduleInitialGameCheckpointUseCase {
       }
 
       const nextRunAt = new Date(
-        normalizedNow.getTime() + nextInterval * 60_000
+        normalizedNow.getTime() + nextInterval * 60_000,
       );
       const jobKey = `checkpoint-${game.date.getFullYear()}-${
         game.date.getMonth() + 1
