@@ -94,7 +94,7 @@ export default async function TeamPage({
 
   const shareUrl = new URL(
     `/team/${teamId}`,
-    process.env.NEXT_PUBLIC_SITE_URL!
+    process.env.NEXT_PUBLIC_SITE_URL!,
   ).toString();
 
   return (
@@ -109,7 +109,9 @@ export default async function TeamPage({
         />
 
         <section className="space-y-2">
-          <SectionEyebrow>今日の{teamName}の試合</SectionEyebrow>
+          <SectionEyebrow>
+            今日の<span className="normal-case">{teamName}</span>の試合
+          </SectionEyebrow>
           <SectionCard>
             <TodaySummary
               dateJst={data.dateJst}

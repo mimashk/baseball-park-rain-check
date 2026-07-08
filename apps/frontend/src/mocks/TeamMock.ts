@@ -74,9 +74,9 @@ function buildWeekly(
 ) {
   const start = new Date(`${dateJst}T00:00:00+09:00`);
 
-  return Array.from({ length: 7 }).map((_, i) => {
+  return Array.from({ length: 6 }).map((_, i) => {
     const d = new Date(start);
-    d.setDate(d.getDate() + i);
+    d.setDate(d.getDate() + i + 1);
     const dJst = d.toISOString().slice(0, 10);
 
     const highC = pattern.highBase + i;

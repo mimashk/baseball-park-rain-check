@@ -12,7 +12,9 @@
     "images:svgo": "svgo -f public/teams --config svgo.config.mjs",
     "preview": "tsx scripts/generateArticles.ts && opennextjs-cloudflare build && opennextjs-cloudflare preview",
     "deploy": "export NEXT_PUBLIC_SITE_URL=https://baseballraincheck.jp && tsx scripts/generateArticles.ts && opennextjs-cloudflare build && opennextjs-cloudflare deploy",
-    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+    "preview:stg": "export NEXT_PUBLIC_NOINDEX=true && tsx scripts/generateArticles.ts && opennextjs-cloudflare build && opennextjs-cloudflare preview -- --env stg",
+    "deploy:stg": "export NEXT_PUBLIC_SITE_URL=\"${STG_SITE_URL:-https://stg.baseballraincheck.jp}\" NEXT_PUBLIC_NOINDEX=true && tsx scripts/generateArticles.ts && opennextjs-cloudflare build && opennextjs-cloudflare deploy -- --env stg"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.17.1",

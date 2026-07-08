@@ -1,4 +1,5 @@
 import { cancelColor } from "@/lib/utils/cancelProb";
+import { formatPercent } from "@/lib/formatters/number";
 
 type CancelInfo = {
   cancelProbPct: number | null;
@@ -22,7 +23,7 @@ export function CancelProbabilityBadge({ game }: { game: CancelInfo }) {
       >
         <span className="text-xs font-medium opacity-90">中止確率</span>
         <span className="text-lg font-bold leading-none">
-          {pct}
+          {formatPercent(pct)}
           <span className="ml-0.5 text-xs font-semibold">%</span>
         </span>
       </div>

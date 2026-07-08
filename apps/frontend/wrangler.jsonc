@@ -6,30 +6,57 @@
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
   "assets": {
     "directory": ".open-next/assets",
-    "binding": "ASSETS"
+    "binding": "ASSETS",
   },
   "vars": {
     "NEXT_PUBLIC_SITE_URL": "https://baseballraincheck.jp",
     "QUERY_API_BASE_URL": "https://query-332196625860.asia-northeast1.run.app",
-    "USE_MOCK": "false"
+    "USE_MOCK": "false",
   },
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
-      "service": "baseball-park-rain-check-frontend"
-    }
+      "service": "baseball-park-rain-check-frontend",
+    },
   ],
   "images": {
-    "binding": "IMAGES"
+    "binding": "IMAGES",
   },
   "observability": {
     "enabled": true,
     "logs": {
       "invocation_logs": true,
-      "head_sampling_rate": 1
-    }
+      "head_sampling_rate": 1,
+    },
   },
   "limits": {
-    "cpu_ms": 300000
-  }
+    "cpu_ms": 300000,
+  },
+  "env": {
+    "stg": {
+      "name": "baseball-park-rain-check-frontend-stg",
+      "workers_dev": false,
+      "routes": [
+        { "pattern": "stg.baseballraincheck.jp", "custom_domain": true },
+      ],
+      "vars": {
+        "NEXT_PUBLIC_SITE_URL": "https://stg.baseballraincheck.jp",
+        "QUERY_API_BASE_URL": "https://query-ewvsm76i5q-an.a.run.app",
+        "USE_MOCK": "false",
+      },
+      "assets": { "directory": ".open-next/assets", "binding": "ASSETS" },
+      "services": [
+        {
+          "binding": "WORKER_SELF_REFERENCE",
+          "service": "baseball-park-rain-check-frontend-stg",
+        },
+      ],
+      "images": { "binding": "IMAGES" },
+      "observability": {
+        "enabled": true,
+        "logs": { "invocation_logs": true, "head_sampling_rate": 1 },
+      },
+      "limits": { "cpu_ms": 300000 },
+    },
+  },
 }

@@ -3,5 +3,6 @@ node_modules/
 .env.stg
 dist/
 tmp/
-CommandInDev.md
+CommandInDevPrd.md
+CommandInDevStg.md
 analytics.md

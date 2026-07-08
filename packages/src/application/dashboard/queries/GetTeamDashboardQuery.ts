@@ -186,11 +186,13 @@ export class GetTeamDashboardQuery {
   }
 
   private async buildWeekly(dateJst: string, teamId: string) {
-    const dates = Array.from({ length: 7 }, (_, i) => addDaysJst(dateJst, i));
+    const dates = Array.from({ length: 6 }, (_, i) =>
+      addDaysJst(dateJst, i + 1),
+    );
 
     const weeklyGames = await this.scheduledGameRepository.findByDate(
       jstDayRangeUtc(dates[0]).startUtc,
-      jstDayRangeUtc(dates[6]).endUtc,
+      jstDayRangeUtc(dates[dates.length - 1]).endUtc,
     );
     const weeklyTargetGames = weeklyGames.filter((g) => {
       const isHome = g.homeTeam.id() === teamId;

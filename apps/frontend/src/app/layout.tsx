@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   description:
     "プロ野球の試合の雨天中止確率を予測して表示するサービス。球場ごとに過去10年分の雨天中止データを分析して正確な中止予測をお届け。",
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL!),
+  robots:
+    process.env.NEXT_PUBLIC_NOINDEX === "true"
+      ? { index: false, follow: false }
+      : undefined,
   icons: {
     icon: "/logo/logo_square.png",
     apple: "/logo/logo_square.png",
