@@ -40,7 +40,7 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-public/fonts/
+scripts/_fonts/
 .open-next/
 .dev.vars
 cloudflare-env.d.ts
