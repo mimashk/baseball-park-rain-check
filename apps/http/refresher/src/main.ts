@@ -1,3 +1,4 @@
+import { inspect } from "node:util";
 import express from "express";
 import { createInfraContainer } from "../../../../packages/src/infra/di/container";
 import { ValidationError } from "../../../../packages/src/shared/errors/ValidationError";
@@ -133,8 +134,10 @@ app.use(
         "リフレッシャーAPIでエラーが発生しました",
         err.code,
         err.message,
-        err.details ?? "",
+        inspect(err.details ?? "", { depth: null }),
       );
+      // さらに、原因チェーン全体を出す
+      console.warn(inspect(err, { depth: null }));
       return res
         .status(400)
         .json({ code: err.code, message: err.message, details: err.details });
