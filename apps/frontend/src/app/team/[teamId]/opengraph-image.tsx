@@ -12,7 +12,13 @@ import { OG_FONT_BASE64 } from "@/generated/ogFont.generated";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
+// open-next.config.ts で incrementalCache を設定していないため実際には ISR ストアが
+// 存在せず(=dummy)、この revalidate は効かずリクエストごとに再生成される。
+// 将来 R2キャッシュを有効化したときに 下の s-maxage と揃うよう同じ値を明示しておく。
 export const revalidate = 600;
+// ?v= のバケット幅(10分)に合わせる。クエリは画像の内容には影響させない。
+const CACHE_CONTROL =
+  "public, max-age=600, s-maxage=600, stale-while-revalidate=60";
 const fontData = Uint8Array.from(atob(OG_FONT_BASE64), (c) =>
   c.charCodeAt(0),
 ).buffer;
@@ -242,6 +248,7 @@ export default async function Image({
       fonts: [
         { name: "NotoSansJP", data: fontData, weight: 700, style: "normal" },
       ],
+      headers: { "cache-control": CACHE_CONTROL },
     },
   );
 }

@@ -4,6 +4,7 @@ import { HourlyForecast } from "@/components/team/HourlyForecast";
 import { WeeklyForecast } from "@/components/team/WeeklyForecast";
 import { TeamId } from "@/types/TeamId";
 import { TEAM_IDS, TEAM_META } from "@/lib/ui/team";
+import { currentOgVersion } from "@/lib/ui/ogVersion";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { XShareButton } from "@/components/ui/XShareButton";
@@ -33,6 +34,10 @@ export async function generateMetadata({
   const title = `${teamName} 雨天中止予報`;
   const description = `${teamName}の試合の雨天中止確率を予測して表示するサービス。${teamName}のホーム球場の過去10年分の雨天中止データを分析して正確な中止予測をお届け。`;
 
+  // X の画像CDN(pbs.twimg.com)はOG画像URL単位で事実上無期限にキャッシュするため、
+  // バージョンを付けて別URLにする。canonical はクエリなしのまま維持する。
+  const ogImageUrl = `/team/${teamId}/opengraph-image?v=${currentOgVersion()}`;
+
   return {
     title,
     description,
@@ -46,7 +51,7 @@ export async function generateMetadata({
       type: "website",
       images: [
         {
-          url: `/team/${teamId}/opengraph-image`,
+          url: ogImageUrl,
           width: 1200,
           height: 630,
           alt: `${teamName} 雨天中止予報`,
@@ -57,7 +62,7 @@ export async function generateMetadata({
       card: "summary_large_image",
       title,
       description,
-      images: [`/team/${teamId}/opengraph-image`],
+      images: [ogImageUrl],
     },
   };
 }
@@ -92,8 +97,10 @@ export default async function TeamPage({
     .map((v) => (v ?? "").trim())
     .filter((v) => v.length > 0);
 
+  // X はカード情報を共有URL単位でキャッシュするため、バージョンを付けて再クロールさせる。
+  // canonical は /team/{teamId} を指しているのでSEO上の重複は発生しない。
   const shareUrl = new URL(
-    `/team/${teamId}`,
+    `/team/${teamId}?s=${currentOgVersion()}`,
     process.env.NEXT_PUBLIC_SITE_URL!,
   ).toString();
 
