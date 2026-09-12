@@ -20,6 +20,8 @@ import { mapHourlyWeatherForecastDtoToProps } from "../mapper/mapHourlyWeatherFo
 import { BallParkHourlyWeatherForecast } from "../../../domain/weatherForecast/valueObjects/BallParkHourlyWeatherForecast";
 import { CancellationPredictionRepository } from "../interfaces/CancellationPredictionRepository";
 import { AppError } from "../../../shared/errors/AppError";
+import { BatchStatusWriter } from "../../shared/interfaces/BatchStatusWriter";
+import { recordBatchSuccess } from "../../shared/utils/recordBatchSuccess";
 
 type PredictResult =
   | {
@@ -43,6 +45,7 @@ export class PredictCancellationUseCase {
     private readonly weatherForecastProvider: HourlyWeatherForecastProvider,
     private readonly ballParkHourlyWeatherForecastRepository: BallParkHourlyWeatherForecastRepository,
     private readonly predictionRepository: CancellationPredictionRepository,
+    private readonly batchStatusWriter: BatchStatusWriter,
   ) {}
 
   async execute(
@@ -68,6 +71,8 @@ export class PredictCancellationUseCase {
         games.push(testGame);
       }
       if (games.length === 0) {
+        // 対象試合が0件でもバッチとしては正常完了なので完了時刻を記録する
+        await recordBatchSuccess(this.batchStatusWriter, "prediction");
         return {
           message: "本日の対象試合はありませんでした",
           results: [],
@@ -214,6 +219,11 @@ export class PredictCancellationUseCase {
             error: "予測処理に失敗しました",
           });
         }
+      }
+      // 1件も予測できていない場合は予測値が更新されていないので完了時刻を進めない。
+      // （個別試合の失敗は results に残るため、一部成功なら更新扱いにする）
+      if (results.some((result) => result.success)) {
+        await recordBatchSuccess(this.batchStatusWriter, "prediction");
       }
       return {
         message: "予測処理を完了しました",

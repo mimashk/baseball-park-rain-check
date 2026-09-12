@@ -54,6 +54,7 @@ import { BallParkHourlyWeatherForecastRepository } from "../../domain/weatherFor
 import { CancellationModelRepository } from "../../domain/model/repositoryInterface/CancellationModelRepository";
 import { CancellationPredictionRepository } from "../../application/prediction/interfaces/CancellationPredictionRepository";
 import { BatchStatusRepository } from "../../application/dashboard/interfaces/BatchStatusRepository";
+import { BatchStatusWriter } from "../../application/shared/interfaces/BatchStatusWriter";
 import {
   R2ObjectStore,
   readR2ConfigFromEnv,
@@ -64,6 +65,7 @@ import { R2BallParkHourlyWeatherForecastRepository } from "../persistence/r2/rep
 import { R2CancellationPredictionRepository } from "../persistence/r2/repository/R2CancellationPredictionRepository";
 import { R2CancellationModelRepository } from "../persistence/r2/repository/R2CancellationModelRepository";
 import { R2BatchStatusRepository } from "../persistence/r2/repository/R2BatchStatusRepository";
+import { R2BatchStatusWriter } from "../persistence/r2/repository/R2BatchStatusWriter";
 
 const defaultCloudSchedulerConfig: CloudSchedulerConfig = {
   projectId:
@@ -119,6 +121,7 @@ export type InfraCradle = {
   cancellationModelRepository: CancellationModelRepository;
   cancellationPredictionRepository: CancellationPredictionRepository;
   batchStatusRepository: BatchStatusRepository;
+  batchStatusWriter: BatchStatusWriter;
 
   cancellationModelTrainer: CancellationModelTrainerImpl;
   cancellationPredictor: CancellationPredictorImpl;
@@ -266,12 +269,14 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
         dailyWeatherForecastProvider,
         scheduledGameRepository,
         ballParkDailyWeatherForecastRepository,
+        batchStatusWriter,
       }: InfraCradle) =>
         new RefreshScheduledGameAndDailyWeatherForecastUsecase(
           scheduledGameFetcher,
           dailyWeatherForecastProvider,
           scheduledGameRepository,
-          ballParkDailyWeatherForecastRepository
+          ballParkDailyWeatherForecastRepository,
+          batchStatusWriter
         ),
       { lifetime: Lifetime.SINGLETON }
     ),
@@ -313,6 +318,7 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
         hourlyWeatherForecastProvider,
         ballParkHourlyWeatherForecastRepository,
         cancellationPredictionRepository,
+        batchStatusWriter,
       }: InfraCradle) =>
         new PredictCancellationUseCase(
           scheduledGameRepository,
@@ -320,7 +326,8 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
           cancellationPredictor,
           hourlyWeatherForecastProvider,
           ballParkHourlyWeatherForecastRepository,
-          cancellationPredictionRepository
+          cancellationPredictionRepository,
+          batchStatusWriter
         ),
       { lifetime: Lifetime.SINGLETON }
     ),
@@ -386,12 +393,14 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
         fetchObservedHourlyWeatherService,
         trainModelService,
         cancellationModelRepository,
+        batchStatusWriter,
       }: InfraCradle) =>
         new RunTrainingPipelineUseCase(
           fetchPastGamesService,
           fetchObservedHourlyWeatherService,
           trainModelService,
-          cancellationModelRepository
+          cancellationModelRepository,
+          batchStatusWriter
         ),
       { lifetime: Lifetime.SINGLETON }
     ),
@@ -433,6 +442,10 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
     ),
     batchStatusRepository: asFunction(
       ({ r2Store }) => new R2BatchStatusRepository(r2Store),
+      { lifetime: Lifetime.SINGLETON }
+    ),
+    batchStatusWriter: asFunction(
+      ({ r2Store }) => new R2BatchStatusWriter(r2Store),
       { lifetime: Lifetime.SINGLETON }
     ),
   });

@@ -8,6 +8,8 @@ import { RunTrainingPipelineResponse } from "../dtos/RunTrainingPipelineResponse
 import { FetchObservedHourlyWeatherService } from "../services/FetchObservedHourlyWeatherService";
 import { FetchPastGamesService } from "../services/FetchPastGamesService";
 import { TrainModelService } from "../services/TrainModelService";
+import { BatchStatusWriter } from "../../shared/interfaces/BatchStatusWriter";
+import { recordBatchSuccess } from "../../shared/utils/recordBatchSuccess";
 
 interface TrainingPipelineResult {
   version: string;
@@ -23,7 +25,8 @@ export class RunTrainingPipelineUseCase {
     private readonly fetchPastGamesService: FetchPastGamesService,
     private readonly fetchObservedHourlyWeatherService: FetchObservedHourlyWeatherService,
     private readonly trainModelService: TrainModelService,
-    private readonly modelRepository: CancellationModelRepository
+    private readonly modelRepository: CancellationModelRepository,
+    private readonly batchStatusWriter: BatchStatusWriter
   ) {}
 
   async execute(
@@ -102,6 +105,7 @@ export class RunTrainingPipelineUseCase {
       trainedBallParkCount: results.length,
       elapsedMs,
     });
+    await recordBatchSuccess(this.batchStatusWriter, "trainer");
     return {
       message: `${results.length}球場の学習が完了しました`,
       results: results.map((result) => ({

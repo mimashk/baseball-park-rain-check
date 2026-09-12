@@ -19,13 +19,16 @@ import { mapDailyWeatherForecastDtoToProps } from "../mapper/mapDailyWeatherFore
 import { BallParkDailyWeatherForecast } from "../../../domain/weatherForecast/valueObjects/BallParkDailyWeatherForecast";
 import { BallParkDailyWeatherForecastRepository } from "../../../domain/weatherForecast/repositoryInterface.ts/BallParkDailyWeatherForecastRepository";
 import { BallParkId } from "@domain/scheduledGame/valueObjects/BallPark";
+import { BatchStatusWriter } from "../../shared/interfaces/BatchStatusWriter";
+import { recordBatchSuccess } from "../../shared/utils/recordBatchSuccess";
 
 export class RefreshScheduledGameAndDailyWeatherForecastUsecase {
   constructor(
     private readonly scheduledGameFetcher: ScheduledGameFetcher,
     private readonly dailyWeatherForecastProvider: DailyWeatherForecastProvider,
     private readonly scheduledGameRepository: ScheduledGameRepository,
-    private readonly dailyWeatherForecastRepository: BallParkDailyWeatherForecastRepository
+    private readonly dailyWeatherForecastRepository: BallParkDailyWeatherForecastRepository,
+    private readonly batchStatusWriter: BatchStatusWriter
   ) {}
 
   async execute(
@@ -48,6 +51,8 @@ export class RefreshScheduledGameAndDailyWeatherForecastUsecase {
         console.log(
           `${normalizedFrom.toISOString()}から${normalizedTo.toISOString()}間は試合がありませんでした`
         );
+        // 試合が0件でもバッチとしては正常完了なので完了時刻を記録する
+        await recordBatchSuccess(this.batchStatusWriter, "refresher");
         return {
           gameIds: [],
           message: `${normalizedFrom.toISOString()}から${normalizedTo.toISOString()}間は試合がありませんでした`,
@@ -139,6 +144,7 @@ export class RefreshScheduledGameAndDailyWeatherForecastUsecase {
           points: points,
         });
       }
+      await recordBatchSuccess(this.batchStatusWriter, "refresher");
       return {
         gameIds: filteredScheduledGames.map((scheduledGame) =>
           scheduledGame.id.toString()
