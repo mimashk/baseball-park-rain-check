@@ -100,12 +100,27 @@ ERA5 自体は完璧な観測ではない（25kmグリッド平均、微小な�
 
 ### Open-Meteo
 
-- `best_match` は **`jma_msm` と完全一致（気温 48/48）**。既にJMAメソモデルを引いている。
-  → `models=` を明示しても値は変わらない。**設定変更で改善する余地はゼロ**。
+- `best_match` は**リード時間でモデルを切り替える**。実測（気温の完全一致数 / 24時間）:
+
+  | リード | `jma_msm` と一致 | MSMのデータ有無 | `showers` |
+  | --- | --- | --- | --- |
+  | 1〜3日目 | 24/24 | 24/24 | 0mm |
+  | 4日目 | 1/24 | 4/24 | 1.5mm |
+  | 6日目 | 0/24 | 0/24 | 14.0mm |
+  | 7日目 | 0/24 | 0/24 | 33.6mm |
+
+  MSMが届く**3日半までは `jma_msm` そのもの**で、そこから先は別モデルに切り替わる。
+  → 短いリード（本計画が対象とする当日）については `models=` を明示しても値は変わらず、
+    **設定変更で更新頻度を改善する余地はゼロ**。
 - `minutely_15` は**時別値の単純内挿**（同一1時間内の4点が全て同値、23/24ブロック）。新情報なし。
 - `precipitation` は「**前1時間の積算**」（"sum of the preceding hour"）。
-- `jma_msm` は `showers` を常に 0 で返し、`precipitation == rain`（48時間で差分0件）。
-  → 学習(`rain`)と推論(`precipitation`)の不一致は**実害ほぼなし**。
+- **`precipitation` を `rain` に変えてはいけない。**
+  forecast の `rain` は対流性の `showers` を除いた値で、`precipitation = rain + showers + snowfall`。
+  一方 archive(ERA5)の `rain` は「総降水量から雪を除いた液体降水すべて」で対流性も含むため、
+  **学習データに対応するのは forecast の `precipitation` の方**（雪が降らない限り）。
+  `jma_msm` は `showers` を常に0で返すので1〜3日目は `precipitation == rain` だが、
+  4日目以降は別モデルに切り替わって `showers` が出てくる。7日ぶんの実測で `showers` は全体の約39%。
+  `forecastDays = 10` で運用している以上、`rain` にすると夏の夕立を落とす。
 - `OpenMeteoClient.ensureNonEmpty` は `responses[0]` のみ返す。複数モデル指定時は配列が増えるため要改修。
 
 ### 気象庁 降水短時間予報（rasrf）
@@ -210,11 +225,44 @@ https://www.jma.go.jp/bosai/jmatile/data/rasrf/{basetime}/immed/{validtime}/surf
 
 - [x] **予報ランの更新間隔を確定** — 確定: **10分毎**、公開ラグ12〜13分。
       バッチは固定時刻で決め打たず、毎回 `targetTimes.json` の最新 basetime を見て取得する。
-- [ ] **フロントのキャッシュを切り分け**（小）
-      R2 の `predictions/by-game/{gameId}.json` の更新時刻とブラウザ表示を突き合わせる。
-      `revalidate = 600` と CDN キャッシュが「古く見える」体感に寄与していないか。
-- [ ] **`precipitation` / `rain` の不一致整理**（小）
-      `jma_msm` では実害ほぼゼロ。正しさのための整理で優先度は低い。
+- [x] **フロントのキャッシュを切り分け** — 結論: **キャッシュは遅延の原因ではない**。
+
+      本番のレスポンスヘッダを実測した結果:
+
+      ```
+      # トップページ
+      Cache-Control: s-maxage=600, stale-while-revalidate=31535400
+      x-nextjs-cache: MISS          ← 何度叩いても MISS
+      x-nextjs-prerender: 1
+
+      # チームページ
+      Cache-Control: private, no-cache, no-store, max-age=0, must-revalidate
+      ```
+
+      `open-next.config.ts` の `incrementalCache` が未設定のため**ISRキャッシュが機能していない**。
+      チームページは完全に動的。Cloudflare もHTMLをキャッシュしていない（`cf-cache-status` が出ない）。
+      つまり毎リクエストで再レンダリングしており、古い値が残る原因は
+      **Open-Meteo が3時間毎にしか更新されないこと**で確定（＝本計画の前提どおり）。
+
+      ただし別の問題は残る。対応はフェーズ3へ移動:
+      - 毎リクエストでオリジンを叩いている（10分毎バッチでトラフィックが増えると効いてくる）
+      - トップページが `stale-while-revalidate=31535400`（約1年）を返す。
+        これは Next.js が ISR ページに自動付与するヘッダで、単独で上書きすると ISR の挙動を壊す。
+        キャッシュ基盤を有効にするときにオンデマンド再検証とセットで扱う。
+      - ~~クエリAPIの `max-age=1800`~~ → `private, max-age=0` に修正済み。
+        Bearer 認証のため共有キャッシュには元々保存されず実害は無かったが、
+        前段にCDNを置いた時点で最大30分古い値を配る設定だった。
+
+- [x] **`precipitation` / `rain` の不一致整理** — 結論: **変更不要**。現状のコードが正しい。
+
+      当初「学習は `rain`、推論は `precipitation` で不一致」と判断したが、誤りだった。
+      archive(ERA5)の `rain` は対流性を含む液体降水すべてで、forecast の `rain` は `showers` を除いた値。
+      名前は同じでも中身が違う。**学習データに対応するのは forecast の `precipitation`** であり、
+      現状のコードは既に正しく揃っていた。
+
+      `rain` に変更すると、4日目以降（`best_match` が別モデルに切り替わる範囲）で
+      `showers` を落として降水量を約39%過小評価する。実際に変更しかけて実測で気づき、差し戻した。
+      再発防止のため `OpenMeteoParamsGenerator` にコメントを残してある。
 
 > 観測点マッピングの修正はフェーズ2（アメダスプロバイダ）へ移動。
 > `nearestWeatherStationName` は**どこからも読まれていない**ため単独で直しても挙動が変わらず、
