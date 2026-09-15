@@ -56,6 +56,9 @@ const MAX_LEAD_HOURS = 15;
 
 const HOUR_MS = 3_600_000;
 
+/** 配信側の最新時刻をキャッシュする時間。ランは10分毎なので短めで十分 */
+const PUBLISHED_UNTIL_CACHE_TTL_MS = 60_000;
+
 /**
  * 気象庁の降水短時間予報タイルから前1時間降水量を取り出す。
  *
@@ -80,6 +83,12 @@ const HOUR_MS = 3_600_000;
 export class JmaShortRangeForecastProvider
   implements ShortRangePrecipitationForecastProvider
 {
+  /** 配信側の最新時刻。1回のバッチ内で使い回す */
+  private static publishedUntilCache: {
+    value: Date;
+    fetchedAtMs: number;
+  } | null = null;
+
   constructor(
     private readonly client: JmaTileClient,
     private readonly config: JmaShortRangeForecastConfig = DEFAULT_JMA_SHORT_RANGE_FORECAST_CONFIG,
@@ -210,8 +219,25 @@ export class JmaShortRangeForecastProvider
     return decoded;
   }
 
-  /** 配信側が公開済みの最新時刻を返す。取得できなければローカル時計で代用する */
+  /**
+   * 配信側が公開済みの最新時刻を返す。取得できなければローカル時計で代用する。
+   *
+   * 1回のバッチでは球場ごと・試合ごとにこのプロバイダが呼ばれるが、
+   * 配信側の時刻は10分単位でしか動かないので短時間キャッシュする。
+   * 10日先までの試合を処理すると数十回の呼び出しになり、
+   * そのたびに targetTimes.json を取りに行くのは無駄なため。
+   */
   private async loadPublishedUntil(): Promise<Date> {
+    const now = Date.now();
+    if (
+      JmaShortRangeForecastProvider.publishedUntilCache &&
+      now - JmaShortRangeForecastProvider.publishedUntilCache.fetchedAtMs <
+        PUBLISHED_UNTIL_CACHE_TTL_MS
+    ) {
+      return JmaShortRangeForecastProvider.publishedUntilCache.value;
+    }
+
+    let value: Date;
     try {
       const url = JmaTileEndpoints.targetTimes(
         JmaTileProduct.PRECIPITATION_SHORT_RANGE_FORECAST,
@@ -219,10 +245,17 @@ export class JmaShortRangeForecastProvider
       const catalog = JmaTargetTimeCatalog.fromJson(
         await this.client.fetchJson(url),
       );
-      return JmaTargetTimeCatalog.toDate(catalog.latestBasetime());
+      value = JmaTargetTimeCatalog.toDate(catalog.latestBasetime());
     } catch {
-      return new Date();
+      // 一覧が取れなくてもタイルは取りに行けるので、ローカル時計で続行する
+      value = new Date();
     }
+
+    JmaShortRangeForecastProvider.publishedUntilCache = {
+      value,
+      fetchedAtMs: now,
+    };
+    return value;
   }
 
   private floorToHour(date: Date): Date {

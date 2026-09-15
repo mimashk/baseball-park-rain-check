@@ -24,6 +24,12 @@ import { PastGameRecordFetcherImpl } from "../providers/pastGameRecord/PastGameF
 
 import { OpenMeteoClient } from "../providers/openmeteo/OpenMeteoClient";
 import { OpenMeteoWeatherProvider } from "../providers/openmeteo/OpenMeteoWeatherProvider";
+import { JmaTileClient } from "../providers/jma/JmaTileClient";
+import { AmedasObservationProvider } from "../providers/jma/AmedasObservationProvider";
+import { JmaShortRangeForecastProvider } from "../providers/jma/JmaShortRangeForecastProvider";
+import { PrecipitationSeriesResolver } from "../../application/prediction/services/PrecipitationSeriesResolver";
+import { PrecipitationResolutionRepository } from "../../application/prediction/interfaces/PrecipitationResolutionRepository";
+import { R2PrecipitationResolutionRepository } from "../persistence/r2/repository/R2PrecipitationResolutionRepository";
 
 import {
   CloudSchedulerCheckpointAdapter,
@@ -120,6 +126,11 @@ export type InfraCradle = {
   ballParkHourlyWeatherForecastRepository: BallParkHourlyWeatherForecastRepository;
   cancellationModelRepository: CancellationModelRepository;
   cancellationPredictionRepository: CancellationPredictionRepository;
+  jmaTileClient: JmaTileClient;
+  observedPrecipitationProvider: AmedasObservationProvider;
+  shortRangePrecipitationForecastProvider: JmaShortRangeForecastProvider;
+  precipitationSeriesResolver: PrecipitationSeriesResolver;
+  precipitationResolutionRepository: PrecipitationResolutionRepository;
   batchStatusRepository: BatchStatusRepository;
   batchStatusWriter: BatchStatusWriter;
 
@@ -319,6 +330,8 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
         ballParkHourlyWeatherForecastRepository,
         cancellationPredictionRepository,
         batchStatusWriter,
+        precipitationSeriesResolver,
+        precipitationResolutionRepository,
       }: InfraCradle) =>
         new PredictCancellationUseCase(
           scheduledGameRepository,
@@ -327,7 +340,9 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
           hourlyWeatherForecastProvider,
           ballParkHourlyWeatherForecastRepository,
           cancellationPredictionRepository,
-          batchStatusWriter
+          batchStatusWriter,
+          precipitationSeriesResolver,
+          precipitationResolutionRepository
         ),
       { lifetime: Lifetime.SINGLETON }
     ),
@@ -446,6 +461,34 @@ export const createInfraContainer = (): AwilixContainer<InfraCradle> => {
     ),
     batchStatusWriter: asFunction(
       ({ r2Store }) => new R2BatchStatusWriter(r2Store),
+      { lifetime: Lifetime.SINGLETON }
+    ),
+
+    // 降水量のソース差し替え(シャドー運用)
+    jmaTileClient: asClass(JmaTileClient, { lifetime: Lifetime.SINGLETON }),
+    observedPrecipitationProvider: asFunction(
+      ({ jmaTileClient }: InfraCradle) =>
+        new AmedasObservationProvider(jmaTileClient),
+      { lifetime: Lifetime.SINGLETON }
+    ),
+    shortRangePrecipitationForecastProvider: asFunction(
+      ({ jmaTileClient }: InfraCradle) =>
+        new JmaShortRangeForecastProvider(jmaTileClient),
+      { lifetime: Lifetime.SINGLETON }
+    ),
+    precipitationSeriesResolver: asFunction(
+      ({
+        observedPrecipitationProvider,
+        shortRangePrecipitationForecastProvider,
+      }: InfraCradle) =>
+        new PrecipitationSeriesResolver(
+          observedPrecipitationProvider,
+          shortRangePrecipitationForecastProvider
+        ),
+      { lifetime: Lifetime.SINGLETON }
+    ),
+    precipitationResolutionRepository: asFunction(
+      ({ r2Store }) => new R2PrecipitationResolutionRepository(r2Store),
       { lifetime: Lifetime.SINGLETON }
     ),
   });
