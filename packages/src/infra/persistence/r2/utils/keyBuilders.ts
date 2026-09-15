@@ -26,6 +26,22 @@ export const ballParkDailyWeatherForecastFileKey = (
 export const cancellationPredictionFileKey = (gameId: string) =>
   `predictions/by-game/${gameId}.json`;
 
+// PrecipitationResolution
+// 降水量の差し替え記録。時間別予報(hourly-weather/)とは別プレフィックスに置く。
+// あちらは date をキーに上書きマージするため、同じ場所に書くと毎時の予報バッチが実況を潰す。
+// 実行ごとに1件ずつ追記するのでキーに時刻を含める。
+export const precipitationResolutionFileKey = (
+  ballParkId: number,
+  jstDate: string,
+  resolvedAtIso: string
+) =>
+  `precipitation-resolution/by-park/${ballParkId}/${jstDate}/${resolvedAtIso.replace(/[:.]/g, "-")}.json`;
+
+export const precipitationResolutionPrefix = (
+  ballParkId: number,
+  jstDate: string
+) => `precipitation-resolution/by-park/${ballParkId}/${jstDate}/`;
+
 // BatchStatus
 export const batchStatusKey = (job: BatchJobName) =>
   `meta/batch-status/${job}.json`;

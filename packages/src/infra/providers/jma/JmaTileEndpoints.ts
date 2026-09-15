@@ -40,13 +40,22 @@ export class JmaTileEndpoints {
   /**
    * タイル画像のURLを組み立てる。
    *
-   * パスの3要素目は解析値と予測値で異なる。
-   *   - validtime === basetime … 解析値なので "none"
-   *   - validtime  >  basetime … 予測値なので "immed"
+   * ■ パスの3要素目はプロダクトの区別
+   * 「解析値か予測値か」ではなく、**どちらの予報プロダクトか**で決まる。
    *
-   * ここを取り違えると404になる。
-   * (実測では解析値も "immed" で取得できたが、気象庁の配信サイトが使う
-   *  "none" に合わせている)
+   *   - リード 1〜6時間  … "immed" = 降水短時間予報。レーダー外挿を数値予報にブレンドしたもの
+   *   - リード 7〜15時間 … "none"  = 降水15時間予報。数値予報ベース
+   *   - リード 0         … "none"  = 解析雨量
+   *
+   * 実測では両者は**別物**で、同じ basetime / validtime でも値が異なる。
+   * リードが伸びるほど差が開く(1時間先で4,791画素、6時間先で19,432画素が相違)。
+   * リード1〜6で "none" を使うとレーダー由来の鮮度を捨てることになるので、必ず使い分ける。
+   *
+   * なお "none" はリード0〜15すべてで200を返すため、取り違えても404にならない。
+   * 静かに精度の低い値を使い続けることになるので注意。
+   *
+   * ■ ズームは偶数のみ
+   * z=4, 6, 8, 10 は配信されているが、奇数ズームは404になる。
    */
   static tile(input: TileUrlInput): string {
     this.assertTimestamp(input.basetime, "basetime");
@@ -60,8 +69,13 @@ export class JmaTileEndpoints {
         y: input.y,
       });
     }
+    if (input.zoom % 2 !== 0) {
+      throw new ValidationError("タイルは偶数ズームのみ配信されています", {
+        zoom: input.zoom,
+      });
+    }
 
-    const segment = input.validtime === input.basetime ? "none" : "immed";
+    const segment = this.segmentFor(input.basetime, input.validtime);
     return [
       BASE_URL,
       input.product,
@@ -74,6 +88,20 @@ export class JmaTileEndpoints {
       input.x,
       `${input.y}.png`,
     ].join("/");
+  }
+
+  /** リード1〜6時間だけが降水短時間予報(immed)、それ以外は15時間予報・解析雨量(none) */
+  private static segmentFor(basetime: string, validtime: string): string {
+    const leadHours =
+      (this.toEpochMs(validtime) - this.toEpochMs(basetime)) / 3_600_000;
+    return leadHours >= 1 && leadHours <= 6 ? "immed" : "none";
+  }
+
+  private static toEpochMs(timestamp: string): number {
+    const iso =
+      `${timestamp.slice(0, 4)}-${timestamp.slice(4, 6)}-${timestamp.slice(6, 8)}` +
+      `T${timestamp.slice(8, 10)}:${timestamp.slice(10, 12)}:${timestamp.slice(12, 14)}Z`;
+    return Date.parse(iso);
   }
 
   private static assertTimestamp(value: string, field: string): void {

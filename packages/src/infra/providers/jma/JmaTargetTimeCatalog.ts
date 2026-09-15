@@ -76,6 +76,12 @@ export class JmaTargetTimeCatalog {
   /**
    * 指定時刻のタイルを取得するための basetime / validtime を選ぶ。
    * 候補が複数ある場合は最も新しい basetime を採用する。
+   *
+   * 注意: `targetTimes.json` は予報ランを最新しか保持しないため、
+   * 正時のランが実在してタイルも配信されているのに一覧から消えていることがある
+   * (例: 09:30 のランが載ると 09:00 のランは消える)。
+   * したがって予報側の取得にこのメソッドだけを使うと取りこぼす。
+   * 正時の basetime を直接組み立てて取りにいく `JmaShortRangeForecastProvider` を参照。
    */
   selectForTime(
     target: Date,
@@ -104,6 +110,20 @@ export class JmaTargetTimeCatalog {
           JmaTargetTimeCatalog.toDate(latest.basetime).getTime()) /
         3_600_000,
     };
+  }
+
+  /**
+   * 掲載されている basetime のうち最新のもの。
+   *
+   * 解析値は10分毎に追加されるため、これは実質「配信側の現在時刻」を表す。
+   * ローカル時計のずれに影響されず、公開ラグも織り込まれた値になるので、
+   * どの正時ランまで公開済みかを判断する基準に使う。
+   */
+  latestBasetime(): string {
+    return this.entries.reduce(
+      (best, entry) => (entry.basetime > best ? entry.basetime : best),
+      this.entries[0].basetime,
+    );
   }
 
   /** 予報を持つ basetime のうち最新のもの。更新状況の記録用 */
