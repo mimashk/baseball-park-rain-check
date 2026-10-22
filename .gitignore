@@ -1,6 +1,7 @@
 node_modules/
 .env
+.env.*
 dist/
 tmp/
-CommandInDev.md
+CommandInDev*.md
 analytics.md
